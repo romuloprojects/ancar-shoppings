@@ -48,5 +48,4 @@ As demais telas antigas continuam no código para evolução posterior, mas fora
 
 O `vite.config.ts` aceita:
 
-- `ancar-shoppings.2see.io`
 - `ancar-shoppings.facilities-ai.com.br`

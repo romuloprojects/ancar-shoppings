@@ -9,7 +9,7 @@ export default defineConfig({
 
   vite: {
     server: {
-      allowedHosts: ["ancar-shoppings.2see.io", "ancar-shoppings.facilities-ai.com.br"],
+      allowedHosts: ["ancar-shoppings.facilities-ai.com.br"],
     },
   },
 });
