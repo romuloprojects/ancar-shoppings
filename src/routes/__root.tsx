@@ -78,16 +78,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Monitoramento Energético e ESG" },
+      { title: "Monitoramento CAG ANCAR" },
       {
         name: "description",
         content:
-          "Plataforma executiva de monitoramento energético e ESG do portfólio de shoppings.",
+          "Plataforma operacional de monitoramento das centrais de água gelada do portfólio ANCAR.",
       },
-      { property: "og:title", content: "Monitoramento Energético e ESG" },
+      { property: "og:title", content: "Monitoramento CAG ANCAR" },
       {
         property: "og:description",
-        content: "Plataforma executiva de monitoramento energético e ESG do portfólio.",
+        content: "Monitoramento operacional de CAG do portfólio ANCAR.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

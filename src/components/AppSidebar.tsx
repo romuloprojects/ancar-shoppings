@@ -1,17 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import {
-  Activity,
-  BarChart3,
-  Bell,
-  CircleHelp,
-  FileText,
-  Home,
-  Leaf,
-  LogOut,
-  Settings,
-  Store,
-  Trophy,
-} from "lucide-react";
+import { Activity, CircleHelp, Home, LogOut, Store } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -28,12 +16,6 @@ import {
 const items = [
   { title: "Visão Geral", url: "/", icon: Home },
   { title: "Shoppings", url: "/shoppings", icon: Store },
-  { title: "Ranking", url: "/ranking", icon: Trophy },
-  { title: "Análises", url: "/analises", icon: BarChart3 },
-  { title: "ESG", url: "/esg", icon: Leaf },
-  { title: "Alertas", url: "/alertas", icon: Bell },
-  { title: "Relatórios", url: "/relatorios", icon: FileText },
-  { title: "Configurações", url: "/configuracoes", icon: Settings },
 ];
 
 const navigationButtonClass =
@@ -48,10 +30,7 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border/75">
       <SidebarHeader className="h-16 justify-center border-b border-sidebar-border/70 px-2 py-0">
-        <div className="hidden h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[color-mix(in_oklab,var(--accent-cyan)_88%,white)] to-[var(--accent-blue)] shadow-[0_8px_28px_-14px_oklch(0.82_0.16_195/85%)] md:flex">
-          <Activity className="h-5 w-5 text-[var(--sidebar)]" strokeWidth={2.4} />
-        </div>
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[color-mix(in_oklab,var(--accent-cyan)_88%,white)] to-[var(--accent-blue)] shadow-[0_8px_28px_-14px_oklch(0.82_0.16_195/85%)] md:hidden">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[color-mix(in_oklab,var(--accent-cyan)_88%,white)] to-[var(--accent-blue)] shadow-[0_8px_28px_-14px_oklch(0.82_0.16_195/85%)]">
           <Activity className="h-5 w-5 text-[var(--sidebar)]" strokeWidth={2.4} />
         </div>
       </SidebarHeader>

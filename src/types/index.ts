@@ -129,3 +129,20 @@ export interface ShoppingDetail extends Shopping {
   alerts: Alert[];
   insights: Insight[];
 }
+
+export type {
+  EquipmentRegistryItem,
+  HistoryPeriod,
+  LiveEquipmentKpi,
+  LiveHealth,
+  LiveKpis,
+  LiveLatest,
+  LiveLocationMetadata,
+  LiveQualityStatus,
+  LiveRegistrySummary,
+  LiveShoppingMetadata,
+  LiveShoppingSummary,
+  PortfolioApiResponse,
+  ShoppingApiResponse,
+  ShoppingHistoryPoint,
+} from "./live";
