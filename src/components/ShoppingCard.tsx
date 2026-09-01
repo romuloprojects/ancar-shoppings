@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Building2, MapPin } from "lucide-react";
 import type { Shopping, ShoppingStatus } from "@/types";
-import { formatNumber } from "@/utils/format";
+import { formatKwTr, formatNumber } from "@/utils/format";
 
 const statusTheme: Record<
   ShoppingStatus,
@@ -87,7 +87,7 @@ export function ShoppingCard({ shopping }: { shopping: Shopping }) {
           value={
             shopping.status === "offline"
               ? "—"
-              : shopping.efficiencyKWTR === null ? "—" : formatNumber(shopping.efficiencyKWTR, { maximumFractionDigits: 3 })
+              : formatKwTr(shopping.efficiencyKWTR)
           }
           unit="kW/TR"
           label="kW/TR"

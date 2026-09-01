@@ -66,6 +66,10 @@ export function mapLiveShoppingToLegacy(item: LiveShoppingSummary): Shopping {
   const kpis = item.latest?.kpis ?? {};
   const coveragePct = getDataQualityPct(item);
   const quality = coveragePct >= 99 ? "alta" : coveragePct >= 80 ? "media" : "baixa";
+  const powerKW = asNumber(kpis.kw_cag);
+  const thermalLoadTR = asNumber(kpis.tr_total);
+  const directKwTr = asNumber(kpis.kw_tr_eletrico_cag ?? kpis.kw_tr_cag);
+  const efficiencyKWTR = directKwTr ?? (powerKW !== null && thermalLoadTR !== null && thermalLoadTR > 0 ? powerKW / thermalLoadTR : null);
   return {
     id: item.id || item.code.toLowerCase(),
     code: item.code,
@@ -84,10 +88,10 @@ export function mapLiveShoppingToLegacy(item: LiveShoppingSummary): Shopping {
       temperaturas: asNumber(kpis.temperatura_externa_c) !== null,
       coveragePct: Math.round(coveragePct),
     },
-    powerKW: asNumber(kpis.kw_cag),
+    powerKW,
     energyTodayKwh: asNumber(item.today?.energyKwh),
-    efficiencyKWTR: asNumber(kpis.kw_tr_eletrico_cag ?? kpis.kw_tr_cag),
-    thermalLoadTR: asNumber(kpis.tr_total),
+    efficiencyKWTR,
+    thermalLoadTR,
     peripheralKW: asNumber(kpis.kw_auxiliares),
     temperatureC: asNumber(kpis.temperatura_externa_c),
     activeChillers: asNumber(kpis.chillers_ativos),
@@ -126,7 +130,7 @@ export function buildCurrentAlerts(items: LiveShoppingSummary[]): Alert[] {
     if (settings.peripheralsWarningPct !== null && peripherals !== null && peripherals > settings.peripheralsWarningPct) alerts.push(makeAlert(item, "perifericos", "atencao", "Periféricos acima do limite", `Periféricos representam ${fmt(peripherals)}% da potência da CAG; limite configurado: ${fmt(settings.peripheralsWarningPct)}%.`, "Avaliar bombas, torres e demais cargas periféricas em operação.", date));
     const kwTr = asNumber(latest.kpis?.kw_tr_eletrico_cag ?? latest.kpis?.kw_tr_cag);
     const targetDeviation = kwTr !== null && settings.targetKwTr !== null && settings.targetKwTr > 0 ? ((kwTr - settings.targetKwTr) / settings.targetKwTr) * 100 : null;
-    if (settings.targetDeviationWarningPct !== null && targetDeviation !== null && targetDeviation > settings.targetDeviationWarningPct) alerts.push(makeAlert(item, "meta", "atencao", "Desempenho acima da meta", `Valor atual de ${fmt(kwTr, 3)} kW/TR acima da tolerância configurada para a meta.`, "Avaliar a condição operacional e a distribuição de carga entre chillers.", date));
+    if (settings.targetDeviationWarningPct !== null && targetDeviation !== null && targetDeviation > settings.targetDeviationWarningPct) alerts.push(makeAlert(item, "meta", "atencao", "Desempenho acima da meta", `Valor atual de ${fmt(kwTr, 2)} kW/TR acima da tolerância configurada para a meta.`, "Avaliar a condição operacional e a distribuição de carga entre chillers.", date));
   }
   return alerts.sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
 }

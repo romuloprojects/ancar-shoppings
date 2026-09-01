@@ -1,6 +1,25 @@
 export const formatNumber = (n: number, opts: Intl.NumberFormatOptions = {}) =>
   new Intl.NumberFormat("pt-BR", opts).format(n);
 
+export const formatKwTr = (value: number | null | undefined, fallback = "—") =>
+  value === null || value === undefined || !Number.isFinite(value)
+    ? fallback
+    : formatNumber(value, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+
+export const formatMetric = (
+  value: number | null | undefined,
+  unit?: string,
+  digits = 1,
+  fallback = "—",
+) => {
+  if (unit === "kW/TR") return formatKwTr(value, fallback);
+  if (value === null || value === undefined || !Number.isFinite(value)) return fallback;
+  return formatNumber(value, { maximumFractionDigits: digits });
+};
+
 export const formatBRL = (n: number) =>
   new Intl.NumberFormat("pt-BR", {
     style: "currency",
@@ -15,7 +34,7 @@ export const formatDateTime = (iso: string) =>
 
 export const formatRelative = (iso: string) => {
   const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-  if (diff < 60) return `há ${diff}s`;
+  if (diff < 60) return `há ${Math.max(0, diff)}s`;
   if (diff < 3600) return `há ${Math.floor(diff / 60)} min`;
   if (diff < 86400) return `há ${Math.floor(diff / 3600)} h`;
   return `há ${Math.floor(diff / 86400)} d`;

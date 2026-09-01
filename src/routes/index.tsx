@@ -31,7 +31,7 @@ import { StatusDot } from "@/components/StatusBadge";
 import { InsightCard } from "@/components/InsightCard";
 import { PortfolioHealthCard } from "@/components/PortfolioHealthCard";
 import { DataUnavailable } from "@/components/DataUnavailable";
-import { formatNumber } from "@/utils/format";
+import { formatKwTr, formatNumber } from "@/utils/format";
 
 type RankingMetric = "power" | "production" | "efficiency" | "quality";
 
@@ -41,7 +41,7 @@ const rankingOptions: Record<
 > = {
   power: { label: "Potência CAG", unit: "kW", lowerIsBetter: false },
   production: { label: "Produção térmica", unit: "TR", lowerIsBetter: false },
-  efficiency: { label: "Eficiência", unit: "kW/TR", lowerIsBetter: true },
+  efficiency: { label: "Intensidade elétrica", unit: "kW/TR", lowerIsBetter: true },
   quality: { label: "Qualidade dos dados", unit: "%", lowerIsBetter: false },
 };
 
@@ -188,7 +188,7 @@ function OverviewPage() {
   const activeSeries = activeChillers === null ? [] : [activeChillers, activeChillers];
 
   const selectedRanking = rankingOptions[rankingMetric];
-  const rankingValues = ranking.map((item) => item.value);
+  const rankingValues = ranking.map((item) => item.value).filter(isNumber);
   const rankingMin = rankingValues.length ? Math.min(...rankingValues) : 0;
   const rankingMax = rankingValues.length ? Math.max(...rankingValues) : 0;
 
@@ -210,7 +210,7 @@ function OverviewPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
         <KpiCard
           icon={Zap}
           label="Potência CAG"
@@ -230,7 +230,7 @@ function OverviewPage() {
         <KpiCard
           icon={Gauge}
           label={isMixed ? "Intensidade Elétrica" : "Eficiência da CAG"}
-          value={display(kwTr, 3)}
+          value={formatKwTr(kwTr)}
           unit="kW/TR"
           accent="green"
           series={historyKwTr}
@@ -344,6 +344,12 @@ function OverviewPage() {
                   />
                   <Tooltip
                     labelFormatter={(value) => formatTooltipTime(String(value))}
+                    formatter={(value, name) => {
+                      const label = String(name);
+                      const numeric = typeof value === "number" ? value : Number(value);
+                      if (label.includes("kW/TR")) return [formatKwTr(numeric), label];
+                      return [formatNumber(numeric, { maximumFractionDigits: 1 }), label];
+                    }}
                     contentStyle={{
                       background: "oklch(0.20 0.03 260)",
                       border: "1px solid oklch(0.35 0.03 260)",
@@ -408,19 +414,16 @@ function OverviewPage() {
             </select>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="max-h-[300px] space-y-1.5 overflow-y-auto pr-1">
             {ranking.length === 0 ? (
               <div className="grid h-[250px] place-items-center">
-                <DataUnavailable label="Nenhum shopping comparável nesta métrica" />
+                <DataUnavailable label="Nenhum shopping cadastrado" />
               </div>
             ) : (
-              ranking.slice(0, 8).map((item) => {
-                const width = getRankingWidth(
-                  item.value,
-                  rankingMin,
-                  rankingMax,
-                  selectedRanking.lowerIsBetter,
-                );
+              ranking.map((item) => {
+                const width = item.value === null
+                  ? 0
+                  : getRankingWidth(item.value, rankingMin, rankingMax, selectedRanking.lowerIsBetter);
                 const color = statusColor[item.status];
 
                 return (
@@ -428,27 +431,34 @@ function OverviewPage() {
                     key={item.shoppingId}
                     to="/shoppings/$shoppingId"
                     params={{ shoppingId: item.shoppingId }}
-                    className="group grid grid-cols-[24px_minmax(210px,1fr)_minmax(150px,0.9fr)_72px_10px] items-center gap-3 rounded-lg px-1.5 py-1.5 text-sm transition-colors hover:bg-muted/30"
+                    className="group grid grid-cols-[24px_minmax(0,1fr)_auto] items-center gap-2 rounded-lg px-1.5 py-2 text-sm transition-colors hover:bg-muted/30 sm:grid-cols-[24px_minmax(160px,1fr)_minmax(100px,0.8fr)_96px_10px] sm:gap-3"
                   >
-                    <span className="text-right text-xs text-muted-foreground">{item.position}</span>
+                    <span className="text-right text-xs text-muted-foreground">{item.position ?? "—"}</span>
                     <span className="min-w-0 truncate font-medium">
                       {item.name}{" "}
                       <span className="font-normal text-muted-foreground">({item.code})</span>
                     </span>
-                    <span className="h-1.5 overflow-hidden rounded-full bg-muted/50">
-                      <span
-                        className="block h-full rounded-full transition-[width] duration-300"
-                        style={{
-                          width: `${width}%`,
-                          background: `linear-gradient(90deg, ${color}, color-mix(in oklab, ${color} 74%, white))`,
-                          boxShadow: `0 0 10px color-mix(in oklab, ${color} 48%, transparent)`,
-                        }}
-                      />
-                    </span>
-                    <span className="metric-value whitespace-nowrap text-right text-xs">
+                    <span className="metric-value whitespace-nowrap text-right text-xs sm:order-none">
                       {formatRankingValue(item.value, rankingMetric)}
                     </span>
-                    <StatusDot status={item.status} />
+                    <span className="col-span-2 ml-[32px] h-1.5 overflow-hidden rounded-full bg-muted/50 sm:col-span-1 sm:ml-0">
+                      {item.value !== null && (
+                        <span
+                          className="block h-full rounded-full transition-[width] duration-300"
+                          style={{
+                            width: `${width}%`,
+                            background: `linear-gradient(90deg, ${color}, color-mix(in oklab, ${color} 74%, white))`,
+                            boxShadow: `0 0 10px color-mix(in oklab, ${color} 48%, transparent)`,
+                          }}
+                        />
+                      )}
+                    </span>
+                    <span className="hidden sm:block"><StatusDot status={item.status} /></span>
+                    {item.reason && (
+                      <span className="col-span-3 ml-[32px] text-[10px] text-muted-foreground sm:col-span-5 sm:ml-[39px]">
+                        {item.reason}
+                      </span>
+                    )}
                   </Link>
                 );
               })
@@ -457,8 +467,8 @@ function OverviewPage() {
         </section>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
-        <section className="panel p-4 xl:col-span-5">
+      <div className="grid grid-cols-1 gap-4 2xl:grid-cols-12">
+        <section className="panel p-4 2xl:col-span-5">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-sm font-semibold">
               Visão do Portfólio
@@ -524,12 +534,12 @@ function OverviewPage() {
           )}
         </section>
 
-        <section className="panel p-4 xl:col-span-3">
+        <section className="panel p-4 2xl:col-span-3">
           <h2 className="mb-3 text-sm font-semibold">Mapa / Distribuição</h2>
           <BrazilMap items={portfolioCards} />
         </section>
 
-        <section className="panel flex h-full min-h-[330px] flex-col p-4 xl:col-span-2">
+        <section className="panel flex h-full min-h-[330px] flex-col p-4 2xl:col-span-2">
           <div className="mb-3 flex items-end justify-between gap-3">
             <div>
               <h2 className="text-sm font-semibold">Oportunidades / Insights</h2>
@@ -549,7 +559,7 @@ function OverviewPage() {
           </div>
         </section>
 
-        <div className="xl:col-span-2">
+        <div className="2xl:col-span-2">
           <PortfolioHealthCard metrics={portfolioHealth} />
         </div>
       </div>
@@ -559,38 +569,57 @@ function OverviewPage() {
 
 function makeLiveRanking(items: LiveShoppingSummary[], metric: RankingMetric): RankingItem[] {
   const option = rankingOptions[metric];
-  const rows = items
-    .map((item) => {
-      const kpis = item.latest?.kpis ?? {};
-      const total = asNumber(item.latest?.health?.pointsTotal) ?? item.registry.pointsTotal;
-      const ok = asNumber(item.latest?.health?.pointsOk) ?? 0;
-      const quality = total > 0 ? (ok / total) * 100 : null;
-      const allElectric =
-        kpis.modelo_energetico === "all_electric_chillers" ||
-        (item.registry.chillersTotal > 0 && item.registry.chillersAbsorption === 0);
+  const evaluated = items.map((item) => {
+    const kpis = item.latest?.kpis ?? {};
+    const total = asNumber(item.latest?.health?.pointsTotal) ?? item.registry.pointsTotal;
+    const ok = asNumber(item.latest?.health?.pointsOk) ?? 0;
+    const quality = total > 0 ? (ok / total) * 100 : null;
+    const kwCag = asNumber(kpis.kw_cag);
+    const trTotal = asNumber(kpis.tr_total);
 
-      let value: number | null = null;
-      if (metric === "power") value = asNumber(kpis.kw_cag);
-      if (metric === "production") value = asNumber(kpis.tr_total);
-      if (metric === "efficiency") {
-        value = allElectric ? asNumber(kpis.kw_tr_eletrico_cag ?? kpis.kw_tr_cag) : null;
-      }
-      if (metric === "quality") value = quality;
+    let value: number | null = null;
+    if (metric === "power") value = kwCag;
+    if (metric === "production") value = trTotal;
+    if (metric === "efficiency") {
+      value = asNumber(kpis.kw_tr_eletrico_cag ?? kpis.kw_tr_cag);
+      if (value === null && kwCag !== null && trTotal !== null && trTotal > 0) value = kwCag / trTotal;
+    }
+    if (metric === "quality") value = quality;
 
-      return { item, value };
-    })
-    .filter((row): row is { item: LiveShoppingSummary; value: number } => row.value !== null)
+    const status = mapLiveShoppingToLegacy(item).status;
+    if (status === "offline") value = null;
+
+    return {
+      item,
+      value,
+      status,
+      reason: status === "offline" ? "Dados desatualizados" : value === null ? "Sem dado disponível" : undefined,
+    };
+  });
+
+  const valid = evaluated
+    .filter((row): row is (typeof evaluated)[number] & { value: number } => row.value !== null)
     .sort((a, b) => (option.lowerIsBetter ? a.value - b.value : b.value - a.value));
+  const positions = new Map(valid.map((row, index) => [row.item.id, index + 1]));
 
-  return rows.map(({ item, value }, index) => ({
-    position: index + 1,
-    shoppingId: item.id || item.code.toLowerCase(),
-    code: item.code,
-    name: item.name,
-    value,
-    unit: option.unit,
-    status: mapLiveShoppingToLegacy(item).status,
-  }));
+  return evaluated
+    .sort((a, b) => {
+      const pa = positions.get(a.item.id) ?? Number.POSITIVE_INFINITY;
+      const pb = positions.get(b.item.id) ?? Number.POSITIVE_INFINITY;
+      if (pa !== pb) return pa - pb;
+      return a.item.name.localeCompare(b.item.name, "pt-BR");
+    })
+    .map(({ item, value, status, reason }) => ({
+      position: positions.get(item.id) ?? null,
+      shoppingId: item.id || item.code.toLowerCase(),
+      code: item.code,
+      name: item.name,
+      value,
+      unit: option.unit,
+      status,
+      comparable: true,
+      reason,
+    }));
 }
 
 function makePortfolioInsights(items: LiveShoppingSummary[]): Insight[] {
@@ -732,10 +761,9 @@ function getRankingWidth(value: number, min: number, max: number, lowerIsBetter:
   return 36 + score * 64;
 }
 
-function formatRankingValue(value: number, metric: RankingMetric) {
+function formatRankingValue(value: number | null, metric: RankingMetric) {
+  if (value === null) return "—";
   if (metric === "quality") return `${formatNumber(value, { maximumFractionDigits: 0 })}%`;
-  if (metric === "efficiency") {
-    return `${formatNumber(value, { maximumFractionDigits: 2 })} kW/TR`;
-  }
+  if (metric === "efficiency") return `${formatKwTr(value)} kW/TR`;
   return `${formatNumber(value, { maximumFractionDigits: 0 })} ${rankingOptions[metric].unit}`;
 }

@@ -164,7 +164,7 @@
 
   body {
     min-width: 320px;
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 }
 
@@ -298,7 +298,11 @@
 }
 
 .data-table-shell {
-  overflow: hidden;
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .data-table-shell table {
@@ -382,5 +386,82 @@
 
   .summary-card {
     min-height: 6.5rem;
+  }
+}
+
+
+/* V3.1 — responsividade funcional em toda a aplicação */
+.section-panel,
+.section-panel > *,
+.summary-card,
+.page-toolbar,
+.page-heading,
+.internal-page,
+.overview-dashboard {
+  min-width: 0;
+}
+
+.section-panel__header {
+  flex-wrap: wrap;
+}
+
+.page-toolbar > * {
+  min-width: 0;
+}
+
+.responsive-chart {
+  width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 1279px) {
+  .overview-dashboard .panel {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .page-toolbar {
+    align-items: stretch;
+  }
+
+  .page-toolbar > label,
+  .page-toolbar > select,
+  .page-toolbar > .segmented-control {
+    width: 100%;
+    max-width: none;
+  }
+
+  .section-panel__header > :last-child:not(:first-child) {
+    width: 100%;
+  }
+
+  .section-panel__header > :last-child:not(:first-child) .segmented-control {
+    width: 100%;
+  }
+
+  .section-panel__header > :last-child:not(:first-child) .segmented-control > button {
+    flex: 1 1 0;
+  }
+
+  .data-table-shell {
+    margin-inline: -0.25rem;
+    width: calc(100% + 0.5rem);
+    padding-bottom: 0.25rem;
+  }
+
+  .data-table-shell table {
+    min-width: 700px;
+  }
+}
+
+@media (max-width: 420px) {
+  .summary-card {
+    padding: 0.85rem;
+  }
+
+  .section-panel__header,
+  .section-panel > .p-4 {
+    padding-inline: 0.85rem;
   }
 }

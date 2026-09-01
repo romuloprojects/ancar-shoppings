@@ -30,7 +30,7 @@ const items = [
   { title: "Shoppings", url: "/shoppings", icon: Store },
   { title: "Ranking", url: "/ranking", icon: Trophy },
   { title: "Análises", url: "/analises", icon: BarChart3 },
-  { title: "ESG", url: "/esg", icon: Leaf },
+  { title: "Energia e Emissões", url: "/esg", icon: Leaf },
   { title: "Alertas", url: "/alertas", icon: Bell },
   { title: "Relatórios", url: "/relatorios", icon: FileText },
   { title: "Configurações", url: "/configuracoes", icon: Settings },

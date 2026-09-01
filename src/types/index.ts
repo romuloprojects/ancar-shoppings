@@ -41,15 +41,16 @@ export interface Shopping {
 }
 
 export interface RankingItem {
-  position: number;
+  position: number | null;
   shoppingId: string;
   code: string;
   name: string;
-  value: number;
+  value: number | null;
   unit: string;
   status: ShoppingStatus;
   trend?: number;
   comparable?: boolean;
+  reason?: string;
 }
 
 export interface Alert {
@@ -77,6 +78,7 @@ export interface Insight {
 
 export type {
   EquipmentRegistryItem,
+  AnalysisMetric,
   HistoryPeriod,
   LiveAlertFlags,
   LiveEquipmentKpi,

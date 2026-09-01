@@ -9,7 +9,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { FilterBar, InternalPage, StatCard } from "@/components/InternalPage";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { formatNumber, formatRelative } from "@/utils/format";
+import { formatKwTr, formatNumber, formatRelative } from "@/utils/format";
 import { useDashboardRuntime } from "@/contexts/dashboard-runtime-context";
 
 export const Route = createFileRoute("/shoppings")({
@@ -60,7 +60,7 @@ function ShoppingsPage() {
         <button type="button" data-active={view === "table"} onClick={() => setView("table")}><span className="flex items-center gap-1.5"><TableIcon className="h-3.5 w-3.5" /> Tabela</span></button>
       </div>} />
 
-    <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
       <StatCard label="Unidades monitoradas" value={list.length} icon={Store} accent="cyan" />
       <StatCard label="Unidades online" value={summary.online} detail={`${list.length ? Math.round((summary.online/list.length)*100) : 0}% do portfólio`} icon={Wifi} accent="green" />
       <StatCard label="Em atenção" value={summary.attention} detail="Status atenção ou crítico" icon={AlertTriangle} accent={summary.attention ? "yellow" : "green"} />
@@ -68,11 +68,11 @@ function ShoppingsPage() {
     </div>
 
     <FilterBar>
-      <div className="relative min-w-[220px] flex-[2_1_320px]"><Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground"/><Input aria-label="Buscar shopping" placeholder="Buscar por nome, sigla ou cidade" value={q} onChange={(e) => setQ(e.target.value)} className="h-9 bg-background/55 pl-9"/></div>
+      <div className="relative w-full flex-[2_1_320px] sm:min-w-[220px]"><Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground"/><Input aria-label="Buscar shopping" placeholder="Buscar por nome, sigla ou cidade" value={q} onChange={(e) => setQ(e.target.value)} className="h-9 bg-background/55 pl-9"/></div>
       <Select label="Estado" value={state} onChange={setState} options={states}/>
       <Select label="Status" value={status} onChange={setStatus} options={STATUS_OPTS} labelMap={{otimo:"Ótimo",bom:"Bom",atencao:"Atenção",critico:"Crítico",offline:"Offline"}}/>
       <Select label="Qualidade" value={quality} onChange={setQuality} options={QUALITIES} labelMap={{alta:"Alta",media:"Média",baixa:"Baixa"}}/>
-      <div className="ml-auto self-center text-xs text-muted-foreground">{filtered.length} de {list.length} exibidos</div>
+      <div className="w-full self-center text-xs text-muted-foreground lg:ml-auto lg:w-auto">{filtered.length} de {list.length} exibidos</div>
     </FilterBar>
 
     {loading ? <LoadingCards count={8}/> : filtered.length === 0 ? <EmptyState title="Nenhum shopping encontrado" description="Revise os filtros aplicados." icon={Search}/> : view === "grid" ?
@@ -82,10 +82,10 @@ function ShoppingsPage() {
       </TableRow></TableHeader><TableBody>{filtered.map((shopping) => <TableRow key={shopping.id}>
         <TableCell><Link to="/shoppings/$shoppingId" params={{shoppingId:shopping.id}} className="flex items-center gap-2 font-medium hover:text-[var(--accent-cyan)]"><span className="rounded-md bg-muted/60 px-1.5 py-0.5 text-[10px] font-semibold">{shopping.code}</span>{shopping.name}</Link></TableCell>
         <TableCell className="text-muted-foreground">{shopping.city}/{shopping.stateCode}</TableCell><TableCell><StatusBadge status={shopping.status}/></TableCell>
-        <TableCell className="metric-value text-right">{num(shopping.powerKW,1)} kW</TableCell><TableCell className="metric-value text-right">{num(shopping.energyTodayKwh,1)} kWh</TableCell><TableCell className="metric-value text-right">{num(shopping.efficiencyKWTR,3)}</TableCell><TableCell className="metric-value text-right">{num(shopping.thermalLoadTR,1)} TR</TableCell><TableCell className="text-right">{shopping.dataAvailability.coveragePct}%</TableCell><TableCell className="text-right text-xs text-muted-foreground">{shopping.status === "offline" ? "—" : formatRelative(shopping.lastUpdate)}</TableCell>
+        <TableCell className="metric-value text-right">{num(shopping.powerKW,1)} kW</TableCell><TableCell className="metric-value text-right">{num(shopping.energyTodayKwh,1)} kWh</TableCell><TableCell className="metric-value text-right">{formatKwTr(shopping.efficiencyKWTR)}</TableCell><TableCell className="metric-value text-right">{num(shopping.thermalLoadTR,1)} TR</TableCell><TableCell className="text-right">{shopping.dataAvailability.coveragePct}%</TableCell><TableCell className="text-right text-xs text-muted-foreground">{shopping.status === "offline" ? "—" : formatRelative(shopping.lastUpdate)}</TableCell>
       </TableRow>)}</TableBody></Table></div>}
   </InternalPage>;
 }
 
 function num(v:number|null,d=1){return v===null?"—":formatNumber(v,{maximumFractionDigits:d});}
-function Select({label,value,onChange,options,labelMap}:{label:string;value:string;onChange:(v:string)=>void;options:string[];labelMap?:Record<string,string>}){return <label className="flex min-w-[120px] flex-1 flex-col gap-1 text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground md:max-w-[170px]">{label}<select value={value} onChange={(e)=>onChange(e.target.value)} className="h-9 rounded-lg border border-border/60 bg-background/55 px-2.5 text-sm font-normal normal-case tracking-normal text-foreground outline-none focus:border-primary/55">{options.map((o)=><option key={o} value={o}>{labelMap?.[o]??o}</option>)}</select></label>}
+function Select({label,value,onChange,options,labelMap}:{label:string;value:string;onChange:(v:string)=>void;options:string[];labelMap?:Record<string,string>}){return <label className="flex w-full flex-1 flex-col gap-1 sm:min-w-[120px] text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground md:max-w-[170px]">{label}<select value={value} onChange={(e)=>onChange(e.target.value)} className="h-9 rounded-lg border border-border/60 bg-background/55 px-2.5 text-sm font-normal normal-case tracking-normal text-foreground outline-none focus:border-primary/55">{options.map((o)=><option key={o} value={o}>{labelMap?.[o]??o}</option>)}</select></label>}

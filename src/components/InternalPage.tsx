@@ -37,7 +37,7 @@ export function SectionPanel({
 }) {
   return (
     <section className={cn("panel section-panel overflow-hidden", className)}>
-      <div className="section-panel__header">
+      <div className="section-panel__header min-w-0">
         <div className="flex min-w-0 items-center gap-3">
           {Icon && (
             <span className="section-panel__icon">
@@ -49,7 +49,7 @@ export function SectionPanel({
             {subtitle && <p className="mt-0.5 text-xs text-muted-foreground">{subtitle}</p>}
           </div>
         </div>
-        {right && <div className="shrink-0">{right}</div>}
+        {right && <div className="min-w-0 shrink-0">{right}</div>}
       </div>
       <div className={cn("p-4", contentClassName)}>{children}</div>
     </section>
