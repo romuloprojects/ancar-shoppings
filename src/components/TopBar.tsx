@@ -140,7 +140,7 @@ export function TopBar() {
             />
           </Link>
 
-          <div className="relative hidden min-w-0 flex-1 sm:block md:max-w-[520px] 2xl:max-w-[620px]">
+          <div className="relative hidden min-w-0 flex-1 2xl:block 2xl:max-w-[520px]">
             <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               aria-label="Buscar shopping ou métrica"

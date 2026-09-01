@@ -71,7 +71,7 @@ function RankingPage() {
   };
 
   return (
-    <InternalPage>
+    <InternalPage className="compact-page compact-ranking-page">
       <PageHeader
         eyebrow="Comparação do portfólio"
         title="Ranking"
@@ -111,13 +111,13 @@ function RankingPage() {
       </div>
 
       <FilterBar>
-        <div className="flex w-full flex-wrap gap-2">
+        <div className="ranking-metric-strip flex w-full flex-nowrap gap-2 overflow-x-auto pb-0.5">
           {METRICS.map((item) => (
             <button
               type="button"
               key={item.key}
               onClick={() => setMetric(item.key)}
-              className={`rounded-lg border px-3 py-2 text-xs font-medium transition ${
+              className={`shrink-0 rounded-lg border px-3 py-2 text-xs font-medium transition ${
                 metric === item.key
                   ? "border-primary/45 bg-primary/10 text-primary"
                   : "border-border/60 bg-background/45 text-muted-foreground hover:text-foreground"
@@ -129,7 +129,7 @@ function RankingPage() {
         </div>
       </FilterBar>
 
-      <SectionPanel title={`Ranking · ${cfg.label}`} subtitle={cfg.subtitle} icon={Zap}>
+      <SectionPanel title={`Ranking · ${cfg.label}`} subtitle={cfg.subtitle} icon={Zap} className="compact-fill-panel" contentClassName="compact-scroll-region">
         {loading ? (
           <LoadingBlock h={360} />
         ) : rows.length === 0 ? (
@@ -144,7 +144,7 @@ function RankingPage() {
                 key={row.shoppingId}
                 to="/shoppings/$shoppingId"
                 params={{ shoppingId: row.shoppingId }}
-                className="grid grid-cols-[44px_minmax(0,1fr)] items-center gap-3 rounded-xl border border-border/55 bg-muted/10 px-3 py-3 transition hover:border-primary/30 hover:bg-muted/20 sm:grid-cols-[52px_minmax(0,1fr)_auto] sm:px-4"
+                className="grid grid-cols-[38px_minmax(0,1fr)] items-center gap-2.5 rounded-xl border border-border/55 bg-muted/10 px-3 py-2 transition hover:border-primary/30 hover:bg-muted/20 sm:grid-cols-[44px_minmax(0,1fr)_auto] sm:px-3"
               >
                 <div className="grid h-9 w-9 place-items-center rounded-full border border-border/60 bg-background/50 text-sm font-semibold">
                   {row.position ?? "—"}

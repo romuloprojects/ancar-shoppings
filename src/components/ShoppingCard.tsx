@@ -48,7 +48,7 @@ export function ShoppingCard({ shopping }: { shopping: Shopping }) {
       params={{ shoppingId: shopping.id }}
       aria-label={`Abrir ${shopping.name}`}
       title={shopping.name}
-      className="group relative flex min-h-[146px] flex-col overflow-hidden rounded-xl border border-border/55 bg-[linear-gradient(145deg,color-mix(in_oklab,var(--card)_96%,transparent),color-mix(in_oklab,var(--background)_82%,transparent))] p-3.5 pb-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-[color-mix(in_oklab,var(--accent-cyan)_48%,transparent)] hover:shadow-[0_12px_32px_-22px_color-mix(in_oklab,var(--accent-cyan)_55%,transparent)]"
+      className="group relative flex min-h-[128px] flex-col overflow-hidden rounded-xl border border-border/55 bg-[linear-gradient(145deg,color-mix(in_oklab,var(--card)_96%,transparent),color-mix(in_oklab,var(--background)_82%,transparent))] p-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-[color-mix(in_oklab,var(--accent-cyan)_48%,transparent)] hover:shadow-[0_12px_32px_-22px_color-mix(in_oklab,var(--accent-cyan)_55%,transparent)]"
     >
       <span
         className="absolute right-3 top-3 h-2.5 w-2.5 rounded-full shadow-[0_0_12px_currentColor]"
@@ -57,11 +57,11 @@ export function ShoppingCard({ shopping }: { shopping: Shopping }) {
       />
 
       <div className="flex items-center gap-3 pr-5">
-        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[color-mix(in_oklab,var(--accent-blue)_28%,transparent)] bg-[radial-gradient(circle_at_35%_30%,color-mix(in_oklab,var(--accent-blue)_28%,transparent),color-mix(in_oklab,var(--card)_94%,transparent)_72%)] shadow-[inset_0_1px_0_oklch(1_0_0/8%)]">
+        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[color-mix(in_oklab,var(--accent-blue)_28%,transparent)] bg-[radial-gradient(circle_at_35%_30%,color-mix(in_oklab,var(--accent-blue)_28%,transparent),color-mix(in_oklab,var(--card)_94%,transparent)_72%)] shadow-[inset_0_1px_0_oklch(1_0_0/8%)]">
           <Building2 className="h-4.5 w-4.5 text-[var(--accent-blue)]" strokeWidth={1.8} />
         </div>
         <div className="min-w-0">
-          <div className="text-base font-semibold tracking-wide text-foreground">
+          <div className="text-[15px] font-semibold tracking-wide text-foreground">
             {shopping.code}
           </div>
           <div className="mt-0.5 flex min-w-0 items-center gap-1 text-[10px] text-muted-foreground">
@@ -73,7 +73,7 @@ export function ShoppingCard({ shopping }: { shopping: Shopping }) {
         </div>
       </div>
 
-      <div className="mt-3 grid grid-cols-3 divide-x divide-border/55 text-center">
+      <div className="mt-2 grid grid-cols-3 divide-x divide-border/55 text-center">
         <Metric
           value={
             shopping.status === "offline"

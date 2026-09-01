@@ -53,7 +53,7 @@ function ShoppingsPage() {
     return { online, attention, averageCoverage };
   }, [list]);
 
-  return <InternalPage>
+  return <InternalPage className="compact-page compact-shoppings-page">
     <PageHeader eyebrow="Portfólio operacional" title="Shoppings" subtitle="Acompanhe disponibilidade, qualidade dos dados e desempenho real das CAGs." icon={Store}
       right={<div className="segmented-control" aria-label="Modo de visualização">
         <button type="button" data-active={view === "grid"} onClick={() => setView("grid")}><span className="flex items-center gap-1.5"><LayoutGrid className="h-3.5 w-3.5" /> Cards</span></button>
@@ -75,8 +75,9 @@ function ShoppingsPage() {
       <div className="w-full self-center text-xs text-muted-foreground lg:ml-auto lg:w-auto">{filtered.length} de {list.length} exibidos</div>
     </FilterBar>
 
-    {loading ? <LoadingCards count={8}/> : filtered.length === 0 ? <EmptyState title="Nenhum shopping encontrado" description="Revise os filtros aplicados." icon={Search}/> : view === "grid" ?
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">{filtered.map((shopping) => <ShoppingCard key={shopping.id} shopping={shopping}/>)}</div> :
+    <div className="compact-scroll-region min-h-0">
+      {loading ? <LoadingCards count={8}/> : filtered.length === 0 ? <EmptyState title="Nenhum shopping encontrado" description="Revise os filtros aplicados." icon={Search}/> : view === "grid" ?
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">{filtered.map((shopping) => <ShoppingCard key={shopping.id} shopping={shopping}/>)}</div> :
       <div className="panel data-table-shell overflow-x-auto"><Table><TableHeader><TableRow>
         <TableHead>Shopping</TableHead><TableHead>Localização</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Potência</TableHead><TableHead className="text-right">Energia hoje</TableHead><TableHead className="text-right">kW/TR</TableHead><TableHead className="text-right">Produção</TableHead><TableHead className="text-right">Cobertura</TableHead><TableHead className="text-right">Atualização</TableHead>
       </TableRow></TableHeader><TableBody>{filtered.map((shopping) => <TableRow key={shopping.id}>
@@ -84,6 +85,7 @@ function ShoppingsPage() {
         <TableCell className="text-muted-foreground">{shopping.city}/{shopping.stateCode}</TableCell><TableCell><StatusBadge status={shopping.status}/></TableCell>
         <TableCell className="metric-value text-right">{num(shopping.powerKW,1)} kW</TableCell><TableCell className="metric-value text-right">{num(shopping.energyTodayKwh,1)} kWh</TableCell><TableCell className="metric-value text-right">{formatKwTr(shopping.efficiencyKWTR)}</TableCell><TableCell className="metric-value text-right">{num(shopping.thermalLoadTR,1)} TR</TableCell><TableCell className="text-right">{shopping.dataAvailability.coveragePct}%</TableCell><TableCell className="text-right text-xs text-muted-foreground">{shopping.status === "offline" ? "—" : formatRelative(shopping.lastUpdate)}</TableCell>
       </TableRow>)}</TableBody></Table></div>}
+    </div>
   </InternalPage>;
 }
 

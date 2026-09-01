@@ -98,21 +98,21 @@ export function KpiCard({
 
   return (
     <article
-      className="panel group relative h-[116px] min-w-0 overflow-hidden px-3.5 py-3 transition-colors duration-200 hover:border-[color-mix(in_oklab,var(--kpi-accent)_32%,var(--border))] 2xl:px-4"
+      className="panel group relative h-[98px] min-w-0 overflow-hidden px-3 py-2.5 transition-colors duration-200 hover:border-[color-mix(in_oklab,var(--kpi-accent)_32%,var(--border))] 2xl:h-[104px] 2xl:px-3.5"
       style={cardGlowStyle}
     >
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/8 to-transparent" />
 
       <div className="relative flex h-full min-w-0 items-center gap-2.5 2xl:gap-3">
         <div
-          className="grid h-12 w-12 shrink-0 place-items-center rounded-full border shadow-[inset_0_1px_0_rgb(255_255_255/6%),0_8px_26px_-16px_var(--kpi-accent)] 2xl:h-14 2xl:w-14"
+          className="grid h-10 w-10 shrink-0 place-items-center rounded-full border shadow-[inset_0_1px_0_rgb(255_255_255/6%),0_8px_26px_-16px_var(--kpi-accent)] 2xl:h-11 2xl:w-11"
           style={{
             color: accentStyle.color,
             borderColor: `color-mix(in oklab, ${accentStyle.color} 42%, transparent)`,
             background: `radial-gradient(circle at 35% 30%, color-mix(in oklab, ${accentStyle.color} 24%, transparent), color-mix(in oklab, ${accentStyle.color} 10%, var(--card)) 72%)`,
           }}
         >
-          <Icon className="h-6 w-6 2xl:h-7 2xl:w-7" strokeWidth={2} />
+          <Icon className="h-5 w-5 2xl:h-6 2xl:w-6" strokeWidth={2} />
         </div>
 
         <div className="min-w-0 flex-1">
@@ -120,8 +120,8 @@ export function KpiCard({
             {label}
           </div>
 
-          <div className="mt-2 flex min-w-0 items-baseline gap-1.5">
-            <span className="metric-value truncate text-[25px] leading-none text-foreground 2xl:text-[28px]">
+          <div className="mt-1.5 flex min-w-0 items-baseline gap-1.5">
+            <span className="metric-value truncate text-[22px] leading-none text-foreground 2xl:text-[24px]">
               {value}
             </span>
             {unit && (
@@ -157,7 +157,7 @@ export function KpiCard({
           )}
         </div>
 
-        <div className="hidden h-[58px] w-16 shrink-0 self-center opacity-95 xl:block 2xl:w-[104px]">
+        <div className="hidden h-[48px] w-14 shrink-0 self-center opacity-95 xl:block 2xl:w-[82px]">
           <svg
             viewBox="0 0 116 52"
             preserveAspectRatio="none"

@@ -15,7 +15,7 @@ const ACCENT_VAR: Record<AccentName, string> = {
 };
 
 export function InternalPage({ children, className }: { children: ReactNode; className?: string }) {
-  return <div className={cn("internal-page space-y-5", className)}>{children}</div>;
+  return <div className={cn("internal-page space-y-3", className)}>{children}</div>;
 }
 
 export function SectionPanel({
@@ -51,7 +51,7 @@ export function SectionPanel({
         </div>
         {right && <div className="min-w-0 shrink-0">{right}</div>}
       </div>
-      <div className={cn("p-4", contentClassName)}>{children}</div>
+      <div className={cn("section-panel__content p-3", contentClassName)}>{children}</div>
     </section>
   );
 }
@@ -82,7 +82,7 @@ export function StatCard({
             {label}
           </div>
           <div className="mt-2 flex items-baseline gap-1.5">
-            <span className="metric-value text-2xl text-foreground">{value}</span>
+            <span className="metric-value text-xl text-foreground 2xl:text-2xl">{value}</span>
             {unit && <span className="text-xs text-muted-foreground">{unit}</span>}
           </div>
           {detail && <p className="mt-1.5 text-[11px] text-muted-foreground">{detail}</p>}

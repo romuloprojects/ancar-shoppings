@@ -128,7 +128,7 @@ export function BrazilMap({ items = [] }: { items?: Shopping[] }) {
     <div className="relative w-full">
       <svg
         viewBox={`0 0 ${BRAZIL_MAP_WIDTH} ${BRAZIL_MAP_HEIGHT}`}
-        className="max-h-[286px] w-full overflow-visible"
+        className="portfolio-map-svg max-h-[230px] w-full overflow-visible"
         role="img"
         aria-label="Distribuição dos shoppings no Brasil"
         onMouseLeave={() => setHoveredId(null)}

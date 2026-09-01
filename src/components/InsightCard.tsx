@@ -52,7 +52,7 @@ export function InsightCard({ insight }: { insight: Insight }) {
     <Link
       to={theme.destination}
       aria-label={`${theme.label}: ${insight.title}`}
-      className="group relative flex min-h-[76px] items-center gap-3 overflow-hidden rounded-xl border border-border/45 bg-[linear-gradient(110deg,color-mix(in_oklab,var(--card)_94%,transparent),color-mix(in_oklab,var(--background)_80%,transparent))] px-3 py-2.5 transition-all duration-200 hover:-translate-y-px hover:border-[color-mix(in_oklab,var(--insight-color)_42%,transparent)] hover:shadow-[0_12px_28px_-22px_color-mix(in_oklab,var(--insight-color)_70%,transparent)]"
+      className="group relative flex min-h-[58px] items-center gap-2.5 overflow-hidden rounded-xl border border-border/45 bg-[linear-gradient(110deg,color-mix(in_oklab,var(--card)_94%,transparent),color-mix(in_oklab,var(--background)_80%,transparent))] px-3 py-2.5 transition-all duration-200 hover:-translate-y-px hover:border-[color-mix(in_oklab,var(--insight-color)_42%,transparent)] hover:shadow-[0_12px_28px_-22px_color-mix(in_oklab,var(--insight-color)_70%,transparent)]"
       style={{ "--insight-color": theme.color } as CSSProperties}
     >
       <span
@@ -65,7 +65,7 @@ export function InsightCard({ insight }: { insight: Insight }) {
       />
 
       <div
-        className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border"
+        className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border"
         style={{
           color: theme.color,
           borderColor: `color-mix(in oklab, ${theme.color} 32%, transparent)`,

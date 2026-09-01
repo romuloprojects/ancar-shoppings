@@ -18,7 +18,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
         <SidebarInset className="min-w-0 bg-transparent">
           <DashboardRuntimeProvider>
             <TopBar />
-            <main className="min-w-0 flex-1 px-3 py-4 sm:px-4 lg:px-5 lg:py-5 2xl:px-6">{children}</main>
+            <main className="dashboard-main min-w-0 flex-1 px-3 py-3 sm:px-4 lg:px-4 lg:py-3 2xl:px-5">{children}</main>
           </DashboardRuntimeProvider>
         </SidebarInset>
       </div>

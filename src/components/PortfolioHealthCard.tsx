@@ -17,7 +17,7 @@ export function PortfolioHealthCard({ metrics }: { metrics: PortfolioHealthMetri
   const dash = (quality / 100) * circumference;
 
   return (
-    <section className="panel flex h-full min-h-[330px] flex-col overflow-hidden p-4">
+    <section className="panel portfolio-health-card flex h-full min-h-0 flex-col overflow-hidden p-3">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-sm font-semibold">Qualidade dos Dados</h2>
@@ -28,7 +28,7 @@ export function PortfolioHealthCard({ metrics }: { metrics: PortfolioHealthMetri
         </div>
       </div>
 
-      <div className="relative mx-auto mt-1 grid h-[154px] w-[154px] place-items-center">
+      <div className="relative mx-auto grid h-[108px] w-[108px] place-items-center">
         <div className="absolute inset-[21px] rounded-full bg-[radial-gradient(circle,color-mix(in_oklab,var(--accent-cyan)_8%,transparent),transparent_66%)] blur-xl" />
         <svg
           viewBox="0 0 100 100"
@@ -67,7 +67,7 @@ export function PortfolioHealthCard({ metrics }: { metrics: PortfolioHealthMetri
         </svg>
 
         <div className="relative text-center">
-          <div className="metric-value text-[34px] leading-none">{formatNumber(quality, { maximumFractionDigits: 0 })}</div>
+          <div className="metric-value text-[28px] leading-none">{formatNumber(quality, { maximumFractionDigits: 0 })}</div>
           <div className="mt-1 text-[9px] uppercase tracking-[0.12em] text-muted-foreground">%</div>
           <div className="mt-1.5 text-[10px] font-semibold text-[var(--accent-green)]">
             {quality >= 99 ? "Dados íntegros" : quality >= 80 ? "Acompanhar" : "Atenção"}
@@ -75,7 +75,7 @@ export function PortfolioHealthCard({ metrics }: { metrics: PortfolioHealthMetri
         </div>
       </div>
 
-      <div className="mt-1 space-y-2.5 text-[10px]">
+      <div className="mt-1 space-y-1.5 text-[10px]">
         <HealthRow
           icon={CheckCircle2}
           label="Pontos OK"
@@ -96,7 +96,7 @@ export function PortfolioHealthCard({ metrics }: { metrics: PortfolioHealthMetri
         />
       </div>
 
-      <div className="mt-auto rounded-lg border border-border/55 bg-muted/15 px-3 py-2 text-center text-[10px] text-muted-foreground">
+      <div className="mt-auto rounded-lg border border-border/55 bg-muted/15 px-2.5 py-1.5 text-center text-[9px] text-muted-foreground">
         Atualização automática a cada 5 minutos
       </div>
     </section>
@@ -115,7 +115,7 @@ function HealthRow({
   color: string;
 }) {
   return (
-    <div className="grid grid-cols-[18px_1fr_auto] items-center gap-2 rounded-lg border border-border/35 bg-muted/10 px-2.5 py-2">
+    <div className="grid grid-cols-[18px_1fr_auto] items-center gap-2 rounded-lg border border-border/35 bg-muted/10 px-2.5 py-1.5">
       <Icon className="h-3.5 w-3.5" style={{ color }} strokeWidth={1.9} />
       <span className="text-muted-foreground">{label}</span>
       <span className="metric-value text-foreground">{value}</span>

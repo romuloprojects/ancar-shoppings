@@ -144,7 +144,7 @@ function AnalyticsPage() {
     config.unit === "kW/TR" ? formatKwTr(value) : formatMetric(value, config.unit, 1);
 
   return (
-    <InternalPage>
+    <InternalPage className="compact-page compact-analysis-page">
       <PageHeader
         eyebrow="Histórico consolidado"
         title="Análises"
@@ -189,7 +189,7 @@ function AnalyticsPage() {
           ))}
         </div>
 
-        <div className="flex w-full flex-wrap items-end gap-2 lg:ml-auto lg:w-auto">
+        <div className="analysis-unit-selector flex max-h-[76px] w-full flex-wrap items-end gap-2 overflow-y-auto pr-1 lg:ml-auto lg:w-auto lg:max-w-[54%]">
           {portfolio.map((shopping) => (
             <label
               key={shopping.code}
@@ -216,6 +216,8 @@ function AnalyticsPage() {
         title={`Comparação · ${config.label}`}
         subtitle={`Período: ${period} · ${series.length} unidade(s) com série disponível`}
         icon={config.icon}
+        className="compact-fill-panel"
+        contentClassName="compact-analysis-content"
       >
         {loading ? (
           <LoadingBlock h={390} />
@@ -234,7 +236,7 @@ function AnalyticsPage() {
                 </span>
               ))}
             </div>
-            <div className="h-[280px] min-w-0 sm:h-[340px] lg:h-[400px]">
+            <div className="analysis-main-chart h-[230px] min-w-0 sm:h-[260px] lg:h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData} margin={{ top: 8, right: 8, bottom: 4, left: -12 }}>
                   <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
@@ -272,7 +274,7 @@ function AnalyticsPage() {
               </ResponsiveContainer>
             </div>
 
-            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="analysis-series-summary mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
               {series.map((shopping, index) => {
                 const value =
                   metric === "energyKwh"

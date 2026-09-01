@@ -18,7 +18,7 @@ export function PageHeader({
 }) {
   return (
     <header className="page-heading">
-      <div className="flex min-w-0 items-start gap-3.5">
+      <div className="flex min-w-0 items-start gap-3">
         {Icon && (
           <span className="page-heading__icon">
             <Icon className="h-5 w-5" />
@@ -30,10 +30,10 @@ export function PageHeader({
               {eyebrow}
             </div>
           )}
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground md:text-[1.75rem]">
+          <h1 className="text-xl font-semibold tracking-tight text-foreground md:text-[1.45rem] 2xl:text-[1.6rem]">
             {title}
           </h1>
-          {subtitle && <p className="mt-1.5 max-w-3xl text-sm text-muted-foreground">{subtitle}</p>}
+          {subtitle && <p className="mt-1 max-w-4xl text-xs text-muted-foreground 2xl:text-[13px]">{subtitle}</p>}
         </div>
       </div>
       {right && <div className="flex shrink-0 items-center gap-2">{right}</div>}
