@@ -1,449 +1,51 @@
 import { createFileRoute } from "@tanstack/react-router";
-import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
-import {
-  BellRing,
-  Database,
-  Gauge,
-  Link2,
-  Palette,
-  Save,
-  Settings,
-  ShieldCheck,
-  SlidersHorizontal,
-  Store,
-  Users,
-} from "lucide-react";
-import { PageHeader, LoadingBlock } from "@/components/ui-helpers";
+import { useEffect, useMemo, useState } from "react";
+import type { Dispatch, SetStateAction } from "react";
+import { Activity, AlertTriangle, Database, Gauge, MonitorCog, Save, Settings, ShieldCheck } from "lucide-react";
+import { toast } from "sonner";
+import { liveDashboardService, normalizeSettings } from "@/services/liveDashboardService";
+import type { LiveShoppingSummary, ShoppingSettings } from "@/types";
+import { LoadingBlock, PageHeader } from "@/components/ui-helpers";
 import { InternalPage, SectionPanel, StatusPill } from "@/components/InternalPage";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { dashboardService } from "@/services/dashboardService";
-import type { Shopping } from "@/types";
-import { USE_MOCK_DATA } from "@/config";
-import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useDashboardRuntime } from "@/contexts/dashboard-runtime-context";
+import { formatDateTime } from "@/utils/format";
 
-export const Route = createFileRoute("/configuracoes")({
-  head: () => ({ meta: [{ title: "Configurações" }] }),
-  component: ConfiguracoesPage,
-});
+export const Route = createFileRoute("/configuracoes")({ head: () => ({ meta: [{ title: "Configurações" }] }), component: SettingsPage });
 
-function ConfiguracoesPage() {
-  const [shoppings, setShoppings] = useState<Shopping[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [useMock, setUseMock] = useState(USE_MOCK_DATA);
-  const [integrationUrl, setIntegrationUrl] = useState("https://dados.exemplo.com/portfolio");
-  const [emissionFactor, setEmissionFactor] = useState("0.084");
-  const [refresh, setRefresh] = useState("30");
+type FormState = {
+  baselineKwTr: string; targetKwTr: string; emissionFactorKgCo2Kwh: string; emissionFactorSource: string; emissionFactorReferenceYear: string;
+  balanceWarningPct: string; peripheralsWarningPct: string; targetDeviationWarningPct: string; staleAfterMinutes: string;
+  baselineReference: string; baselineValidFrom: string; baselineNotes: string;
+};
 
-  useEffect(() => {
-    let alive = true;
-    dashboardService.getShoppings().then((items) => {
-      if (!alive) return;
-      setShoppings(items);
-      setLoading(false);
-    });
-    return () => {
-      alive = false;
-    };
-  }, []);
-
-  const save = () => toast.success("Configurações salvas (demo)");
-
-  return (
-    <InternalPage>
-      <PageHeader
-        eyebrow="Administração do sistema"
-        title="Configurações"
-        subtitle="Gerencie portfólio, metas, limites, integrações e preferências da plataforma."
-        icon={Settings}
-        right={
-          <Button onClick={save} className="gap-2">
-            <Save className="h-4 w-4" /> Salvar alterações
-          </Button>
-        }
-      />
-
-      <Tabs defaultValue="shoppings" className="space-y-4">
-        <div className="panel overflow-x-auto p-2">
-          <TabsList className="h-auto min-w-max flex-wrap justify-start gap-1 bg-transparent p-0">
-            <TabsTrigger value="shoppings" className="gap-1.5">
-              <Store className="h-3.5 w-3.5" /> Shoppings
-            </TabsTrigger>
-            <TabsTrigger value="metas" className="gap-1.5">
-              <Gauge className="h-3.5 w-3.5" /> Metas
-            </TabsTrigger>
-            <TabsTrigger value="alertas" className="gap-1.5">
-              <BellRing className="h-3.5 w-3.5" /> Alertas
-            </TabsTrigger>
-            <TabsTrigger value="emissoes" className="gap-1.5">
-              <SlidersHorizontal className="h-3.5 w-3.5" /> Emissões
-            </TabsTrigger>
-            <TabsTrigger value="usuarios" className="gap-1.5">
-              <Users className="h-3.5 w-3.5" /> Usuários
-            </TabsTrigger>
-            <TabsTrigger value="unidades" className="gap-1.5">
-              <Database className="h-3.5 w-3.5" /> Unidades
-            </TabsTrigger>
-            <TabsTrigger value="instrumentos" className="gap-1.5">
-              <ShieldCheck className="h-3.5 w-3.5" /> Disponibilidade
-            </TabsTrigger>
-            <TabsTrigger value="integracao" className="gap-1.5">
-              <Link2 className="h-3.5 w-3.5" /> Integração
-            </TabsTrigger>
-            <TabsTrigger value="aparencia" className="gap-1.5">
-              <Palette className="h-3.5 w-3.5" /> Aparência
-            </TabsTrigger>
-          </TabsList>
-        </div>
-
-        <TabsContent value="shoppings" className="m-0">
-          <SectionPanel
-            title="Portfólio monitorado"
-            subtitle="Unidades cadastradas e cobertura atual de instrumentação"
-            icon={Store}
-            contentClassName="p-0"
-          >
-            {loading ? (
-              <div className="p-4">
-                <LoadingBlock h={360} />
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[720px] text-sm">
-                  <thead className="bg-muted/20 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                    <tr>
-                      <th className="px-4 py-3 text-left">Sigla</th>
-                      <th className="px-4 py-3 text-left">Nome</th>
-                      <th className="px-4 py-3 text-left">Localização</th>
-                      <th className="px-4 py-3 text-left">Qualidade</th>
-                      <th className="px-4 py-3 text-right">Cobertura</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {shoppings.map((shopping) => (
-                      <tr key={shopping.id} className="border-t border-border/35">
-                        <td className="px-4 py-3 font-semibold">{shopping.code}</td>
-                        <td className="px-4 py-3">{shopping.name}</td>
-                        <td className="px-4 py-3 text-muted-foreground">
-                          {shopping.city}/{shopping.stateCode}
-                        </td>
-                        <td className="px-4 py-3">
-                          <StatusPill
-                            label={
-                              shopping.dataQuality === "alta"
-                                ? "Alta"
-                                : shopping.dataQuality === "media"
-                                  ? "Média"
-                                  : "Baixa"
-                            }
-                            tone={
-                              shopping.dataQuality === "alta"
-                                ? "positive"
-                                : shopping.dataQuality === "media"
-                                  ? "warning"
-                                  : "danger"
-                            }
-                          />
-                        </td>
-                        <td className="metric-value px-4 py-3 text-right">
-                          {shopping.dataAvailability.coveragePct}%
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </SectionPanel>
-        </TabsContent>
-
-        <TabsContent value="metas" className="m-0">
-          <SettingsGrid
-            title="Metas corporativas"
-            subtitle="Parâmetros utilizados nos comparativos e indicadores executivos"
-            icon={Gauge}
-          >
-            <Field label="Meta eficiência (kW/TR)" defaultValue="0.65" />
-            <Field label="Meta redução consumo (%)" defaultValue="8" />
-            <Field label="Meta ESG Score" defaultValue="85" />
-            <Field label="Meta CO₂ evitado (t/ano)" defaultValue="12500" />
-            <Field label="Meta economia (R$/ano)" defaultValue="4200000" />
-            <Field label="Meta energia renovável (%)" defaultValue="45" />
-          </SettingsGrid>
-        </TabsContent>
-
-        <TabsContent value="alertas" className="m-0">
-          <SettingsGrid
-            title="Limites de alertas"
-            subtitle="Referências operacionais para geração de eventos e recomendações"
-            icon={BellRing}
-          >
-            <Field label="Delta T mínimo (°C)" defaultValue="5.0" />
-            <Field label="Consumo acima do baseline (%)" defaultValue="15" />
-            <Field label="Aproximação máxima (°C)" defaultValue="5.5" />
-            <Field label="Eficiência máxima aceitável (kW/TR)" defaultValue="0.85" />
-            <Field label="Cobertura mínima (%)" defaultValue="80" />
-            <Field label="Tempo máximo sem leitura (min)" defaultValue="10" />
-          </SettingsGrid>
-        </TabsContent>
-
-        <TabsContent value="emissoes" className="m-0">
-          <SectionPanel
-            title="Fator de emissão"
-            subtitle="Parâmetro aplicado às métricas de emissões e CO₂ evitado"
-            icon={SlidersHorizontal}
-          >
-            <div className="max-w-lg space-y-3">
-              <Field
-                label="Fator de emissão da rede (t CO₂ / MWh)"
-                value={emissionFactor}
-                onChange={setEmissionFactor}
-              />
-              <p className="text-xs leading-relaxed text-muted-foreground">
-                Valor demonstrativo baseado na referência configurada para a plataforma. A origem e
-                a periodicidade da atualização devem ser definidas na integração definitiva.
-              </p>
-            </div>
-          </SectionPanel>
-        </TabsContent>
-
-        <TabsContent value="usuarios" className="m-0">
-          <SectionPanel
-            title="Usuários e perfis"
-            subtitle="Controle demonstrativo de permissões de acesso"
-            icon={Users}
-            contentClassName="p-0"
-          >
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[620px] text-sm">
-                <thead className="bg-muted/20 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                  <tr>
-                    <th className="px-4 py-3 text-left">Nome</th>
-                    <th className="px-4 py-3 text-left">E-mail</th>
-                    <th className="px-4 py-3 text-left">Perfil</th>
-                    <th className="px-4 py-3 text-right">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[
-                    ["Alex Gomes", "alex@empresa.com.br", "Administrador"],
-                    ["Marina Souza", "marina@empresa.com.br", "Analista"],
-                    ["Rafael Lima", "rafael@empresa.com.br", "Operador"],
-                    ["Camila Torres", "camila@empresa.com.br", "Visualização"],
-                  ].map(([name, email, profile]) => (
-                    <tr key={email} className="border-t border-border/35">
-                      <td className="px-4 py-3 font-medium">{name}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{email}</td>
-                      <td className="px-4 py-3">{profile}</td>
-                      <td className="px-4 py-3 text-right">
-                        <StatusPill label="Ativo" tone="positive" />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </SectionPanel>
-        </TabsContent>
-
-        <TabsContent value="unidades" className="m-0">
-          <SettingsGrid
-            title="Unidades de engenharia"
-            subtitle="Padrões exibidos nos cards, gráficos e relatórios"
-            icon={Database}
-          >
-            {[
-              ["Energia", "MWh"],
-              ["Potência", "kW"],
-              ["Eficiência", "kW/TR"],
-              ["Temperatura", "°C"],
-              ["Vazão", "L/s"],
-              ["Emissões", "t CO₂"],
-            ].map(([label, value]) => (
-              <Field key={label} label={label} defaultValue={value} />
-            ))}
-          </SettingsGrid>
-        </TabsContent>
-
-        <TabsContent value="instrumentos" className="m-0">
-          <SectionPanel
-            title="Disponibilidade de instrumentos"
-            subtitle="Cobertura por família de medição em cada unidade"
-            icon={ShieldCheck}
-            contentClassName="p-0"
-          >
-            {loading ? (
-              <div className="p-4">
-                <LoadingBlock h={360} />
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[780px] text-sm">
-                  <thead className="bg-muted/20 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                    <tr>
-                      <th className="px-4 py-3 text-left">Shopping</th>
-                      <th className="px-4 py-3 text-center">Chillers</th>
-                      <th className="px-4 py-3 text-center">Periféricos</th>
-                      <th className="px-4 py-3 text-center">Temperaturas</th>
-                      <th className="px-4 py-3 text-center">Vazão</th>
-                      <th className="px-4 py-3 text-right">Cobertura</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {shoppings.map((shopping) => (
-                      <tr key={shopping.id} className="border-t border-border/35">
-                        <td className="px-4 py-3 font-medium">
-                          {shopping.code} · {shopping.name}
-                        </td>
-                        <AvailabilityCell value={shopping.dataAvailability.chillers} />
-                        <AvailabilityCell value={shopping.dataAvailability.perifericos} />
-                        <AvailabilityCell value={shopping.dataAvailability.temperaturas} />
-                        <AvailabilityCell value={shopping.dataAvailability.vazao} />
-                        <td className="metric-value px-4 py-3 text-right">
-                          {shopping.dataAvailability.coveragePct}%
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </SectionPanel>
-        </TabsContent>
-
-        <TabsContent value="integracao" className="m-0">
-          <SectionPanel
-            title="Integração de dados"
-            subtitle="Fonte, endpoint e intervalo de atualização"
-            icon={Link2}
-          >
-            <div className="space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/50 bg-muted/15 p-4">
-                <div>
-                  <div className="text-sm font-medium">Usar dados mockados</div>
-                  <div className="mt-1 text-xs text-muted-foreground">
-                    Quando desativado, a aplicação consulta a fonte de dados configurada.
-                  </div>
-                </div>
-                <Switch checked={useMock} onCheckedChange={setUseMock} />
-              </div>
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                <Field
-                  label="Endpoint de integração"
-                  value={integrationUrl}
-                  onChange={setIntegrationUrl}
-                />
-                <Field
-                  label="Intervalo de atualização (segundos)"
-                  value={refresh}
-                  onChange={setRefresh}
-                />
-              </div>
-              <div className="flex justify-end">
-                <Button onClick={save}>Salvar integração</Button>
-              </div>
-            </div>
-          </SectionPanel>
-        </TabsContent>
-
-        <TabsContent value="aparencia" className="m-0">
-          <SectionPanel
-            title="Aparência e experiência"
-            subtitle="Preferências visuais demonstrativas"
-            icon={Palette}
-          >
-            <div className="space-y-3">
-              <div className="rounded-xl border border-border/50 bg-muted/15 p-4 text-sm text-muted-foreground">
-                O tema é fixado em modo escuro corporativo para manter contraste e consistência
-                entre as telas do protótipo.
-              </div>
-              <ToggleSetting
-                label="Densidade compacta"
-                description="Reduz espaçamentos em tabelas e listas"
-              />
-              <ToggleSetting
-                label="Animações de gráficos"
-                description="Mantém transições suaves nas atualizações"
-              />
-            </div>
-          </SectionPanel>
-        </TabsContent>
-      </Tabs>
-    </InternalPage>
-  );
+function SettingsPage(){
+ const {tick,refreshNow,selectedShoppingCode,setSelectedShoppingCode}=useDashboardRuntime(); const [portfolio,setPortfolio]=useState<LiveShoppingSummary[]>([]); const [settings,setSettings]=useState<ShoppingSettings>(normalizeSettings()); const [form,setForm]=useState<FormState>(toForm(normalizeSettings())); const [loading,setLoading]=useState(true); const [saving,setSaving]=useState(false); const [error,setError]=useState<string|null>(null);
+ useEffect(()=>{let alive=true;liveDashboardService.getPortfolio().then(p=>{if(!alive)return;setPortfolio(p.shoppings);if(p.shoppings.length&&!p.shoppings.some(s=>s.code===selectedShoppingCode))setSelectedShoppingCode(p.shoppings[0].code)}).catch(e=>{if(alive)setError(e instanceof Error?e.message:"Falha ao carregar portfólio")});return()=>{alive=false}},[tick,selectedShoppingCode,setSelectedShoppingCode]);
+ useEffect(()=>{if(!selectedShoppingCode)return;let alive=true;setLoading(true);liveDashboardService.getSettings(selectedShoppingCode).then(r=>{if(!alive)return;setSettings(r.settings);setForm(toForm(r.settings));setError(null)}).catch(e=>{if(alive)setError(e instanceof Error?e.message:"Falha ao carregar configurações")}).finally(()=>{if(alive)setLoading(false)});return()=>{alive=false}},[selectedShoppingCode]);
+ const current=useMemo(()=>portfolio.find(s=>s.code===selectedShoppingCode)??null,[portfolio,selectedShoppingCode]);
+ const save=async()=>{setSaving(true);try{const payload:ShoppingSettings={...settings,baselineKwTr:parseNullable(form.baselineKwTr),targetKwTr:parseNullable(form.targetKwTr),emissionFactorKgCo2Kwh:parseNullable(form.emissionFactorKgCo2Kwh),emissionFactorSource:textOrNull(form.emissionFactorSource),emissionFactorReferenceYear:parseNullable(form.emissionFactorReferenceYear),balanceWarningPct:parseNullable(form.balanceWarningPct),peripheralsWarningPct:parseNullable(form.peripheralsWarningPct),targetDeviationWarningPct:parseNullable(form.targetDeviationWarningPct),staleAfterMinutes:parseNullable(form.staleAfterMinutes),baselineReference:textOrNull(form.baselineReference),baselineValidFrom:textOrNull(form.baselineValidFrom),baselineNotes:textOrNull(form.baselineNotes),reportSettings:settings.reportSettings??{}};const result=await liveDashboardService.saveSettings(selectedShoppingCode,payload);setSettings(result.settings);setForm(toForm(result.settings));refreshNow();toast.success("Configurações salvas e publicadas para os workflows n8n.");}catch(e){toast.error(e instanceof Error?e.message:"Falha ao salvar configurações.")}finally{setSaving(false)}};
+ return <InternalPage><PageHeader eyebrow="Parâmetros por shopping" title="Configurações" subtitle="Baseline, meta, emissões e limites operacionais são salvos por shopping no PostgreSQL, versionados e consumidos pelos workflows n8n." icon={Settings} right={<Button onClick={save} disabled={saving||loading}><Save className="mr-1.5 h-3.5 w-3.5"/>{saving?"Salvando...":"Salvar alterações"}</Button>}/>
+ <div className="panel p-3"><label className="flex max-w-xl flex-col gap-1 text-[10px] font-medium uppercase tracking-[.12em] text-muted-foreground">Shopping<select value={selectedShoppingCode} onChange={e=>setSelectedShoppingCode(e.target.value)} className="mt-1 h-10 rounded-lg border border-border/60 bg-background/55 px-3 text-sm font-normal normal-case tracking-normal text-foreground">{portfolio.map(s=><option key={s.code} value={s.code}>{s.code} · {s.name}</option>)}</select></label></div>
+ {error&&<div className="rounded-lg border border-[var(--accent-red)]/25 bg-[var(--accent-red)]/8 px-3 py-2 text-xs text-[var(--accent-red)]">{error}</div>}
+ {loading?<LoadingBlock h={540}/>:<Tabs defaultValue="desempenho" className="space-y-4"><TabsList className="h-auto flex-wrap justify-start gap-1 bg-transparent p-0"><TabsTrigger value="desempenho">Desempenho</TabsTrigger><TabsTrigger value="alertas">Alertas</TabsTrigger><TabsTrigger value="disponibilidade">Disponibilidade</TabsTrigger><TabsTrigger value="sistema">Sistema</TabsTrigger><TabsTrigger value="aparencia">Aparência</TabsTrigger></TabsList>
+ <TabsContent value="desempenho" className="m-0 space-y-4"><SectionPanel title="Baseline e meta" subtitle="Parâmetros usados por dashboard, análises e relatórios" icon={Gauge}><div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"><Field label="Baseline kW/TR" value={form.baselineKwTr} onChange={v=>patch(setForm,"baselineKwTr",v)} unit="kW/TR" placeholder="Não configurado"/><Field label="Meta kW/TR" value={form.targetKwTr} onChange={v=>patch(setForm,"targetKwTr",v)} unit="kW/TR" placeholder="Não configurado"/><Field label="Período / referência do baseline" value={form.baselineReference} onChange={v=>patch(setForm,"baselineReference",v)} placeholder="Ex.: Jan–Mar/2026"/><Field label="Baseline válido desde" value={form.baselineValidFrom} onChange={v=>patch(setForm,"baselineValidFrom",v)} type="date"/><div className="md:col-span-2"><label className="block text-[10px] font-medium uppercase tracking-[.12em] text-muted-foreground">Observações do baseline<Textarea value={form.baselineNotes} onChange={e=>patch(setForm,"baselineNotes",e.target.value)} placeholder="Critério utilizado para definição do baseline" className="mt-1.5 min-h-24 bg-background/55 text-sm normal-case tracking-normal"/></label></div></div></SectionPanel>
+ <SectionPanel title="Fator de emissão" subtitle="Aplicado às estimativas de emissões evitadas" icon={Activity}><div className="grid grid-cols-1 gap-4 md:grid-cols-3"><Field label="Fator de emissão" value={form.emissionFactorKgCo2Kwh} onChange={v=>patch(setForm,"emissionFactorKgCo2Kwh",v)} unit="kgCO₂/kWh" placeholder="Não configurado"/><Field label="Fonte do fator" value={form.emissionFactorSource} onChange={v=>patch(setForm,"emissionFactorSource",v)} placeholder="Fonte oficial / documento"/><Field label="Ano / referência" value={form.emissionFactorReferenceYear} onChange={v=>patch(setForm,"emissionFactorReferenceYear",v)} placeholder="2026"/></div></SectionPanel></TabsContent>
+ <TabsContent value="alertas" className="m-0"><SectionPanel title="Limites operacionais" subtitle="Sem valor configurado, o respectivo alerta não é gerado" icon={AlertTriangle}><div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4"><Field label="Desvio máximo de balanço" value={form.balanceWarningPct} onChange={v=>patch(setForm,"balanceWarningPct",v)} unit="%" placeholder="Não configurado"/><Field label="Periféricos — atenção" value={form.peripheralsWarningPct} onChange={v=>patch(setForm,"peripheralsWarningPct",v)} unit="%" placeholder="Não configurado"/><Field label="Desvio acima da meta" value={form.targetDeviationWarningPct} onChange={v=>patch(setForm,"targetDeviationWarningPct",v)} unit="%" placeholder="Não configurado"/><Field label="Dados desatualizados após" value={form.staleAfterMinutes} onChange={v=>patch(setForm,"staleAfterMinutes",v)} unit="min" placeholder="Não configurado"/></div></SectionPanel></TabsContent>
+ <TabsContent value="disponibilidade" className="m-0"><SectionPanel title="Disponibilidade de dados" subtitle="Derivada automaticamente do cadastro e da última coleta" icon={ShieldCheck}>{current?<div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4"><Availability label="Potência CAG" ok={current.latest?.kpis?.kw_cag!==null&&current.latest?.kpis?.kw_cag!==undefined}/><Availability label="Produção térmica" ok={current.latest?.kpis?.tr_total!==null&&current.latest?.kpis?.tr_total!==undefined}/><Availability label="Periféricos" ok={current.latest?.kpis?.kw_auxiliares!==null&&current.latest?.kpis?.kw_auxiliares!==undefined}/><Availability label="Temperatura externa" ok={current.latest?.kpis?.temperatura_externa_c!==null&&current.latest?.kpis?.temperatura_externa_c!==undefined}/><Availability label="Status de chillers" ok={(current.latest?.kpis?.chillers_status_conhecidos as number|undefined)===current.registry.chillersTotal}/><Availability label="Pontos válidos" ok={(current.latest?.health?.pointsOk??0)===(current.latest?.health?.pointsTotal??current.registry.pointsTotal)} detail={`${current.latest?.health?.pointsOk??0} / ${current.latest?.health?.pointsTotal??current.registry.pointsTotal}`}/></div>:null}</SectionPanel></TabsContent>
+ <TabsContent value="sistema" className="m-0"><SectionPanel title="Integração" subtitle="Informações de operação; credenciais e endpoints não são editáveis pelo cliente" icon={Database}><div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4"><Info label="Coleta" value="A cada 5 minutos"/><Info label="API Dashboard" value="Operacional" tone="positive"/><Info label="Shopping" value={current?.code??"—"}/><Info label="Última coleta" value={current?.latest?.collectedAt?formatDateTime(current.latest.collectedAt):"Sem dados"}/><Info label="Versão da configuração" value={settings.version===null?"Não configurada":String(settings.version)}/><Info label="Origem" value={settings.sourceChannel??"—"}/></div></SectionPanel></TabsContent>
+ <TabsContent value="aparencia" className="m-0"><SectionPanel title="Aparência" subtitle="A interface mantém o padrão visual corporativo da aplicação" icon={MonitorCog}><div className="rounded-xl border border-border/55 bg-muted/10 p-4 text-sm text-muted-foreground">Tema escuro, tipografia, espaçamentos e cores permanecem padronizados para todo o portfólio. Não há parâmetros operacionais nesta aba.</div></SectionPanel></TabsContent>
+ </Tabs>}
+ </InternalPage>
 }
-
-function SettingsGrid({
-  title,
-  subtitle,
-  icon,
-  children,
-}: {
-  title: string;
-  subtitle: string;
-  icon: typeof Gauge;
-  children: ReactNode;
-}) {
-  return (
-    <SectionPanel title={title} subtitle={subtitle} icon={icon}>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">{children}</div>
-    </SectionPanel>
-  );
-}
-
-function Field({
-  label,
-  defaultValue,
-  value,
-  onChange,
-}: {
-  label: string;
-  defaultValue?: string;
-  value?: string;
-  onChange?: (value: string) => void;
-}) {
-  return (
-    <div>
-      <Label className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
-        {label}
-      </Label>
-      <Input
-        defaultValue={defaultValue}
-        value={value}
-        onChange={onChange ? (event) => onChange(event.target.value) : undefined}
-        className="mt-1.5 h-10 bg-background/45"
-      />
-    </div>
-  );
-}
-
-function AvailabilityCell({ value }: { value: boolean }) {
-  return (
-    <td className="px-4 py-3 text-center">
-      <span
-        className={`mx-auto block h-2.5 w-2.5 rounded-full ${
-          value
-            ? "bg-[var(--accent-green)] shadow-[0_0_9px_var(--accent-green)]"
-            : "bg-muted-foreground/30"
-        }`}
-        aria-label={value ? "Disponível" : "Indisponível"}
-      />
-    </td>
-  );
-}
-
-function ToggleSetting({ label, description }: { label: string; description: string }) {
-  return (
-    <div className="flex items-center justify-between gap-4 rounded-xl border border-border/50 bg-muted/15 p-4">
-      <div>
-        <div className="text-sm font-medium">{label}</div>
-        <div className="mt-1 text-xs text-muted-foreground">{description}</div>
-      </div>
-      <Switch defaultChecked />
-    </div>
-  );
-}
+function patch(setter:Dispatch<SetStateAction<FormState>>,key:keyof FormState,value:string){setter(prev=>({...prev,[key]:value}))}
+function parseNullable(v:string){const t=v.trim().replace(",",".");if(!t)return null;const n=Number(t);if(!Number.isFinite(n))throw new Error(`Valor inválido: ${v}`);return n}
+function textOrNull(v:string){const t=v.trim();return t||null}
+function toForm(s:ShoppingSettings):FormState{return {baselineKwTr:str(s.baselineKwTr),targetKwTr:str(s.targetKwTr),emissionFactorKgCo2Kwh:str(s.emissionFactorKgCo2Kwh),emissionFactorSource:s.emissionFactorSource??"",emissionFactorReferenceYear:str(s.emissionFactorReferenceYear),balanceWarningPct:str(s.balanceWarningPct),peripheralsWarningPct:str(s.peripheralsWarningPct),targetDeviationWarningPct:str(s.targetDeviationWarningPct),staleAfterMinutes:str(s.staleAfterMinutes),baselineReference:s.baselineReference??"",baselineValidFrom:s.baselineValidFrom??"",baselineNotes:s.baselineNotes??""}}
+function str(v:number|null|undefined){return v===null||v===undefined?"":String(v)}
+function Field({label,value,onChange,unit,placeholder,type="text"}:{label:string;value:string;onChange:(v:string)=>void;unit?:string;placeholder?:string;type?:string}){return <label className="block text-[10px] font-medium uppercase tracking-[.12em] text-muted-foreground">{label}<div className="relative mt-1.5"><Input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} className={`h-10 bg-background/55 text-sm font-normal normal-case tracking-normal ${unit?"pr-24":""}`}/>{unit&&<span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">{unit}</span>}</div></label>}
+function Availability({label,ok,detail}:{label:string;ok:boolean;detail?:string}){return <div className="rounded-xl border border-border/55 bg-muted/10 p-4"><div className="flex items-center justify-between gap-2"><div className="text-sm font-medium">{label}</div><StatusPill label={ok?"Disponível":"Indisponível"} tone={ok?"positive":"warning"}/></div>{detail&&<div className="mt-2 text-xs text-muted-foreground">{detail}</div>}</div>}
+function Info({label,value,tone="neutral"}:{label:string;value:string;tone?:"positive"|"neutral"}){return <div className="rounded-xl border border-border/55 bg-muted/10 p-4"><div className="text-[10px] uppercase tracking-[.1em] text-muted-foreground">{label}</div><div className="mt-2 flex items-center justify-between gap-2 text-sm font-medium"><span>{value}</span>{tone==="positive"&&<StatusPill label="OK" tone="positive"/>}</div></div>}

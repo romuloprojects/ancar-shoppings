@@ -78,19 +78,19 @@ export function ShoppingCard({ shopping }: { shopping: Shopping }) {
           value={
             shopping.status === "offline"
               ? "—"
-              : formatNumber(shopping.powerKW / 1000, { maximumFractionDigits: 2 })
+              : shopping.powerKW === null ? "—" : formatNumber(shopping.powerKW, { maximumFractionDigits: 1 })
           }
-          unit="MW"
+          unit="kW"
           label="Potência"
         />
         <Metric
           value={
             shopping.status === "offline"
               ? "—"
-              : formatNumber(shopping.efficiencyKWTR, { maximumFractionDigits: 2 })
+              : shopping.efficiencyKWTR === null ? "—" : formatNumber(shopping.efficiencyKWTR, { maximumFractionDigits: 3 })
           }
           unit="kW/TR"
-          label={shopping.energyModel === "mixed_absorption_electric" ? "Intensidade" : "Eficiência"}
+          label="kW/TR"
         />
         <Metric
           value={shopping.status === "offline" ? "—" : String(shopping.dataAvailability.coveragePct)}

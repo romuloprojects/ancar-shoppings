@@ -1,274 +1,31 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import {
-  AlertTriangle,
-  CalendarClock,
-  Clock3,
-  Eye,
-  FileBarChart,
-  FileSpreadsheet,
-  FileText,
-  Gauge,
-  History,
-  Leaf,
-  Search,
-  Send,
-  ShieldCheck,
-  Trophy,
-} from "lucide-react";
-import { PageHeader } from "@/components/ui-helpers";
-import {
-  FilterBar,
-  InternalPage,
-  SectionPanel,
-  StatCard,
-  StatusPill,
-} from "@/components/InternalPage";
+import { useEffect, useMemo, useState } from "react";
+import { Activity, Download, FileText, Gauge, ShieldCheck, Zap } from "lucide-react";
+import { liveDashboardService } from "@/services/liveDashboardService";
+import type { HistoryPeriod, LiveShoppingSummary, ShoppingApiResponse } from "@/types";
+import { EmptyState, LoadingBlock, PageHeader } from "@/components/ui-helpers";
+import { FilterBar, InternalPage, SectionPanel, StatCard } from "@/components/InternalPage";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
+import { formatNumber } from "@/utils/format";
+import { useDashboardRuntime } from "@/contexts/dashboard-runtime-context";
 
-export const Route = createFileRoute("/relatorios")({
-  head: () => ({ meta: [{ title: "Relatórios" }] }),
-  component: RelatoriosPage,
-});
+export const Route = createFileRoute("/relatorios")({ head: () => ({ meta: [{ title: "Relatórios" }] }), component: ReportsPage });
 
-const reports = [
-  {
-    id: "diario",
-    icon: CalendarClock,
-    title: "Diário",
-    category: "Operacional",
-    desc: "Consolidado das últimas 24 horas de operação.",
-    color: "var(--accent-cyan)",
-  },
-  {
-    id: "semanal",
-    icon: CalendarClock,
-    title: "Semanal",
-    category: "Operacional",
-    desc: "Comparativo de eficiência e consumo dos últimos 7 dias.",
-    color: "var(--accent-blue)",
-  },
-  {
-    id: "mensal",
-    icon: CalendarClock,
-    title: "Mensal",
-    category: "Executivo",
-    desc: "Relatório executivo com KPIs e evolução mensal.",
-    color: "var(--accent-purple)",
-  },
-  {
-    id: "ranking",
-    icon: Trophy,
-    title: "Ranking",
-    category: "Executivo",
-    desc: "Ranking consolidado por métrica e período.",
-    color: "var(--accent-yellow)",
-  },
-  {
-    id: "esg",
-    icon: Leaf,
-    title: "ESG",
-    category: "Sustentabilidade",
-    desc: "Indicadores ambientais, sociais e de governança.",
-    color: "var(--accent-green)",
-  },
-  {
-    id: "eficiencia",
-    icon: Gauge,
-    title: "Eficiência",
-    category: "Técnico",
-    desc: "Análise detalhada de eficiência por shopping.",
-    color: "var(--accent-cyan)",
-  },
-  {
-    id: "alertas",
-    icon: AlertTriangle,
-    title: "Alertas",
-    category: "Operacional",
-    desc: "Histórico completo de alertas e resoluções.",
-    color: "var(--accent-red)",
-  },
-  {
-    id: "qualidade",
-    icon: ShieldCheck,
-    title: "Qualidade dos Dados",
-    category: "Técnico",
-    desc: "Cobertura e disponibilidade dos instrumentos.",
-    color: "var(--accent-purple)",
-  },
-];
-
-const recentReports = [
-  ["Relatório mensal — Junho", "PDF", "Hoje, 09:42", "Concluído"],
-  ["Ranking de eficiência", "XLSX", "Ontem, 17:18", "Concluído"],
-  ["Alertas críticos — 7 dias", "PDF", "15/07, 15:04", "Concluído"],
-  ["Resumo ESG — 2º trimestre", "PDF", "12/07, 11:25", "Agendado"],
-];
-
-function RelatoriosPage() {
-  const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("Todos");
-
-  const categories = ["Todos", ...Array.from(new Set(reports.map((report) => report.category)))];
-  const filtered = useMemo(
-    () =>
-      reports.filter((report) => {
-        const matchesQuery = `${report.title} ${report.desc}`
-          .toLowerCase()
-          .includes(query.toLowerCase().trim());
-        const matchesCategory = category === "Todos" || report.category === category;
-        return matchesQuery && matchesCategory;
-      }),
-    [query, category],
-  );
-
-  return (
-    <InternalPage>
-      <PageHeader
-        eyebrow="Exportação e distribuição"
-        title="Relatórios"
-        subtitle="Gere, visualize e agende relatórios operacionais, técnicos e executivos."
-        icon={FileBarChart}
-      />
-
-      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-        <StatCard
-          label="Modelos disponíveis"
-          value={reports.length}
-          icon={FileText}
-          accent="cyan"
-        />
-        <StatCard label="Gerados este mês" value={28} icon={History} accent="blue" />
-        <StatCard label="Agendamentos ativos" value={4} icon={Clock3} accent="purple" />
-        <StatCard
-          label="Última geração"
-          value="09:42"
-          detail="Hoje"
-          icon={CalendarClock}
-          accent="green"
-        />
-      </div>
-
-      <FilterBar>
-        <div className="relative min-w-[240px] flex-[1_1_420px]">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            aria-label="Buscar relatório"
-            placeholder="Buscar modelo de relatório"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            className="h-9 bg-background/55 pl-9"
-          />
-        </div>
-        <label className="flex min-w-[190px] flex-col gap-1 text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
-          Categoria
-          <select
-            value={category}
-            onChange={(event) => setCategory(event.target.value)}
-            className="h-9 rounded-lg border border-border/60 bg-background/55 px-2.5 text-sm font-normal normal-case tracking-normal text-foreground outline-none focus:border-primary/55"
-          >
-            {categories.map((option) => (
-              <option key={option}>{option}</option>
-            ))}
-          </select>
-        </label>
-        <div className="ml-auto self-center text-xs text-muted-foreground">
-          {filtered.length} modelos exibidos
-        </div>
-      </FilterBar>
-
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-4">
-        {filtered.map((report) => (
-          <article key={report.id} className="panel flex min-h-[230px] flex-col p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div
-                className="grid h-11 w-11 place-items-center rounded-xl border"
-                style={{
-                  color: report.color,
-                  borderColor: `color-mix(in oklab, ${report.color} 28%, transparent)`,
-                  background: `color-mix(in oklab, ${report.color} 10%, transparent)`,
-                }}
-              >
-                <report.icon className="h-5 w-5" />
-              </div>
-              <StatusPill label={report.category} tone="neutral" />
-            </div>
-            <h2 className="mt-4 text-base font-semibold">{report.title}</h2>
-            <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{report.desc}</p>
-            <div className="mt-auto grid grid-cols-2 gap-2 pt-5">
-              <Button
-                variant="outline"
-                size="sm"
-                className="justify-start"
-                onClick={() => toast.info(`Visualizando: ${report.title}`)}
-              >
-                <Eye className="mr-1.5 h-3.5 w-3.5" /> Visualizar
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="justify-start"
-                onClick={() => toast.success(`PDF ${report.title} exportado (demo)`)}
-              >
-                <FileText className="mr-1.5 h-3.5 w-3.5" /> PDF
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="justify-start"
-                onClick={() => toast.success(`Excel ${report.title} exportado (demo)`)}
-              >
-                <FileSpreadsheet className="mr-1.5 h-3.5 w-3.5" /> Excel
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="justify-start"
-                onClick={() => toast.info(`Envio agendado: ${report.title}`)}
-              >
-                <Send className="mr-1.5 h-3.5 w-3.5" /> Agendar
-              </Button>
-            </div>
-          </article>
-        ))}
-      </div>
-
-      <SectionPanel
-        title="Histórico recente"
-        subtitle="Últimos relatórios gerados ou agendados"
-        icon={History}
-        contentClassName="p-0"
-      >
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[680px] text-sm">
-            <thead className="bg-muted/20 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-              <tr>
-                <th className="px-4 py-3 text-left">Relatório</th>
-                <th className="px-4 py-3 text-left">Formato</th>
-                <th className="px-4 py-3 text-left">Data</th>
-                <th className="px-4 py-3 text-right">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentReports.map(([name, format, date, status]) => (
-                <tr key={name} className="border-t border-border/35">
-                  <td className="px-4 py-3 font-medium">{name}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{format}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{date}</td>
-                  <td className="px-4 py-3 text-right">
-                    <StatusPill
-                      label={status}
-                      tone={status === "Concluído" ? "positive" : "info"}
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </SectionPanel>
-    </InternalPage>
-  );
+function ReportsPage(){
+ const {tick,selectedShoppingCode,setSelectedShoppingCode}=useDashboardRuntime(); const [portfolio,setPortfolio]=useState<LiveShoppingSummary[]>([]); const [period,setPeriod]=useState<HistoryPeriod>("7d"); const [data,setData]=useState<ShoppingApiResponse|null>(null); const [loading,setLoading]=useState(true);
+ useEffect(()=>{let alive=true;liveDashboardService.getPortfolio().then(p=>{if(!alive)return;setPortfolio(p.shoppings);if(p.shoppings.length&&!p.shoppings.some(s=>s.code===selectedShoppingCode))setSelectedShoppingCode(p.shoppings[0].code)});return()=>{alive=false}},[tick,selectedShoppingCode,setSelectedShoppingCode]);
+ useEffect(()=>{if(!selectedShoppingCode)return;let alive=true;setLoading(true);liveDashboardService.getShopping(selectedShoppingCode,period).then(r=>{if(alive)setData(r)}).finally(()=>{if(alive)setLoading(false)});return()=>{alive=false}},[selectedShoppingCode,period,tick]);
+ const configured=!!data?.shopping?.settings?.baselineKwTr; const rows=useMemo(()=>data?.history??[],[data]);
+ const exportCsv=()=>{if(!data?.shopping)return;const header=["timestamp","potencia_kw","energia_kwh","producao_tr","frio_trh","kw_tr","perifericos_kw","temperatura_c","qualidade_pct","economia_estimada_kwh","emissoes_evitadas_kgco2"];const csv=[header.join(";"),...rows.map(r=>[r.timestamp,r.kwCag??"",r.energyKwh??"",r.trTotal??"",r.thermalTrh??"",r.kwTr??"",r.kwAux??"",r.temperatureC??"",r.dataQualityPct??"",r.savedKwh??"",r.avoidedKgCo2??""].join(";"))].join("\n");const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`ancar-${data.shopping.code}-${period}.csv`;a.click();URL.revokeObjectURL(url)};
+ return <InternalPage><PageHeader eyebrow="Relatórios operacionais" title="Relatórios" subtitle="Prévia baseada na telemetria histórica. Os mesmos parâmetros de baseline, meta e alertas configurados no frontend são usados nos cálculos." icon={FileText} right={<Button onClick={exportCsv} disabled={!data?.history?.length}><Download className="mr-1.5 h-3.5 w-3.5"/>Exportar CSV</Button>}/>
+ <FilterBar><label className="flex min-w-[260px] flex-col gap-1 text-[10px] uppercase tracking-[.12em] text-muted-foreground">Shopping<select value={selectedShoppingCode} onChange={e=>setSelectedShoppingCode(e.target.value)} className="h-9 rounded-lg border border-border/60 bg-background/55 px-2.5 text-sm normal-case tracking-normal text-foreground">{portfolio.map(s=><option key={s.code} value={s.code}>{s.code} · {s.name}</option>)}</select></label><div className="segmented-control self-end">{(["24h","7d","30d"] as HistoryPeriod[]).map(p=><button type="button" key={p} data-active={period===p} onClick={()=>setPeriod(p)}>{p}</button>)}</div></FilterBar>
+ {loading&&!data?<LoadingBlock h={520}/>:!data?.shopping?<EmptyState title="Sem dados para relatório"/>:<>
+ <div className="grid grid-cols-2 gap-3 xl:grid-cols-4"><StatCard label="Energia no período" value={num(data.summary.energyKwh,1)} unit="kWh" icon={Zap} accent="cyan"/><StatCard label="Frio acumulado" value={num(data.summary.thermalTrh,1)} unit="TRh" icon={Activity} accent="blue"/><StatCard label="Média kW/TR" value={num(data.summary.avgKwTr,3)} unit="kW/TR" icon={Gauge} accent="green"/><StatCard label="Qualidade média" value={num(data.summary.avgDataQualityPct,1)} unit="%" icon={ShieldCheck} accent="purple"/></div>
+ <div className="grid grid-cols-1 gap-4 xl:grid-cols-2"><SectionPanel title="Resumo de desempenho" subtitle={`Período ${period}`} icon={Activity}><div className="grid grid-cols-2 gap-3"><ReportMetric label="Potência média" value={data.summary.avgKw} unit="kW"/><ReportMetric label="Pico de potência" value={data.summary.maxKw} unit="kW"/><ReportMetric label="Produção média" value={data.summary.avgTr} unit="TR"/><ReportMetric label="Pico de produção" value={data.summary.maxTr} unit="TR"/><ReportMetric label="Periféricos médios" value={data.summary.avgAuxKw} unit="kW"/><ReportMetric label="Energia total" value={data.summary.energyKwh} unit="kWh"/></div></SectionPanel>
+ <SectionPanel title="Baseline e emissões" subtitle="Estimativas somente quando os parâmetros foram configurados" icon={FileText}>{configured?<div className="grid grid-cols-2 gap-3"><ReportMetric label="Baseline" value={data.shopping.settings.baselineKwTr} unit="kW/TR"/><ReportMetric label="Meta" value={data.shopping.settings.targetKwTr} unit="kW/TR"/><ReportMetric label="Energia evitada estimada" value={data.summary.savedKwh} unit="kWh"/><ReportMetric label="Emissões evitadas estimadas" value={data.summary.avoidedKgCo2} unit="kgCO₂"/></div>:<div className="rounded-xl border border-[var(--accent-yellow)]/25 bg-[var(--accent-yellow)]/8 p-4 text-sm text-muted-foreground">Configure baseline e fator de emissão para habilitar estimativas de energia e emissões evitadas.</div>}</SectionPanel></div>
+ <SectionPanel title="Relatórios programados" subtitle="Estrutura preparada para a próxima etapa" icon={FileText}><p className="text-sm text-muted-foreground">Quando os relatórios automáticos forem ativados, eles consultarão a mesma configuração versionada por shopping utilizada por dashboard, alertas e análises. Nenhum parâmetro ficará hardcoded nos workflows.</p></SectionPanel>
+ </>}
+ </InternalPage>
 }
+function num(v:number|null|undefined,d=1){return v===null||v===undefined?"—":formatNumber(v,{maximumFractionDigits:d})}
+function ReportMetric({label,value,unit}:{label:string;value:number|null|undefined;unit:string}){return <div className="rounded-xl border border-border/55 bg-muted/10 p-3"><div className="text-[10px] uppercase tracking-[.1em] text-muted-foreground">{label}</div><div className="mt-1.5 metric-value text-xl">{num(value,3)} <span className="text-[10px] text-muted-foreground">{unit}</span></div></div>}

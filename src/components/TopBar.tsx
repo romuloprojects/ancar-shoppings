@@ -139,10 +139,8 @@ export function TopBar() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Button variant="outline" size="sm" className={controlClass}>
-            <GitCompareArrows className="h-3.5 w-3.5 opacity-70" />
-            Comparar
-            <ChevronDown className="h-3.5 w-3.5 opacity-60" />
+          <Button variant="outline" size="sm" className={controlClass} asChild>
+            <Link to="/analises"><GitCompareArrows className="h-3.5 w-3.5 opacity-70" />Comparar</Link>
           </Button>
 
           <div className="flex items-center gap-2 whitespace-nowrap px-1 text-[11px] text-muted-foreground">
@@ -157,7 +155,7 @@ export function TopBar() {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--accent-green)] opacity-55" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--accent-green)]" />
             </span>
-            <span className="text-xs text-muted-foreground">Sistema Operacional</span>
+            <span className="text-xs text-muted-foreground">{shoppings.length ? "Sistema Operacional" : "API indisponível"}</span>
           </div>
 
           <DropdownMenu>
@@ -165,12 +163,12 @@ export function TopBar() {
               <button className="flex items-center gap-2 rounded-xl px-1.5 py-1 outline-none transition-colors hover:bg-muted/45 focus-visible:ring-1 focus-visible:ring-ring">
                 <Avatar className="h-9 w-9 border border-border/70 shadow-sm">
                   <AvatarFallback className="bg-gradient-to-br from-[color-mix(in_oklab,var(--accent-blue)_45%,var(--card))] to-[color-mix(in_oklab,var(--accent-purple)_35%,var(--card))] text-xs font-semibold text-foreground">
-                    AG
+                    AN
                   </AvatarFallback>
                 </Avatar>
                 <div className="hidden min-w-[82px] text-left leading-tight 2xl:block">
-                  <div className="text-xs font-medium text-foreground">Alex G.</div>
-                  <div className="mt-0.5 text-[10px] text-muted-foreground">Administrador</div>
+                  <div className="text-xs font-medium text-foreground">ANCAR</div>
+                  <div className="mt-0.5 text-[10px] text-muted-foreground">Monitoramento</div>
                 </div>
                 <ChevronDown className="hidden h-3.5 w-3.5 text-muted-foreground 2xl:block" />
               </button>

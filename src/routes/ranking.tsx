@@ -1,225 +1,32 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Award, BarChart3, Medal, Sparkles, TrendingDown, TrendingUp, Trophy } from "lucide-react";
-import { dashboardService } from "@/services/dashboardService";
+import { Activity, BarChart3, Gauge, Medal, ShieldCheck, Trophy, Zap } from "lucide-react";
+import { dashboardService, type RankingMetric } from "@/services/dashboardService";
 import type { RankingItem } from "@/types";
 import { EmptyState, LoadingBlock, PageHeader } from "@/components/ui-helpers";
-import { StatusBadge } from "@/components/StatusBadge";
-import { FilterBar, InternalPage, StatCard } from "@/components/InternalPage";
+import { FilterBar, InternalPage, SectionPanel, StatCard, StatusPill } from "@/components/InternalPage";
 import { formatNumber } from "@/utils/format";
+import { useDashboardRuntime } from "@/contexts/dashboard-runtime-context";
 
-export const Route = createFileRoute("/ranking")({
-  head: () => ({ meta: [{ title: "Ranking" }] }),
-  component: RankingPage,
-});
+export const Route = createFileRoute("/ranking")({ head: () => ({ meta: [{ title: "Ranking" }] }), component: RankingPage });
 
-type Metric =
-  "eficiencia" | "consumo" | "economia" | "esg" | "qualidade" | "alertas" | "disponibilidade";
-
-const METRICS: { key: Metric; label: string }[] = [
-  { key: "eficiencia", label: "Eficiência" },
-  { key: "consumo", label: "Consumo" },
-  { key: "economia", label: "Economia" },
-  { key: "esg", label: "ESG" },
-  { key: "qualidade", label: "Qualidade dos dados" },
-  { key: "alertas", label: "Alertas" },
-  { key: "disponibilidade", label: "Disponibilidade" },
+const METRICS: { key: RankingMetric; label: string; subtitle: string }[] = [
+  { key: "eficiencia", label: "Eficiência", subtitle: "kW/TR para unidades com medição elétrica integral comparável" },
+  { key: "energia", label: "Energia hoje", subtitle: "Energia elétrica acumulada desde 00:00" },
+  { key: "potencia", label: "Potência", subtitle: "Potência instantânea da CAG" },
+  { key: "producao", label: "Produção", subtitle: "Produção térmica instantânea" },
+  { key: "perifericos", label: "Periféricos", subtitle: "Participação dos periféricos na potência da CAG" },
+  { key: "qualidade", label: "Qualidade", subtitle: "Percentual de pontos válidos na última coleta" },
+  { key: "balanco", label: "Balanço", subtitle: "Desvio entre potência total e soma das cargas medidas" },
 ];
 
-const LOWER_IS_BETTER = new Set<Metric>(["eficiencia", "consumo", "alertas"]);
-
-function RankingPage() {
-  const [metric, setMetric] = useState<Metric>("eficiencia");
-  const [period, setPeriod] = useState("Últimos 30 dias");
-  const [items, setItems] = useState<RankingItem[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let alive = true;
-    setLoading(true);
-    dashboardService.getRanking(metric).then((result) => {
-      if (!alive) return;
-      setItems(result);
-      setLoading(false);
-    });
-    return () => {
-      alive = false;
-    };
-  }, [metric]);
-
-  const summary = useMemo(() => {
-    const leader = items[0];
-    const average = items.length
-      ? items.reduce((total, item) => total + item.value, 0) / items.length
-      : 0;
-    const improving = items.filter((item) => item.trend > 0).length;
-    return { leader, average, improving };
-  }, [items]);
-
-  const values = items.map((item) => item.value);
-  const min = Math.min(...values, 0);
-  const max = Math.max(...values, 1);
-  const range = Math.max(max - min, 0.0001);
-  const lowerIsBetter = LOWER_IS_BETTER.has(metric);
-
-  return (
-    <InternalPage>
-      <PageHeader
-        eyebrow="Benchmark do portfólio"
-        title="Ranking"
-        subtitle="Compare desempenho, qualidade e disponibilidade entre todos os shoppings."
-        icon={Trophy}
-      />
-
-      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-        <StatCard
-          label="Líder atual"
-          value={summary.leader?.code ?? "—"}
-          detail={summary.leader?.name ?? "Aguardando dados"}
-          icon={Medal}
-          accent="yellow"
-        />
-        <StatCard
-          label="Valor do líder"
-          value={
-            summary.leader ? formatNumber(summary.leader.value, { maximumFractionDigits: 2 }) : "—"
-          }
-          unit={summary.leader?.unit}
-          icon={Award}
-          accent="green"
-        />
-        <StatCard
-          label="Média do portfólio"
-          value={formatNumber(summary.average, { maximumFractionDigits: 2 })}
-          unit={summary.leader?.unit}
-          icon={BarChart3}
-          accent="blue"
-        />
-        <StatCard
-          label="Tendência positiva"
-          value={summary.improving}
-          unit={`de ${items.length}`}
-          detail="Comparativo com o período anterior"
-          icon={Sparkles}
-          accent="cyan"
-        />
-      </div>
-
-      <FilterBar className="items-center">
-        <div className="segmented-control max-w-full overflow-x-auto">
-          {METRICS.map((option) => (
-            <button
-              key={option.key}
-              type="button"
-              data-active={metric === option.key}
-              onClick={() => setMetric(option.key)}
-              className="whitespace-nowrap"
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
-        <label className="ml-auto flex min-w-[180px] flex-col gap-1 text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
-          Período
-          <select
-            value={period}
-            onChange={(event) => setPeriod(event.target.value)}
-            className="h-9 rounded-lg border border-border/60 bg-background/55 px-2.5 text-sm font-normal normal-case tracking-normal text-foreground outline-none focus:border-primary/55"
-          >
-            {["Hoje", "Últimos 7 dias", "Últimos 30 dias", "Este mês"].map((option) => (
-              <option key={option}>{option}</option>
-            ))}
-          </select>
-        </label>
-      </FilterBar>
-
-      {loading ? (
-        <LoadingBlock h={520} />
-      ) : items.length === 0 ? (
-        <EmptyState
-          title="Ranking indisponível"
-          description="Não há dados suficientes para calcular esta classificação no período selecionado."
-          icon={Trophy}
-        />
-      ) : (
-        <div className="panel overflow-hidden">
-          <div className="hidden grid-cols-[64px_minmax(220px,1.4fr)_minmax(180px,1fr)_150px_120px_112px] gap-4 border-b border-border/50 bg-muted/25 px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground lg:grid">
-            <span>Posição</span>
-            <span>Shopping</span>
-            <span>Desempenho relativo</span>
-            <span className="text-right">Valor</span>
-            <span className="text-right">Tendência</span>
-            <span className="text-right">Status</span>
-          </div>
-          <div className="divide-y divide-border/40">
-            {items.map((item) => {
-              const normalized = lowerIsBetter
-                ? ((max - item.value) / range) * 100
-                : ((item.value - min) / range) * 100;
-              const barWidth = Math.max(8, Math.min(100, normalized));
-              return (
-                <div
-                  key={item.shoppingId}
-                  className="grid gap-3 px-4 py-3.5 transition-colors hover:bg-[color-mix(in_oklab,var(--accent-cyan)_4%,transparent)] lg:grid-cols-[64px_minmax(220px,1.4fr)_minmax(180px,1fr)_150px_120px_112px] lg:items-center lg:gap-4"
-                >
-                  <div className="flex items-center gap-2 lg:block">
-                    <span
-                      className={`grid h-8 w-8 place-items-center rounded-lg text-sm font-semibold ${
-                        item.position <= 3
-                          ? "bg-[var(--accent-yellow)]/12 text-[var(--accent-yellow)]"
-                          : "bg-muted/40 text-muted-foreground"
-                      }`}
-                    >
-                      {item.position}
-                    </span>
-                    <span className="text-xs text-muted-foreground lg:hidden">posição</span>
-                  </div>
-                  <div className="min-w-0">
-                    <Link
-                      to="/shoppings/$shoppingId"
-                      params={{ shoppingId: item.shoppingId }}
-                      className="font-medium hover:text-[var(--accent-cyan)]"
-                    >
-                      {item.name}
-                    </Link>
-                    <div className="mt-0.5 text-xs text-muted-foreground">{item.code}</div>
-                  </div>
-                  <div className="hidden lg:block">
-                    <div className="h-1.5 overflow-hidden rounded-full bg-muted/45">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-[var(--accent-cyan)] to-[var(--accent-blue)]"
-                        style={{ width: `${barWidth}%` }}
-                      />
-                    </div>
-                  </div>
-                  <div className="metric-value text-sm lg:text-right">
-                    {formatNumber(item.value, { maximumFractionDigits: 2 })}{" "}
-                    <span className="text-xs font-normal text-muted-foreground">{item.unit}</span>
-                  </div>
-                  <div className="flex items-center gap-1 text-xs lg:justify-end">
-                    {item.trend >= 0 ? (
-                      <TrendingUp className="h-3.5 w-3.5 text-[var(--accent-green)]" />
-                    ) : (
-                      <TrendingDown className="h-3.5 w-3.5 text-[var(--accent-red)]" />
-                    )}
-                    <span
-                      className={
-                        item.trend >= 0 ? "text-[var(--accent-green)]" : "text-[var(--accent-red)]"
-                      }
-                    >
-                      {item.trend > 0 ? "+" : ""}
-                      {item.trend}%
-                    </span>
-                  </div>
-                  <div className="lg:flex lg:justify-end">
-                    <StatusBadge status={item.status} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-    </InternalPage>
-  );
+function RankingPage(){
+ const {tick}=useDashboardRuntime(); const [metric,setMetric]=useState<RankingMetric>("eficiencia"); const [rows,setRows]=useState<RankingItem[]>([]); const [loading,setLoading]=useState(true);
+ useEffect(()=>{let alive=true;setLoading(true);dashboardService.getRanking(metric).then(r=>{if(alive)setRows(r)}).finally(()=>{if(alive)setLoading(false)});return()=>{alive=false}},[metric,tick]);
+ const cfg=METRICS.find(m=>m.key===metric)!; const best=rows[0]; const average=useMemo(()=>rows.length?rows.reduce((a,r)=>a+r.value,0)/rows.length:null,[rows]);
+ return <InternalPage><PageHeader eyebrow="Comparação do portfólio" title="Ranking" subtitle="Compare somente indicadores derivados das fontes reais disponíveis." icon={Trophy}/>
+ <div className="grid grid-cols-2 gap-3 xl:grid-cols-4"><StatCard label="Unidades comparadas" value={rows.length} icon={BarChart3} accent="cyan"/><StatCard label="Melhor resultado" value={best?formatNumber(best.value,{maximumFractionDigits:3}):"—"} unit={best?.unit} detail={best?best.code:"Sem dados"} icon={Medal} accent="green"/><StatCard label="Média" value={average===null?"—":formatNumber(average,{maximumFractionDigits:3})} unit={best?.unit} icon={Gauge} accent="blue"/><StatCard label="Métrica ativa" value={cfg.label} detail={cfg.subtitle} icon={ShieldCheck} accent="purple"/></div>
+ <FilterBar><div className="flex flex-wrap gap-2">{METRICS.map(m=><button type="button" key={m.key} onClick={()=>setMetric(m.key)} className={`rounded-lg border px-3 py-2 text-xs font-medium transition ${metric===m.key?"border-primary/45 bg-primary/10 text-primary":"border-border/60 bg-background/45 text-muted-foreground hover:text-foreground"}`}>{m.label}</button>)}</div></FilterBar>
+ <SectionPanel title={`Ranking · ${cfg.label}`} subtitle={cfg.subtitle} icon={Zap}>{loading?<LoadingBlock h={360}/>:rows.length===0?<EmptyState title="Sem dados comparáveis" description="A métrica selecionada ainda não possui dados válidos para as unidades cadastradas."/>:<div className="space-y-2">{rows.map((row)=><Link key={row.shoppingId} to="/shoppings/$shoppingId" params={{shoppingId:row.shoppingId}} className="grid grid-cols-[52px_1fr_auto] items-center gap-3 rounded-xl border border-border/55 bg-muted/10 px-4 py-3 transition hover:border-primary/30 hover:bg-muted/20"><div className="grid h-9 w-9 place-items-center rounded-full border border-border/60 bg-background/50 text-sm font-semibold">{row.position}</div><div className="min-w-0"><div className="flex items-center gap-2"><span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold">{row.code}</span><span className="truncate text-sm font-medium">{row.name}</span></div><div className="mt-1"><StatusPill label={row.status==="otimo"?"Ótimo":row.status==="offline"?"Offline":row.status==="critico"?"Crítico":row.status==="atencao"?"Atenção":"Bom"} tone={row.status==="otimo"?"positive":row.status==="critico"?"danger":row.status==="atencao"?"warning":"neutral"}/></div></div><div className="text-right"><div className="metric-value text-xl">{formatNumber(row.value,{maximumFractionDigits:3})}</div><div className="text-[10px] text-muted-foreground">{row.unit}</div></div></Link>)}</div>}</SectionPanel>
+ </InternalPage>
 }

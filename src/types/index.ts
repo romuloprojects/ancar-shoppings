@@ -7,9 +7,7 @@ export interface DataAvailability {
   chillers: boolean;
   perifericos: boolean;
   temperaturas: boolean;
-  vazao: boolean;
-  esg: boolean;
-  coveragePct: number; // 0-100
+  coveragePct: number;
 }
 
 export interface Shopping {
@@ -22,41 +20,24 @@ export interface Shopping {
   latitude: number;
   longitude: number;
   status: ShoppingStatus;
-  lastUpdate: string; // ISO
+  lastUpdate: string;
   dataQuality: DataQuality;
   dataAvailability: DataAvailability;
-  // métricas atuais
-  powerKW: number;
-  consumptionMWh: number;
-  efficiencyKWTR: number;
-  esgScore: number;
-  copValue?: number;
-  deltaT?: number;
-  vazaoLs?: number;
-  thermalLoadTR?: number;
-  emissionsTons?: number;
-  savingsBRL?: number;
-  monthlyConsumptionMWh?: number;
-  energyModel?: string;
-}
-
-export interface PortfolioKpi {
-  potenciaTotalMW: number;
-  consumoHojeMWh: number;
-  eficienciaMediaKWTR: number;
-  co2EvitadoT: number;
-  economiaEstimadaBRL: number;
-  deltaPotencia: number;
-  deltaConsumo: number;
-  deltaEficiencia: number;
-  deltaCO2: number;
-  deltaEconomia: number;
-}
-
-export interface EnergyDataPoint {
-  time: string; // label
-  eficiencia: number;
-  consumo: number;
+  powerKW: number | null;
+  energyTodayKwh: number | null;
+  efficiencyKWTR: number | null;
+  thermalLoadTR: number | null;
+  peripheralKW: number | null;
+  temperatureC: number | null;
+  activeChillers: number | null;
+  chillersTotal: number;
+  dataQualityPct: number;
+  savedTodayKwh: number | null;
+  avoidedTodayKgCo2: number | null;
+  baselineKwTr: number | null;
+  targetKwTr: number | null;
+  balanceDeviationPct: number | null;
+  peripheralsPct: number | null;
 }
 
 export interface RankingItem {
@@ -66,8 +47,9 @@ export interface RankingItem {
   name: string;
   value: number;
   unit: string;
-  trend: number; // % vs periodo anterior
   status: ShoppingStatus;
+  trend?: number;
+  comparable?: boolean;
 }
 
 export interface Alert {
@@ -84,32 +66,6 @@ export interface Alert {
   recommendation: string;
 }
 
-export interface ESGMetrics {
-  energiaConsumidaMWh: number;
-  energiaEconomizadaMWh: number;
-  emissoesT: number;
-  emissoesEvitadasT: number;
-  intensidadeEnergetica: number; // kWh/m²
-  esgScore: number;
-  ambiental: number;
-  social: number;
-  governanca: number;
-  metaProgressoPct: number;
-  energiaRenovavelPct: number;
-  aguaM3: number;
-  residuosT: number;
-}
-
-export interface Equipment {
-  id: string;
-  name: string;
-  type: "chiller" | "torre" | "bomba" | "ahu" | "fancoil" | "outro";
-  powerKW: number;
-  status: "operando" | "standby" | "manutencao" | "falha";
-  efficiencyKWTR?: number;
-  lastMaintenance?: string;
-}
-
 export interface Insight {
   id: string;
   type: "oportunidade" | "alerta" | "destaque";
@@ -119,22 +75,10 @@ export interface Insight {
   detail?: string;
 }
 
-export interface ShoppingDetail extends Shopping {
-  dailyConsumption: EnergyDataPoint[];
-  weeklyConsumption: EnergyDataPoint[];
-  monthlyConsumption: EnergyDataPoint[];
-  chillerPower: { name: string; kw: number }[];
-  peripheralPower: { name: string; kw: number }[];
-  temperatures: { name: string; value: number | null; unit: string }[];
-  equipments: Equipment[];
-  alerts: Alert[];
-  insights: Insight[];
-}
-
-
 export type {
   EquipmentRegistryItem,
   HistoryPeriod,
+  LiveAlertFlags,
   LiveEquipmentKpi,
   LiveHealth,
   LiveKpis,
@@ -144,7 +88,11 @@ export type {
   LiveRegistrySummary,
   LiveShoppingMetadata,
   LiveShoppingSummary,
+  PeriodSummary,
   PortfolioApiResponse,
+  SettingsApiResponse,
   ShoppingApiResponse,
   ShoppingHistoryPoint,
+  ShoppingSettings,
+  TodaySummary,
 } from "./live";

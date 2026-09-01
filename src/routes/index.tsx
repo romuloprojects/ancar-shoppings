@@ -33,8 +33,6 @@ import { PortfolioHealthCard } from "@/components/PortfolioHealthCard";
 import { DataUnavailable } from "@/components/DataUnavailable";
 import { formatNumber } from "@/utils/format";
 
-const STALE_AFTER_MS = 15 * 60 * 1000;
-
 type RankingMetric = "power" | "production" | "efficiency" | "quality";
 
 const rankingOptions: Record<
@@ -170,7 +168,7 @@ function OverviewPage() {
   }
 
   const history =
-    shoppingData?.shopping?.code === selectedShoppingCode ? shoppingData.history ?? [] : [];
+    shoppingData && shoppingData.shopping.code === selectedShoppingCode ? shoppingData.history ?? [] : [];
   const kpis = selectedShopping.latest?.kpis ?? {};
   const isMixed =
     kpis.modelo_energetico === "mixed_absorption_electric" ||
@@ -591,18 +589,23 @@ function makeLiveRanking(items: LiveShoppingSummary[], metric: RankingMetric): R
     name: item.name,
     value,
     unit: option.unit,
-    trend: 0,
     status: mapLiveShoppingToLegacy(item).status,
   }));
 }
 
 function makePortfolioInsights(items: LiveShoppingSummary[]): Insight[] {
-  const stale = items.filter((item) => isStale(item.latest?.collectedAt));
-  const balanceWarnings = items.filter((item) => item.latest?.kpis?.balanco_status === "warning");
-  const highAux = items.filter(
-    (item) => (asNumber(item.latest?.kpis?.auxiliares_pct_kw_cag) ?? 0) > 25,
-  );
-  const mixed = items.filter((item) => item.registry.chillersAbsorption > 0);
+  const stale = items.filter((item) => isStale(item));
+  const balanceWarnings = items.filter((item) => {
+    const value = asNumber(item.latest?.kpis?.desvio_balanco_pct);
+    const limit = asNumber(item.settings?.balanceWarningPct);
+    return value !== null && limit !== null && value > limit;
+  });
+  const highAux = items.filter((item) => {
+    const value = asNumber(item.latest?.kpis?.auxiliares_pct_kw_cag);
+    const limit = asNumber(item.settings?.peripheralsWarningPct);
+    return value !== null && limit !== null && value > limit;
+  });
+  const unconfigured = items.filter((item) => item.settings?.baselineKwTr === null || item.settings?.targetKwTr === null);
 
   const result: Insight[] = [];
 
@@ -631,18 +634,18 @@ function makePortfolioInsights(items: LiveShoppingSummary[]): Insight[] {
       id: "aux",
       type: "oportunidade",
       icon: "settings",
-      title: `Periféricos acima de 25% em ${highAux.length} shopping(s)`,
-      subtitle: "Priorize análise de bombas, torres e cargas auxiliares.",
+      title: `Periféricos acima do limite em ${highAux.length} shopping(s)`,
+      subtitle: "Limites definidos individualmente nas configurações de cada shopping.",
     });
   }
 
-  if (mixed.length) {
+  if (unconfigured.length) {
     result.push({
-      id: "mixed",
-      type: "destaque",
-      icon: "trend",
-      title: `${mixed.length} CAG(s) com chillers de absorção`,
-      subtitle: "COP global fica indisponível sem medição da energia térmica de entrada.",
+      id: "settings",
+      type: "oportunidade",
+      icon: "settings",
+      title: `${unconfigured.length} shopping(s) com parâmetros pendentes`,
+      subtitle: "Configure baseline e meta para habilitar comparativos e estimativas.",
     });
   }
 
@@ -670,7 +673,7 @@ function makePortfolioHealth(items: LiveShoppingSummary[]) {
     const ok = asNumber(item.latest?.health?.pointsOk) ?? 0;
     pointsTotal += total;
     pointsOk += ok;
-    if (isStale(item.latest?.collectedAt)) stale += 1;
+    if (isStale(item)) stale += 1;
     else online += 1;
   }
 
@@ -684,10 +687,15 @@ function makePortfolioHealth(items: LiveShoppingSummary[]) {
   };
 }
 
-function isStale(collectedAt?: string) {
+function isStale(item: LiveShoppingSummary) {
+  const collectedAt = item.latest?.collectedAt;
   if (!collectedAt) return true;
   const timestamp = Date.parse(collectedAt);
-  return !Number.isFinite(timestamp) || Date.now() - timestamp > STALE_AFTER_MS;
+  if (!Number.isFinite(timestamp)) return true;
+  const configuredMinutes = asNumber(item.settings?.staleAfterMinutes);
+  const technicalFallback = Math.max(5, (item.collectionIntervalMinutes ?? 5) * 3);
+  const staleMinutes = configuredMinutes !== null ? configuredMinutes : technicalFallback;
+  return Date.now() - timestamp > staleMinutes * 60_000;
 }
 
 function isNumber(value: number | null): value is number {

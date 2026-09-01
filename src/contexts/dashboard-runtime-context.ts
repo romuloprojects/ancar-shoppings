@@ -5,6 +5,7 @@ import type { HistoryPeriod } from "@/types/live";
 export interface DashboardRuntimeValue {
   tick: number;
   lastUpdate: Date;
+  refreshNow: () => void;
   selectedShoppingCode: string;
   setSelectedShoppingCode: Dispatch<SetStateAction<string>>;
   historyPeriod: HistoryPeriod;

@@ -1,5 +1,25 @@
 export type LiveQualityStatus = "ok" | "partial" | "error" | string;
 
+export interface ShoppingSettings {
+  version: number | null;
+  validFrom?: string | null;
+  baselineKwTr: number | null;
+  targetKwTr: number | null;
+  emissionFactorKgCo2Kwh: number | null;
+  emissionFactorSource: string | null;
+  emissionFactorReferenceYear: number | null;
+  balanceWarningPct: number | null;
+  peripheralsWarningPct: number | null;
+  targetDeviationWarningPct: number | null;
+  staleAfterMinutes: number | null;
+  baselineReference: string | null;
+  baselineValidFrom: string | null;
+  baselineNotes: string | null;
+  reportSettings: Record<string, unknown>;
+  updatedBy?: string | null;
+  sourceChannel?: string | null;
+}
+
 export interface LiveHealth {
   status?: LiveQualityStatus;
   pointsTotal?: number;
@@ -9,6 +29,13 @@ export interface LiveHealth {
   apiErrorCount?: number;
   collectionDurationSeconds?: number;
   expectedMinimumDelaySeconds?: number;
+}
+
+export interface LiveAlertFlags {
+  balance?: boolean | null;
+  peripherals?: boolean | null;
+  target?: boolean | null;
+  dataQuality?: boolean | null;
 }
 
 export interface LiveEquipmentKpi {
@@ -57,6 +84,12 @@ export interface LiveKpis {
   energia_auxiliares_kwh_5min_estimado?: number | null;
   frio_trh_5min_estimado?: number | null;
   frio_kwh_termico_5min_estimado?: number | null;
+  baseline_energia_kwh_5min_estimado?: number | null;
+  economia_eletrica_kwh_5min_estimado?: number | null;
+  emissoes_evitadas_kgco2_5min_estimado?: number | null;
+  desvio_meta_pct?: number | null;
+  settings_version?: number | null;
+  alert_flags?: LiveAlertFlags;
   equipamentos?: Record<string, LiveEquipmentKpi>;
   [key: string]: unknown;
 }
@@ -65,6 +98,7 @@ export interface LiveLatest {
   cycleId: string;
   collectedAt: string;
   qualityStatus: LiveQualityStatus;
+  settingsVersion?: number | null;
   kpis: LiveKpis;
   status: Record<string, unknown>;
   health: LiveHealth;
@@ -92,14 +126,25 @@ export interface LiveShoppingMetadata {
   [key: string]: unknown;
 }
 
+export interface TodaySummary {
+  energyKwh: number | null;
+  thermalTrh: number | null;
+  savedKwh: number | null;
+  avoidedKgCo2: number | null;
+  avgKwTr: number | null;
+}
+
 export interface LiveShoppingSummary {
   id: string;
   code: string;
   name: string;
   timezone: string;
   sortOrder: number;
+  collectionIntervalMinutes?: number;
   metadata: LiveShoppingMetadata;
   registry: LiveRegistrySummary;
+  settings: ShoppingSettings;
+  today?: TodaySummary;
   latest: LiveLatest | null;
 }
 
@@ -120,8 +165,29 @@ export interface ShoppingHistoryPoint {
   cop: number | null;
   temperatureC: number | null;
   kwAux: number | null;
+  peripheralsPct: number | null;
   balanceDeviationPct: number | null;
+  targetDeviationPct: number | null;
+  activeChillers: number | null;
+  energyKwh: number | null;
+  thermalTrh: number | null;
+  savedKwh: number | null;
+  avoidedKgCo2: number | null;
   dataQualityPct: number | null;
+}
+
+export interface PeriodSummary {
+  energyKwh: number | null;
+  thermalTrh: number | null;
+  savedKwh: number | null;
+  avoidedKgCo2: number | null;
+  avgKwTr: number | null;
+  avgKw: number | null;
+  maxKw: number | null;
+  avgTr: number | null;
+  maxTr: number | null;
+  avgAuxKw: number | null;
+  avgDataQualityPct: number | null;
 }
 
 export interface EquipmentRegistryItem {
@@ -140,4 +206,11 @@ export interface ShoppingApiResponse {
   shopping: LiveShoppingSummary | null;
   equipmentRegistry: EquipmentRegistryItem[];
   history: ShoppingHistoryPoint[];
+  summary: PeriodSummary;
+}
+
+export interface SettingsApiResponse {
+  ok: boolean;
+  shoppingId: string;
+  settings: ShoppingSettings;
 }
