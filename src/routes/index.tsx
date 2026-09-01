@@ -192,7 +192,7 @@ function OverviewPage() {
   const rankingMin = rankingValues.length ? Math.min(...rankingValues) : 0;
   const rankingMax = rankingValues.length ? Math.max(...rankingValues) : 0;
 
-  const portfolioPageSize = 3;
+  const portfolioPageSize = 6;
   const portfolioPageCount = Math.max(1, Math.ceil(portfolioCards.length / portfolioPageSize));
   const safePortfolioPage = Math.min(portfolioPage, portfolioPageCount - 1);
   const portfolioItems = portfolioCards.slice(
@@ -203,14 +203,14 @@ function OverviewPage() {
   const portfolioHealth = makePortfolioHealth(portfolio.shoppings);
 
   return (
-    <div className="overview-dashboard space-y-3">
+    <div className="overview-dashboard space-y-4">
       {error && (
         <div className="overview-error rounded-lg border border-[color-mix(in_oklab,var(--accent-yellow)_38%,transparent)] bg-[color-mix(in_oklab,var(--accent-yellow)_8%,transparent)] px-3 py-2 text-xs text-[var(--accent-yellow)]">
           {error}
         </div>
       )}
 
-      <div className="overview-kpis grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="overview-kpis grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
         <KpiCard
           icon={Zap}
           label="Potência CAG"
@@ -252,8 +252,8 @@ function OverviewPage() {
         />
       </div>
 
-      <div className="overview-primary-grid grid min-h-0 grid-cols-1 gap-3 xl:grid-cols-2">
-        <section className="panel overview-chart-panel min-h-0 p-3">
+      <div className="overview-primary-grid grid min-h-0 grid-cols-1 gap-4 xl:grid-cols-2">
+        <section className="panel overview-chart-panel min-h-0 p-4">
           <div className="mb-2 flex items-center justify-between gap-3">
             <div>
               <h2 className="text-sm font-semibold">
@@ -295,7 +295,7 @@ function OverviewPage() {
             </select>
           </div>
 
-          <div className="overview-chart h-[238px] min-h-0 2xl:h-[260px]">
+          <div className="overview-chart h-[272px] min-h-0 2xl:h-[286px]">
             {loadingHistory && history.length === 0 ? (
               <LoadingBlock h={272} />
             ) : history.length === 0 ? (
@@ -397,7 +397,7 @@ function OverviewPage() {
           </div>
         </section>
 
-        <section className="panel overview-ranking-panel min-h-0 p-3">
+        <section className="panel overview-ranking-panel min-h-0 p-4">
           <div className="mb-2 flex items-center justify-between gap-3">
             <h2 className="text-sm font-semibold">Ranking dos Shoppings</h2>
             <select
@@ -414,7 +414,7 @@ function OverviewPage() {
             </select>
           </div>
 
-          <div className="overview-ranking-list max-h-[260px] space-y-1 overflow-y-auto pr-1">
+          <div className="overview-ranking-list max-h-[330px] space-y-1.5 overflow-y-auto pr-1">
             {ranking.length === 0 ? (
               <div className="grid h-[250px] place-items-center">
                 <DataUnavailable label="Nenhum shopping cadastrado" />
@@ -431,7 +431,7 @@ function OverviewPage() {
                     key={item.shoppingId}
                     to="/shoppings/$shoppingId"
                     params={{ shoppingId: item.shoppingId }}
-                    className="group grid grid-cols-[24px_minmax(0,1fr)_auto] items-center gap-2 rounded-lg px-1.5 py-2 text-sm transition-colors hover:bg-muted/30 sm:grid-cols-[24px_minmax(160px,1fr)_minmax(100px,0.8fr)_96px_10px] sm:gap-3"
+                    className="group grid grid-cols-[24px_minmax(0,1fr)_auto] items-center gap-2 rounded-lg px-1.5 py-1.5 text-sm transition-colors hover:bg-muted/30 sm:grid-cols-[24px_minmax(210px,1fr)_minmax(150px,0.9fr)_72px_10px] sm:gap-3"
                   >
                     <span className="text-right text-xs text-muted-foreground">{item.position ?? "—"}</span>
                     <span className="min-w-0 truncate font-medium">
@@ -467,8 +467,8 @@ function OverviewPage() {
         </section>
       </div>
 
-      <div className="overview-portfolio-grid grid min-h-0 grid-cols-1 gap-3 xl:grid-cols-12">
-        <section className="panel overview-portfolio-panel min-h-0 p-3 xl:col-span-5">
+      <div className="overview-portfolio-grid grid min-h-0 grid-cols-1 gap-4 xl:grid-cols-12">
+        <section className="panel overview-portfolio-panel min-h-0 p-4 xl:col-span-5">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-sm font-semibold">
               Visão do Portfólio
@@ -480,7 +480,7 @@ function OverviewPage() {
               Ver todos
             </Link>
           </div>
-          <div className="overview-portfolio-cards grid min-h-0 grid-cols-1 gap-2 sm:grid-cols-3">
+          <div className="overview-portfolio-cards grid min-h-0 grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
             {portfolioItems.map((shopping) => (
               <ShoppingCard key={shopping.id} shopping={shopping} />
             ))}
@@ -534,12 +534,12 @@ function OverviewPage() {
           )}
         </section>
 
-        <section className="panel overview-map-panel min-h-0 p-3 xl:col-span-3">
+        <section className="panel overview-map-panel min-h-0 p-4 xl:col-span-3">
           <h2 className="mb-3 text-sm font-semibold">Mapa / Distribuição</h2>
           <BrazilMap items={portfolioCards} />
         </section>
 
-        <section className="panel overview-insights-panel flex h-full min-h-0 flex-col p-3 xl:col-span-2">
+        <section className="panel overview-insights-panel flex h-full min-h-0 flex-col p-4 xl:col-span-2">
           <div className="mb-3 flex items-end justify-between gap-3">
             <div>
               <h2 className="text-sm font-semibold">Oportunidades / Insights</h2>

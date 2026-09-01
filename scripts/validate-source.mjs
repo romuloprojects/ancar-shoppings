@@ -9,6 +9,7 @@ const errors=[];
 for(const file of files){const text=fs.readFileSync(file,'utf8');const out=ts.transpileModule(text,{compilerOptions:{jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext},reportDiagnostics:true,fileName:file});for(const d of out.diagnostics||[]){if(d.category===ts.DiagnosticCategory.Error)errors.push(`${path.relative(root,file)}: ${ts.flattenDiagnosticMessageText(d.messageText,' ')}`)}}
 function assert(cond,msg){if(!cond)errors.push(msg)}
 const styles=fs.readFileSync(path.join(src,'styles.css'),'utf8');
+assert(styles.includes('grid-template-rows: 116px minmax(0, 1.15fr) minmax(0, 0.95fr)'),'Visão Geral: proporção V3.4 ausente');
 assert(styles.includes('grid-template-columns: repeat(5, minmax(0, 1fr)) !important'),'Visão Geral: grid de 5 KPIs homologado ausente');
 assert(styles.includes('grid-template-columns: minmax(0, 5fr) minmax(0, 3fr) minmax(0, 2fr) minmax(0, 2fr) !important'),'Visão Geral: faixa inferior 5/3/2/2 ausente');
 assert(styles.includes('.ranking-workspace-body'),'Ranking: workspace lateral ausente');
@@ -18,6 +19,11 @@ assert(styles.includes('.energy-workspace-body'),'Energia: workspace lateral aus
 assert(styles.includes('.reports-workspace-body'),'Relatórios: workspace lateral ausente');
 assert(styles.includes('grid-template-columns:170px minmax(0,1fr)'),'Configurações: navegação lateral homologada ausente');
 const allSrc=files.map(f=>fs.readFileSync(f,'utf8')).join('\n');
+assert(allSrc.includes('const portfolioPageSize = 6'),'Visão Geral: paginação deve voltar a 6 cards por página');
+assert(allSrc.includes('h-[116px]'),'KpiCard: altura original de 116px ausente');
+assert(allSrc.includes('min-h-[146px]'),'ShoppingCard: altura original de 146px ausente');
+assert(allSrc.includes('max-h-[286px]'),'BrazilMap: escala original de 286px ausente');
+assert(allSrc.includes('overview-chart h-[272px]'),'Visão Geral: altura-base original do gráfico ausente');
 assert(!/\bMWh\b/.test(allSrc),'Unidade MWh encontrada no frontend');
 assert(!/\bMW\b/.test(allSrc),'Unidade MW encontrada no frontend');
 assert(!allSrc.includes('Todos os Shoppings'),'Opção Todos os Shoppings não deve existir');
