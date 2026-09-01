@@ -1,0 +1,245 @@
+[
+  {
+    "page": "overview",
+    "viewport": "1920x1080",
+    "ok": true,
+    "bodyW": 1920,
+    "innerW": 1920,
+    "mainH": 1010,
+    "mainScrollH": 1010
+  },
+  {
+    "page": "shoppings",
+    "viewport": "1920x1080",
+    "ok": true,
+    "bodyW": 1920,
+    "innerW": 1920,
+    "mainH": 1010,
+    "mainScrollH": 1010
+  },
+  {
+    "page": "detail",
+    "viewport": "1920x1080",
+    "ok": true,
+    "bodyW": 1920,
+    "innerW": 1920,
+    "mainH": 1010,
+    "mainScrollH": 1010
+  },
+  {
+    "page": "ranking",
+    "viewport": "1920x1080",
+    "ok": true,
+    "bodyW": 1920,
+    "innerW": 1920,
+    "mainH": 1010,
+    "mainScrollH": 1010
+  },
+  {
+    "page": "analises",
+    "viewport": "1920x1080",
+    "ok": true,
+    "bodyW": 1920,
+    "innerW": 1920,
+    "mainH": 1010,
+    "mainScrollH": 1010
+  },
+  {
+    "page": "alertas",
+    "viewport": "1920x1080",
+    "ok": true,
+    "bodyW": 1920,
+    "innerW": 1920,
+    "mainH": 1010,
+    "mainScrollH": 1010
+  },
+  {
+    "page": "esg",
+    "viewport": "1920x1080",
+    "ok": true,
+    "bodyW": 1920,
+    "innerW": 1920,
+    "mainH": 1010,
+    "mainScrollH": 1010
+  },
+  {
+    "page": "relatorios",
+    "viewport": "1920x1080",
+    "ok": true,
+    "bodyW": 1920,
+    "innerW": 1920,
+    "mainH": 1010,
+    "mainScrollH": 1010
+  },
+  {
+    "page": "configuracoes",
+    "viewport": "1920x1080",
+    "ok": true,
+    "bodyW": 1920,
+    "innerW": 1920,
+    "mainH": 1010,
+    "mainScrollH": 1010
+  },
+  {
+    "page": "overview",
+    "viewport": "1440x900",
+    "ok": true,
+    "bodyW": 1440,
+    "innerW": 1440,
+    "mainH": 830,
+    "mainScrollH": 830
+  },
+  {
+    "page": "shoppings",
+    "viewport": "1440x900",
+    "ok": true,
+    "bodyW": 1440,
+    "innerW": 1440,
+    "mainH": 830,
+    "mainScrollH": 830
+  },
+  {
+    "page": "detail",
+    "viewport": "1440x900",
+    "ok": true,
+    "bodyW": 1440,
+    "innerW": 1440,
+    "mainH": 830,
+    "mainScrollH": 830
+  },
+  {
+    "page": "ranking",
+    "viewport": "1440x900",
+    "ok": true,
+    "bodyW": 1440,
+    "innerW": 1440,
+    "mainH": 830,
+    "mainScrollH": 830
+  },
+  {
+    "page": "analises",
+    "viewport": "1440x900",
+    "ok": true,
+    "bodyW": 1440,
+    "innerW": 1440,
+    "mainH": 830,
+    "mainScrollH": 830
+  },
+  {
+    "page": "alertas",
+    "viewport": "1440x900",
+    "ok": true,
+    "bodyW": 1440,
+    "innerW": 1440,
+    "mainH": 830,
+    "mainScrollH": 830
+  },
+  {
+    "page": "esg",
+    "viewport": "1440x900",
+    "ok": true,
+    "bodyW": 1440,
+    "innerW": 1440,
+    "mainH": 830,
+    "mainScrollH": 830
+  },
+  {
+    "page": "relatorios",
+    "viewport": "1440x900",
+    "ok": true,
+    "bodyW": 1440,
+    "innerW": 1440,
+    "mainH": 830,
+    "mainScrollH": 830
+  },
+  {
+    "page": "configuracoes",
+    "viewport": "1440x900",
+    "ok": true,
+    "bodyW": 1440,
+    "innerW": 1440,
+    "mainH": 830,
+    "mainScrollH": 830
+  },
+  {
+    "page": "overview",
+    "viewport": "1366x768",
+    "ok": true,
+    "bodyW": 1366,
+    "innerW": 1366,
+    "mainH": 698,
+    "mainScrollH": 698
+  },
+  {
+    "page": "shoppings",
+    "viewport": "1366x768",
+    "ok": true,
+    "bodyW": 1366,
+    "innerW": 1366,
+    "mainH": 698,
+    "mainScrollH": 698
+  },
+  {
+    "page": "detail",
+    "viewport": "1366x768",
+    "ok": true,
+    "bodyW": 1366,
+    "innerW": 1366,
+    "mainH": 698,
+    "mainScrollH": 698
+  },
+  {
+    "page": "ranking",
+    "viewport": "1366x768",
+    "ok": true,
+    "bodyW": 1366,
+    "innerW": 1366,
+    "mainH": 698,
+    "mainScrollH": 698
+  },
+  {
+    "page": "analises",
+    "viewport": "1366x768",
+    "ok": true,
+    "bodyW": 1366,
+    "innerW": 1366,
+    "mainH": 698,
+    "mainScrollH": 698
+  },
+  {
+    "page": "alertas",
+    "viewport": "1366x768",
+    "ok": true,
+    "bodyW": 1366,
+    "innerW": 1366,
+    "mainH": 698,
+    "mainScrollH": 698
+  },
+  {
+    "page": "esg",
+    "viewport": "1366x768",
+    "ok": true,
+    "bodyW": 1366,
+    "innerW": 1366,
+    "mainH": 698,
+    "mainScrollH": 698
+  },
+  {
+    "page": "relatorios",
+    "viewport": "1366x768",
+    "ok": true,
+    "bodyW": 1366,
+    "innerW": 1366,
+    "mainH": 698,
+    "mainScrollH": 698
+  },
+  {
+    "page": "configuracoes",
+    "viewport": "1366x768",
+    "ok": true,
+    "bodyW": 1366,
+    "innerW": 1366,
+    "mainH": 698,
+    "mainScrollH": 698
+  }
+]

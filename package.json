@@ -9,7 +9,10 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "validate:source": "node scripts/validate-source.mjs",
+    "validate:visual": "python scripts/validate-visual.py",
+    "validate": "npm run validate:source && npm run validate:visual"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

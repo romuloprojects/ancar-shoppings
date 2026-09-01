@@ -4,7 +4,7 @@ import { BarChart3, Gauge, Medal, ShieldCheck, Trophy, Zap } from "lucide-react"
 import { dashboardService, type RankingMetric } from "@/services/dashboardService";
 import type { RankingItem } from "@/types";
 import { EmptyState, LoadingBlock, PageHeader } from "@/components/ui-helpers";
-import { FilterBar, InternalPage, SectionPanel, StatCard, StatusPill } from "@/components/InternalPage";
+import { FilterBar, InternalPage, SectionPanel, StatCard } from "@/components/InternalPage";
 import { formatKwTr, formatMetric } from "@/utils/format";
 import { useDashboardRuntime } from "@/contexts/dashboard-runtime-context";
 
@@ -129,67 +129,58 @@ function RankingPage() {
         </div>
       </FilterBar>
 
-      <SectionPanel title={`Ranking · ${cfg.label}`} subtitle={cfg.subtitle} icon={Zap} className="compact-fill-panel" contentClassName="compact-scroll-region">
-        {loading ? (
-          <LoadingBlock h={360} />
-        ) : rows.length === 0 ? (
-          <EmptyState
-            title="Sem unidades cadastradas"
-            description="A API não retornou unidades para o portfólio."
-          />
-        ) : (
-          <div className="space-y-2">
-            {rows.map((row) => (
-              <Link
-                key={row.shoppingId}
-                to="/shoppings/$shoppingId"
-                params={{ shoppingId: row.shoppingId }}
-                className="grid grid-cols-[38px_minmax(0,1fr)] items-center gap-2.5 rounded-xl border border-border/55 bg-muted/10 px-3 py-2 transition hover:border-primary/30 hover:bg-muted/20 sm:grid-cols-[44px_minmax(0,1fr)_auto] sm:px-3"
-              >
-                <div className="grid h-9 w-9 place-items-center rounded-full border border-border/60 bg-background/50 text-sm font-semibold">
-                  {row.position ?? "—"}
-                </div>
+      <div className="ranking-workspace-body min-h-0 flex-1">
+        <SectionPanel title={`Ranking · ${cfg.label}`} subtitle={cfg.subtitle} icon={Zap} className="compact-fill-panel" contentClassName="compact-scroll-region">
+          {loading ? (
+            <LoadingBlock h={360} />
+          ) : rows.length === 0 ? (
+            <EmptyState
+              title="Sem unidades cadastradas"
+              description="A API não retornou unidades para o portfólio."
+            />
+          ) : (
+            <div className="space-y-1.5">
+              {rows.map((row) => (
+                <Link
+                  key={row.shoppingId}
+                  to="/shoppings/$shoppingId"
+                  params={{ shoppingId: row.shoppingId }}
+                  className="ranking-row-compact grid grid-cols-[34px_minmax(0,1fr)_minmax(110px,0.72fr)_88px] items-center gap-2 rounded-lg border border-border/45 bg-muted/10 px-2.5 py-1.5 transition hover:border-primary/30 hover:bg-muted/20"
+                >
+                  <div className="grid h-7 w-7 place-items-center rounded-full border border-border/60 bg-background/50 text-[11px] font-semibold">
+                    {row.position ?? "—"}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex min-w-0 items-center gap-1.5">
+                      <span className="rounded bg-muted px-1.5 py-0.5 text-[9px] font-semibold">{row.code}</span>
+                      <span className="min-w-0 truncate text-[11px] font-medium">{row.name}</span>
+                    </div>
+                    {row.reason && <div className="mt-0.5 truncate text-[9px] text-muted-foreground">{row.reason}</div>}
+                  </div>
+                  <div className="h-1.5 overflow-hidden rounded-full bg-muted/45">
+                    {row.value !== null && <span className="block h-full rounded-full bg-[linear-gradient(90deg,var(--accent-cyan),var(--accent-green))]" style={{width:`${Math.max(12, Math.min(100, 100 - ((row.position ?? rows.length)-1) * (75/Math.max(1,rows.length-1))))}%`}} />}
+                  </div>
+                  <div className="text-right">
+                    <div className="metric-value text-sm">{formatValue(row.value, row.unit)}</div>
+                    <div className="text-[9px] text-muted-foreground">{row.value === null ? "—" : row.unit}</div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </SectionPanel>
 
-                <div className="min-w-0">
-                  <div className="flex min-w-0 flex-wrap items-center gap-2">
-                    <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold">{row.code}</span>
-                    <span className="min-w-0 truncate text-sm font-medium">{row.name}</span>
-                  </div>
-                  <div className="mt-1 flex flex-wrap items-center gap-2">
-                    <StatusPill
-                      label={statusText(row.status)}
-                      tone={statusTone(row.status)}
-                    />
-                    {row.reason && <span className="text-[11px] text-muted-foreground">{row.reason}</span>}
-                  </div>
-                </div>
-
-                <div className="col-span-2 text-left sm:col-span-1 sm:text-right">
-                  <div className="metric-value text-xl">
-                    {formatValue(row.value, row.unit)}
-                  </div>
-                  <div className="text-[10px] text-muted-foreground">{row.value === null ? row.reason ?? "Sem dado" : row.unit}</div>
-                </div>
-              </Link>
-            ))}
+        <aside className="ranking-side-panel panel min-h-0 overflow-hidden p-3">
+          <div className="text-xs font-semibold">Leitura da comparação</div>
+          <div className="mt-1 text-[10px] leading-relaxed text-muted-foreground">A métrica selecionada define quais unidades são tecnicamente comparáveis. Unidades sem dado continuam visíveis.</div>
+          <div className="mt-3 space-y-2">
+            <div className="rounded-lg border border-border/45 bg-muted/10 p-2.5"><div className="text-[9px] uppercase tracking-[.12em] text-[var(--accent-green)]">Melhor resultado</div><div className="mt-1 text-sm font-semibold">{best ? `${best.code} · ${formatValue(best.value,best.unit)} ${best.unit ?? ""}` : "Sem dados"}</div></div>
+            <div className="rounded-lg border border-border/45 bg-muted/10 p-2.5"><div className="text-[9px] uppercase tracking-[.12em] text-[var(--accent-cyan)]">Média do portfólio</div><div className="mt-1 text-sm font-semibold">{formatValue(average,best?.unit)} {best?.unit ?? ""}</div></div>
+            <div className="rounded-lg border border-border/45 bg-muted/10 p-2.5"><div className="text-[9px] uppercase tracking-[.12em] text-[var(--accent-yellow)]">Cobertura</div><div className="mt-1 text-sm font-semibold">{validRows.length} de {rows.length} unidades com valor</div></div>
           </div>
-        )}
-      </SectionPanel>
+        </aside>
+      </div>
     </InternalPage>
   );
 }
 
-function statusText(status: RankingItem["status"]) {
-  if (status === "otimo") return "Ótimo";
-  if (status === "offline") return "Offline";
-  if (status === "critico") return "Crítico";
-  if (status === "atencao") return "Atenção";
-  return "Bom";
-}
-
-function statusTone(status: RankingItem["status"]): "positive" | "danger" | "warning" | "neutral" {
-  if (status === "otimo") return "positive";
-  if (status === "critico") return "danger";
-  if (status === "atencao") return "warning";
-  return "neutral";
-}

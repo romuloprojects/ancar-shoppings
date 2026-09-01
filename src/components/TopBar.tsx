@@ -35,7 +35,7 @@ import { useDashboardRuntime } from "@/contexts/dashboard-runtime-context";
 import { formatRelative } from "@/utils/format";
 
 const controlClass =
-  "h-9 shrink-0 gap-2 rounded-lg border-border/55 bg-[color-mix(in_oklab,var(--card)_76%,transparent)] px-3 text-[12px] font-medium text-foreground/90 shadow-none hover:bg-accent/55 hover:text-foreground";
+  "h-9 shrink-0 gap-2 rounded-xl border-border/55 bg-[color-mix(in_oklab,var(--card)_76%,transparent)] px-3 text-[11px] font-medium text-foreground/90 shadow-none hover:bg-accent/55 hover:text-foreground";
 
 const periodLabels: Record<HistoryPeriod, string> = {
   "24h": "Últimas 24 horas",
@@ -125,7 +125,7 @@ export function TopBar() {
   return (
     <>
       <header className="sticky top-0 z-30 border-b border-border/55 bg-[color-mix(in_oklab,var(--background)_92%,transparent)] backdrop-blur-xl">
-        <div className="flex h-16 min-w-0 items-center gap-2 px-3 sm:gap-3 sm:px-4 lg:px-5">
+        <div className="topbar-inner flex h-16 min-w-0 items-center gap-2 px-3 sm:gap-2.5 sm:px-3.5 lg:px-4">
           <SidebarTrigger className="h-9 w-9 shrink-0 text-muted-foreground hover:text-foreground md:hidden" />
 
           <Link
@@ -149,7 +149,7 @@ export function TopBar() {
             />
           </div>
 
-          <div className="hidden min-w-0 items-center gap-2 xl:flex">
+          <div className="topbar-controls hidden min-w-0 items-center gap-2 lg:flex">
             <ShoppingDropdown
               shoppings={shoppings}
               selectedShopping={selectedShopping}
@@ -167,13 +167,13 @@ export function TopBar() {
             </div>
           </div>
 
-          <div className="ml-auto flex shrink-0 items-center gap-2 lg:gap-4">
+          <div className="topbar-status ml-auto flex shrink-0 items-center gap-2 lg:gap-3">
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild>
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-9 w-9 border-border/55 bg-card/55 xl:hidden"
+                  className="h-9 w-9 border-border/55 bg-card/55 lg:hidden"
                   aria-label="Controles do dashboard"
                 >
                   <SlidersHorizontal className="h-4 w-4" />
@@ -354,7 +354,7 @@ function ShoppingDropdown({
         <Button
           variant="outline"
           size="sm"
-          className={`${controlClass} min-w-[166px] max-w-[230px] justify-between`}
+          className={`${controlClass} min-w-[156px] max-w-[220px] justify-between xl:min-w-[176px]`}
         >
           <span className="truncate">
             {selectedShopping

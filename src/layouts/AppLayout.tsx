@@ -13,12 +13,12 @@ const sidebarVariables = {
 export function AppLayout({ children }: { children: ReactNode }) {
   return (
     <SidebarProvider open={false} style={sidebarVariables}>
-      <div className="flex min-h-svh w-full min-w-0 overflow-x-clip">
+      <div className="app-shell flex min-h-svh w-full min-w-0 overflow-x-clip">
         <AppSidebar />
-        <SidebarInset className="min-w-0 bg-transparent">
+        <SidebarInset className="app-inset min-w-0 bg-transparent">
           <DashboardRuntimeProvider>
             <TopBar />
-            <main className="dashboard-main min-w-0 flex-1 px-3 py-3 sm:px-4 lg:px-4 lg:py-3 2xl:px-5">{children}</main>
+            <main className="dashboard-main min-w-0 flex-1 px-3 py-2.5 sm:px-3.5 lg:px-3.5 2xl:px-4">{children}</main>
           </DashboardRuntimeProvider>
         </SidebarInset>
       </div>

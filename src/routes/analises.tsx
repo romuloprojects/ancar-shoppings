@@ -212,104 +212,77 @@ function AnalyticsPage() {
         </div>
       </FilterBar>
 
-      <SectionPanel
-        title={`Comparação · ${config.label}`}
-        subtitle={`Período: ${period} · ${series.length} unidade(s) com série disponível`}
-        icon={config.icon}
-        className="compact-fill-panel"
-        contentClassName="compact-analysis-content"
-      >
-        {loading ? (
-          <LoadingBlock h={390} />
-        ) : series.length === 0 ? (
-          <EmptyState title="Sem séries disponíveis" description="Selecione ao menos uma unidade com histórico disponível." />
-        ) : (
-          <>
-            <div className="mb-3 flex flex-wrap gap-x-4 gap-y-2 text-xs text-muted-foreground">
-              {series.map((shopping, index) => (
-                <span key={shopping.shopping?.code} className="flex items-center gap-1.5">
-                  <span
-                    className="h-2.5 w-2.5 rounded-full"
-                    style={{ background: SERIES_COLORS[index % SERIES_COLORS.length] }}
-                  />
-                  {shopping.shopping?.code} · {shopping.shopping?.name}
-                </span>
-              ))}
-            </div>
-            <div className="analysis-main-chart h-[230px] min-w-0 sm:h-[260px] lg:h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData} margin={{ top: 8, right: 8, bottom: 4, left: -12 }}>
-                  <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
-                  <XAxis
-                    dataKey="timestamp"
-                    tickFormatter={(value) => labelTime(String(value), period)}
-                    minTickGap={28}
-                    tick={{ fontSize: 9, fill: "var(--muted-foreground)" }}
-                  />
-                  <YAxis tick={{ fontSize: 9, fill: "var(--muted-foreground)" }} width={52} />
-                  <Tooltip
-                    contentStyle={chartTooltipStyle}
-                    labelFormatter={(value) => new Date(String(value)).toLocaleString("pt-BR")}
-                    formatter={(value, name) => [
-                      displayValue(typeof value === "number" ? value : Number(value)),
-                      `${String(name)} (${config.unit})`,
-                    ]}
-                  />
-                  {series.map((shopping, index) => {
-                    const code = shopping.shopping?.code ?? `S${index + 1}`;
-                    return (
-                      <Line
-                        key={code}
-                        type="monotone"
-                        dataKey={code}
-                        name={code}
-                        stroke={SERIES_COLORS[index % SERIES_COLORS.length]}
-                        dot={false}
-                        strokeWidth={2}
-                        connectNulls
-                      />
-                    );
-                  })}
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+      <div className="analysis-workspace-body min-h-0 flex-1">
+        <SectionPanel
+          title={`Comparação · ${config.label}`}
+          subtitle={`Período: ${period} · ${series.length} unidade(s) com série disponível`}
+          icon={config.icon}
+          className="compact-fill-panel"
+          contentClassName="compact-analysis-content"
+        >
+          {loading ? (
+            <LoadingBlock h={390} />
+          ) : series.length === 0 ? (
+            <EmptyState title="Sem séries disponíveis" description="Selecione ao menos uma unidade com histórico disponível." />
+          ) : (
+            <>
+              <div className="mb-2 flex flex-wrap gap-x-3 gap-y-1.5 text-[10px] text-muted-foreground">
+                {series.map((shopping, index) => (
+                  <span key={shopping.shopping?.code} className="flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full" style={{ background: SERIES_COLORS[index % SERIES_COLORS.length] }} />
+                    {shopping.shopping?.code} · {shopping.shopping?.name}
+                  </span>
+                ))}
+              </div>
+              <div className="analysis-main-chart h-[230px] min-w-0 sm:h-[260px] lg:h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData} margin={{ top: 8, right: 8, bottom: 4, left: -12 }}>
+                    <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="timestamp" tickFormatter={(value) => labelTime(String(value), period)} minTickGap={28} tick={{ fontSize: 9, fill: "var(--muted-foreground)" }} />
+                    <YAxis tick={{ fontSize: 9, fill: "var(--muted-foreground)" }} width={52} />
+                    <Tooltip contentStyle={chartTooltipStyle} labelFormatter={(value) => new Date(String(value)).toLocaleString("pt-BR")} formatter={(value, name) => [displayValue(typeof value === "number" ? value : Number(value)), `${String(name)} (${config.unit})`]} />
+                    {series.map((shopping, index) => {
+                      const code = shopping.shopping?.code ?? `S${index + 1}`;
+                      return <Line key={code} type="monotone" dataKey={code} name={code} stroke={SERIES_COLORS[index % SERIES_COLORS.length]} dot={false} strokeWidth={2} connectNulls />;
+                    })}
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="analysis-kpi-strip mt-2 grid grid-cols-2 gap-1.5 lg:grid-cols-5">
+                <AnalysisMini label="Média" value={displayValue(avg)} unit={config.unit}/>
+                <AnalysisMini label="Máximo" value={displayValue(max)} unit={config.unit}/>
+                <AnalysisMini label="Mínimo" value={displayValue(min)} unit={config.unit}/>
+                <AnalysisMini label="Séries" value={String(series.length)} unit="unid."/>
+                <AnalysisMini label="Período" value={period} unit=""/>
+              </div>
+            </>
+          )}
+        </SectionPanel>
 
-            <div className="analysis-series-summary mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
-              {series.map((shopping, index) => {
-                const value =
-                  metric === "energyKwh"
-                    ? shopping.summary.energyKwh
-                    : average(shopping.history.map((history) => history[metric] as number | null));
-                return (
-                  <div
-                    key={shopping.shopping?.code}
-                    className="rounded-xl border border-border/55 bg-muted/10 p-3"
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="truncate text-sm font-semibold">
-                          {shopping.shopping?.code} · {shopping.shopping?.name}
-                        </div>
-                        <div className="mt-0.5 text-[11px] text-muted-foreground">{config.label}</div>
-                      </div>
-                      <span
-                        className="h-2.5 w-2.5 shrink-0 rounded-full"
-                        style={{ background: SERIES_COLORS[index % SERIES_COLORS.length] }}
-                      />
-                    </div>
-                    <div className="mt-3 metric-value text-xl">
-                      {displayValue(value)} <span className="text-[10px] text-muted-foreground">{config.unit}</span>
-                    </div>
-                  </div>
-                );
+        <aside className="analysis-side-stack min-h-0">
+          <section className="panel min-h-0 overflow-hidden p-3">
+            <div className="text-xs font-semibold">Shoppings comparados</div>
+            <div className="analysis-side-list mt-2 min-h-0 overflow-y-auto pr-1">
+              {series.map((shopping,index)=>{
+                const value = metric === "energyKwh" ? shopping.summary.energyKwh : average(shopping.history.map((history)=>history[metric] as number|null));
+                return <div key={shopping.shopping?.code} className="grid grid-cols-[8px_minmax(0,1fr)_auto] items-center gap-2 border-b border-border/35 py-2 text-[10px]"><span className="h-2 w-2 rounded-full" style={{background:SERIES_COLORS[index%SERIES_COLORS.length]}}/><span className="truncate">{shopping.shopping?.code} · {shopping.shopping?.name}</span><span className="metric-value">{displayValue(value)}</span></div>
               })}
             </div>
-          </>
-        )}
-      </SectionPanel>
+          </section>
+          <section className="panel min-h-0 overflow-hidden p-3">
+            <div className="text-xs font-semibold">Leituras rápidas</div>
+            <div className="mt-2 space-y-2 text-[10px]">
+              <div className="rounded-lg border border-border/45 bg-muted/10 p-2.5"><span className="text-muted-foreground">Métrica ativa</span><div className="mt-1 font-semibold">{config.label} ({config.unit})</div></div>
+              <div className="rounded-lg border border-border/45 bg-muted/10 p-2.5"><span className="text-muted-foreground">Comparação</span><div className="mt-1 font-semibold">{series.length} unidade(s) com série disponível</div></div>
+            </div>
+          </section>
+        </aside>
+      </div>
     </InternalPage>
   );
 }
+
+function AnalysisMini({label,value,unit}:{label:string;value:string;unit:string}){return <div className="rounded-lg border border-border/45 bg-muted/10 px-2.5 py-2"><div className="text-[9px] uppercase tracking-[.1em] text-muted-foreground">{label}</div><div className="mt-1 metric-value text-sm">{value} {unit&&<span className="text-[9px] font-normal text-muted-foreground">{unit}</span>}</div></div>}
 
 function mergeSeries(series: ShoppingApiResponse[], metric: AnalysisMetric) {
   const rows = new Map<string, Record<string, string | number | null>>();

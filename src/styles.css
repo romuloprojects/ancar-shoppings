@@ -956,3 +956,621 @@
     box-shadow: 0 18px 44px -28px rgb(0 0 0 / 80%);
   }
 }
+
+/* V3.3 — CONTRATO VISUAL HOMOLOGADO
+   Fonte visual: ANCAR_HOMOLOGACAO_VISUAL_V1.
+   Princípio: dashboard compacto por viewport, agrupado, sem rolagem do documento
+   em desktop/notebook sempre que houver área útil suficiente. Excesso rola dentro
+   de listas, tabelas, tabs e painéis específicos. */
+
+:root {
+  --ancar-shell-gap: 0.65rem;
+  --ancar-panel-radius: 0.82rem;
+  --ancar-topbar-h: 4rem;
+}
+
+.panel {
+  border-radius: var(--ancar-panel-radius);
+}
+
+.internal-page {
+  max-width: none;
+}
+
+.page-heading {
+  min-height: 2.55rem;
+}
+
+.page-heading__icon {
+  width: 2.15rem;
+  height: 2.15rem;
+}
+
+.page-heading h1 {
+  font-size: 1.05rem;
+  line-height: 1.1;
+}
+
+.page-heading p {
+  margin-top: 0.12rem;
+  max-width: 64rem;
+  font-size: 0.67rem;
+  line-height: 1.2;
+}
+
+.summary-card {
+  min-height: 4.9rem;
+  padding: 0.62rem 0.72rem;
+}
+
+.summary-card .metric-value {
+  font-size: 1.05rem;
+}
+
+.summary-card p {
+  line-height: 1.15;
+}
+
+.section-panel__header {
+  min-height: 2.65rem;
+  padding: 0.48rem 0.68rem;
+}
+
+.section-panel__header h2 {
+  font-size: 0.76rem;
+}
+
+.section-panel__header p {
+  font-size: 0.63rem;
+  line-height: 1.15;
+}
+
+.section-panel__content {
+  padding: 0.65rem;
+}
+
+.page-toolbar {
+  min-height: 2.75rem;
+  padding: 0.45rem 0.6rem !important;
+}
+
+.page-toolbar input,
+.page-toolbar select {
+  height: 2rem;
+  font-size: 0.7rem;
+}
+
+.segmented-control > button {
+  padding: 0.34rem 0.58rem;
+  font-size: 0.68rem;
+}
+
+.data-table-shell table {
+  min-width: 700px;
+}
+
+.data-table-shell th,
+.data-table-shell td {
+  padding-top: 0.42rem;
+  padding-bottom: 0.42rem;
+  font-size: 0.68rem;
+}
+
+/* Shell e topbar */
+@media (min-width: 1024px) and (min-height: 650px) {
+  .app-shell {
+    height: 100svh;
+    min-height: 100svh;
+    overflow: hidden;
+  }
+
+  .app-inset {
+    height: 100svh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .dashboard-main {
+    height: calc(100svh - var(--ancar-topbar-h));
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .topbar-inner {
+    gap: 0.48rem;
+  }
+
+  .topbar-controls {
+    gap: 0.42rem;
+  }
+
+  .topbar-status {
+    gap: 0.55rem;
+  }
+
+  .internal-page,
+  .overview-dashboard {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .internal-page.compact-page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ancar-shell-gap);
+  }
+
+  .internal-page.compact-page > * + * {
+    margin-top: 0 !important;
+  }
+}
+
+/* Visão Geral homologada: 5 KPIs + gráfico/ranking + 4 blocos inferiores. */
+@media (min-width: 1024px) and (min-height: 650px) {
+  .overview-dashboard {
+    display: grid;
+    grid-template-rows: 86px minmax(220px, 1.16fr) minmax(190px, 0.92fr);
+    gap: var(--ancar-shell-gap);
+  }
+
+  .overview-dashboard > * + * {
+    margin-top: 0 !important;
+  }
+
+  .overview-kpis {
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: 0.52rem !important;
+  }
+
+  .overview-primary-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr) !important;
+    gap: var(--ancar-shell-gap) !important;
+  }
+
+  .overview-portfolio-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 3fr) minmax(0, 2fr) minmax(0, 2fr) !important;
+    gap: var(--ancar-shell-gap) !important;
+  }
+
+  .overview-portfolio-panel,
+  .overview-map-panel,
+  .overview-insights-panel,
+  .overview-health-panel {
+    grid-column: auto !important;
+  }
+
+  .overview-chart-panel,
+  .overview-ranking-panel,
+  .overview-portfolio-panel,
+  .overview-map-panel,
+  .overview-insights-panel,
+  .portfolio-health-card {
+    padding: 0.68rem !important;
+  }
+
+  .overview-chart-panel h2,
+  .overview-ranking-panel h2,
+  .overview-portfolio-panel h2,
+  .overview-map-panel h2,
+  .overview-insights-panel h2,
+  .portfolio-health-card h2 {
+    font-size: 0.78rem;
+  }
+
+  .overview-chart-panel .mb-2,
+  .overview-ranking-panel .mb-2,
+  .overview-portfolio-panel .mb-3,
+  .overview-map-panel > h2,
+  .overview-insights-panel .mb-3 {
+    margin-bottom: 0.38rem;
+  }
+
+  .overview-chart-panel .mt-1 {
+    margin-top: 0.2rem;
+  }
+
+  .overview-chart-panel .gap-4 {
+    gap: 0.7rem;
+  }
+
+  .overview-chart-panel .text-xs,
+  .overview-ranking-panel .text-xs {
+    font-size: 0.62rem;
+  }
+
+  .overview-chart {
+    flex: 1 1 auto;
+    height: auto !important;
+    min-height: 0;
+  }
+
+  .overview-ranking-list {
+    flex: 1 1 auto;
+    height: auto !important;
+    max-height: none !important;
+    overflow-y: auto;
+  }
+
+  .overview-ranking-list > a {
+    min-height: 2rem;
+    padding-top: 0.28rem;
+    padding-bottom: 0.28rem;
+  }
+
+  .overview-portfolio-cards {
+    flex: 1 1 auto;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0.42rem !important;
+    overflow: hidden;
+  }
+
+  .overview-portfolio-cards > a {
+    min-height: 0;
+    height: 100%;
+  }
+
+  .overview-portfolio-panel .mt-3 {
+    margin-top: 0.35rem;
+  }
+
+  .overview-map-panel .portfolio-map-svg {
+    max-height: min(15.5svh, 145px) !important;
+  }
+
+  .overview-map-panel .mt-2 {
+    margin-top: 0.25rem;
+  }
+
+  .overview-insights-list {
+    overflow-y: auto;
+  }
+
+  .overview-insights-list > a {
+    min-height: 48px;
+    padding: 0.42rem 0.5rem;
+  }
+
+  .portfolio-health-card .relative.mx-auto {
+    width: min(9.5svh, 88px) !important;
+    height: min(9.5svh, 88px) !important;
+  }
+
+  .portfolio-health-card .mt-1.space-y-1\.5 {
+    margin-top: 0.15rem;
+  }
+
+  .portfolio-health-card .mt-auto {
+    margin-top: 0.25rem;
+  }
+}
+
+/* Resoluções notebook com pouca altura: ainda preserva o agrupamento. */
+@media (min-width: 1024px) and (max-height: 800px) {
+  .overview-dashboard {
+    grid-template-rows: 80px minmax(205px, 1.1fr) minmax(176px, 0.9fr);
+    gap: 0.5rem;
+  }
+
+  .overview-kpis > article {
+    height: 80px !important;
+  }
+
+  .overview-chart-panel,
+  .overview-ranking-panel,
+  .overview-portfolio-panel,
+  .overview-map-panel,
+  .overview-insights-panel,
+  .portfolio-health-card {
+    padding: 0.55rem !important;
+  }
+
+  .overview-map-panel .portfolio-map-svg {
+    max-height: 116px !important;
+  }
+
+  .portfolio-health-card .relative.mx-auto {
+    width: 72px !important;
+    height: 72px !important;
+  }
+}
+
+/* Shoppings: resumo/filtros fixos; área de unidades rola internamente. */
+@media (min-width: 1024px) and (min-height: 650px) {
+  .compact-shoppings-page > .grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 0.5rem !important;
+  }
+
+  .compact-shoppings-page > .compact-scroll-region {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    padding-right: 0.15rem;
+  }
+
+  .compact-shoppings-page > .compact-scroll-region > .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0.5rem !important;
+  }
+}
+
+@media (min-width: 1500px) {
+  .compact-shoppings-page > .compact-scroll-region > .grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Detalhe: KPIs compactos, tabs fixas e rolagem somente no conteúdo da tab. */
+@media (min-width: 1024px) and (min-height: 650px) {
+  .compact-detail-page > .grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+    gap: 0.5rem !important;
+  }
+
+  .compact-detail-page .compact-tabs {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .compact-detail-page .compact-tab-content[data-state="active"] {
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .compact-detail-page .detail-main-chart {
+    height: min(35svh, 300px) !important;
+  }
+}
+
+/* Ranking: conteúdo principal em duas colunas; ranking rola internamente. */
+@media (min-width: 1024px) and (min-height: 650px) {
+  .compact-ranking-page > .grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 0.5rem !important;
+  }
+
+  .compact-ranking-page .ranking-metric-strip {
+    flex: 0 0 auto;
+  }
+
+  .compact-ranking-page > .compact-fill-panel {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .compact-ranking-page .compact-scroll-region {
+    min-height: 0;
+    overflow-y: auto;
+  }
+}
+
+/* Análises: filtros fixos; gráfico e resumos ficam no workspace interno. */
+@media (min-width: 1024px) and (min-height: 650px) {
+  .compact-analysis-page > .grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 0.5rem !important;
+  }
+
+  .compact-analysis-page > .compact-fill-panel {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .compact-analysis-page .compact-analysis-content {
+    min-height: 0;
+    overflow: auto;
+  }
+
+  .compact-analysis-page .analysis-main-chart {
+    height: min(39svh, 330px) !important;
+  }
+
+  .compact-analysis-page .analysis-series-summary {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: 0.4rem !important;
+  }
+}
+
+/* Alertas / Energia e Emissões: conteúdo principal rola dentro do painel. */
+@media (min-width: 1024px) and (min-height: 650px) {
+  .compact-alerts-page > .grid,
+  .compact-esg-page > .grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 0.5rem !important;
+  }
+
+  .compact-alerts-page > .compact-fill-panel,
+  .compact-esg-page > .compact-fill-panel {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .compact-alerts-page .compact-scroll-region,
+  .compact-esg-page .compact-scroll-region {
+    min-height: 0;
+    overflow: auto;
+  }
+}
+
+/* Relatórios: filtros fixos e workspace rolável apenas internamente. */
+@media (min-width: 1024px) and (min-height: 650px) {
+  .compact-reports-page .reports-workspace {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+  }
+
+  .compact-reports-page .reports-workspace > .grid:first-child {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 0.5rem !important;
+  }
+}
+
+/* Configurações: seletor e salvar ficam sempre à vista; conteúdo das tabs rola internamente. */
+@media (min-width: 1024px) and (min-height: 650px) {
+  .compact-settings-page .compact-tabs {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .compact-settings-page .compact-tab-content[data-state="active"] {
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .compact-settings-page .compact-tab-content .section-panel + .section-panel {
+    margin-top: 0.5rem;
+  }
+
+  .compact-settings-page textarea {
+    min-height: 3.6rem;
+    max-height: 5.2rem;
+  }
+}
+
+/* Tablet/mobile continua progressivo, com scroll natural da página. */
+@media (max-width: 1023px), (max-height: 649px) {
+  .app-shell,
+  .app-inset,
+  .dashboard-main,
+  .internal-page,
+  .overview-dashboard {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .overview-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .overview-primary-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .overview-portfolio-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .overview-kpis {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .overview-portfolio-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .overview-portfolio-panel {
+    grid-column: span 2 !important;
+  }
+}
+
+@media (min-width: 1024px) and (min-height: 650px) {
+  .ranking-workspace-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(250px, 0.65fr);
+    gap: var(--ancar-shell-gap);
+  }
+  .ranking-workspace-body > * { min-height: 0; }
+  .ranking-side-panel { overflow-y: auto; }
+}
+
+@media (min-width: 1024px) and (min-height: 650px) {
+  .analysis-workspace-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1.34fr) minmax(250px, 0.66fr);
+    gap: var(--ancar-shell-gap);
+  }
+  .analysis-side-stack {
+    display: grid;
+    grid-template-rows: minmax(0, 1.15fr) minmax(110px, 0.85fr);
+    gap: var(--ancar-shell-gap);
+  }
+  .analysis-kpi-strip > div { min-width: 0; }
+}
+@media (min-width: 1024px) and (min-height: 650px) {
+  .alerts-workspace-body { display:grid; grid-template-columns:minmax(0,1.45fr) minmax(250px,.55fr); gap:var(--ancar-shell-gap); }
+  .alerts-side-stack { display:grid; grid-template-rows:auto minmax(0,1fr); gap:var(--ancar-shell-gap); }
+}
+@media (min-width: 1024px) and (min-height: 650px) {
+  .energy-workspace-body { display:grid; grid-template-columns:minmax(0,1.25fr) minmax(300px,.75fr); gap:var(--ancar-shell-gap); }
+  .energy-side-stack { display:grid; grid-template-rows:minmax(0,1.25fr) auto; gap:var(--ancar-shell-gap); }
+  .energy-main-chart { height:min(43svh,360px); }
+}
+.reports-control-strip { display:flex; align-items:end; gap:.55rem; padding:.5rem .65rem; }
+.reports-control-strip label { display:flex; min-width:260px; flex-direction:column; gap:.2rem; font-size:.58rem; text-transform:uppercase; letter-spacing:.1em; color:var(--muted-foreground); }
+.reports-control-strip select { height:2rem; border:1px solid var(--border); border-radius:.55rem; background:color-mix(in oklab,var(--background) 70%,transparent); padding:0 .55rem; color:var(--foreground); font-size:.7rem; text-transform:none; letter-spacing:normal; }
+@media (min-width: 1024px) and (min-height: 650px) {
+  .reports-workspace-body { display:grid; grid-template-columns:minmax(250px,.72fr) minmax(0,1.28fr); gap:var(--ancar-shell-gap); }
+  .report-library { overflow-y:auto; }
+  .report-preview-panel { display:flex; flex-direction:column; }
+  .report-preview-chart { flex:1 1 auto; height:min(38svh,330px); }
+}
+@media (min-width: 1024px) and (min-height: 650px) {
+  .compact-settings-page > .panel.p-3 { padding:.5rem .65rem; }
+  .compact-settings-page > .panel.p-3 label { max-width:none; flex-direction:row; align-items:center; gap:.65rem; }
+  .compact-settings-page > .panel.p-3 label > select { margin-top:0; width:min(360px,42vw); height:2.15rem; }
+  .compact-settings-page .compact-tabs {
+    display:grid;
+    grid-template-columns:170px minmax(0,1fr);
+    grid-template-rows:minmax(0,1fr);
+    gap:var(--ancar-shell-gap);
+    flex:1 1 auto;
+    min-height:0;
+    overflow:hidden;
+  }
+  .compact-settings-page .compact-tabs > [role="tablist"] {
+    grid-column:1;
+    grid-row:1;
+    display:flex !important;
+    height:100% !important;
+    flex-direction:column;
+    align-items:stretch;
+    gap:.25rem !important;
+    overflow-y:auto;
+    border:1px solid var(--border);
+    border-radius:var(--ancar-panel-radius);
+    background:color-mix(in oklab,var(--card) 92%,transparent) !important;
+    padding:.55rem !important;
+  }
+  .compact-settings-page .compact-tabs > [role="tablist"] button {
+    justify-content:flex-start;
+    width:100%;
+    min-height:2.15rem;
+    border-radius:.55rem;
+    padding:.45rem .6rem;
+    font-size:.68rem;
+  }
+  .compact-settings-page .compact-tabs > .compact-tab-content[data-state="active"] {
+    grid-column:2;
+    grid-row:1;
+    display:block;
+    height:100%;
+    min-height:0;
+    overflow-y:auto;
+    padding-right:.15rem;
+  }
+  .compact-settings-page .settings-performance-tab[data-state="active"] {
+    display:grid;
+    grid-template-columns:1.25fr .75fr;
+    align-content:start;
+    gap:var(--ancar-shell-gap);
+  }
+  .compact-settings-page .settings-performance-tab .section-panel { margin-top:0 !important; }
+  .compact-settings-page .settings-performance-tab .section-panel:first-child { grid-row:span 2; }
+  .compact-settings-page .form-grid { gap:.45rem; }
+  .compact-settings-page input { height:2rem !important; font-size:.7rem; }
+}
+@media (min-width: 1024px) and (min-height: 650px) {
+  .detail-behavior-grid { display:grid; grid-template-columns:minmax(0,1.34fr) minmax(300px,.66fr); gap:var(--ancar-shell-gap); height:100%; }
+  .detail-behavior-grid > * { min-height:0; }
+  .detail-summary-strip > div { min-width:0; }
+}
