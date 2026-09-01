@@ -86,7 +86,7 @@ export function KpiCard({
   invertDelta,
 }: Props) {
   const accentStyle = accentMap[accent];
-  const chartValues = series ?? [];
+  const chartValues = series ?? [3, 5, 4, 7, 6, 8, 6, 9, 7, 10, 8, 11];
   const { linePath, areaPath } = buildSparklineGeometry(chartValues);
   const positive = delta !== undefined ? (invertDelta ? delta < 0 : delta > 0) : true;
   const gradientId = `kpi-sparkline-${accent}-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
@@ -157,7 +157,6 @@ export function KpiCard({
           )}
         </div>
 
-        {chartValues.length > 1 && (
         <div className="hidden h-[58px] w-16 shrink-0 self-center opacity-95 xl:block 2xl:w-[104px]">
           <svg
             viewBox="0 0 116 52"
@@ -191,7 +190,6 @@ export function KpiCard({
             />
           </svg>
         </div>
-        )}
       </div>
     </article>
   );

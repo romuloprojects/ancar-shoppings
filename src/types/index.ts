@@ -37,6 +37,7 @@ export interface Shopping {
   emissionsTons?: number;
   savingsBRL?: number;
   monthlyConsumptionMWh?: number;
+  energyModel?: string;
 }
 
 export interface PortfolioKpi {
@@ -129,6 +130,7 @@ export interface ShoppingDetail extends Shopping {
   alerts: Alert[];
   insights: Insight[];
 }
+
 
 export type {
   EquipmentRegistryItem,

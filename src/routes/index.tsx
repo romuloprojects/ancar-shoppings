@@ -1,13 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import {
-  Activity,
-  Building2,
-  Fan,
-  Gauge,
-  Thermometer,
-  Zap,
-} from "lucide-react";
+import { Activity, ChevronLeft, ChevronRight, Fan, Gauge, Thermometer, Zap } from "lucide-react";
 import {
   Area,
   CartesianGrid,
@@ -18,23 +11,49 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { dashboardService, mapLiveShoppingToLegacy } from "@/services/dashboardService";
+import { liveDashboardService, asNumber, mapLiveShoppingToLegacy } from "@/services/liveDashboardService";
 import type {
   HistoryPeriod,
   Insight,
   LiveShoppingSummary,
   PortfolioApiResponse,
+  RankingItem,
   Shopping,
   ShoppingApiResponse,
+  ShoppingStatus,
 } from "@/types";
 import { KpiCard } from "@/components/KpiCard";
 import { ShoppingCard } from "@/components/ShoppingCard";
 import { BrazilMap } from "@/components/BrazilMap";
-import { InsightCard } from "@/components/InsightCard";
-import { DataUnavailable } from "@/components/DataUnavailable";
 import { LoadingBlock } from "@/components/ui-helpers";
 import { useDashboardRuntime } from "@/contexts/dashboard-runtime-context";
-import { formatNumber, formatRelative } from "@/utils/format";
+import { StatusDot } from "@/components/StatusBadge";
+import { InsightCard } from "@/components/InsightCard";
+import { PortfolioHealthCard } from "@/components/PortfolioHealthCard";
+import { DataUnavailable } from "@/components/DataUnavailable";
+import { formatNumber } from "@/utils/format";
+
+const STALE_AFTER_MS = 15 * 60 * 1000;
+
+type RankingMetric = "power" | "production" | "efficiency" | "quality";
+
+const rankingOptions: Record<
+  RankingMetric,
+  { label: string; unit: string; lowerIsBetter: boolean }
+> = {
+  power: { label: "Potência CAG", unit: "kW", lowerIsBetter: false },
+  production: { label: "Produção térmica", unit: "TR", lowerIsBetter: false },
+  efficiency: { label: "Eficiência", unit: "kW/TR", lowerIsBetter: true },
+  quality: { label: "Qualidade dos dados", unit: "%", lowerIsBetter: false },
+};
+
+const statusColor: Record<ShoppingStatus, string> = {
+  otimo: "var(--accent-green)",
+  bom: "var(--accent-cyan)",
+  atencao: "var(--accent-yellow)",
+  critico: "var(--accent-red)",
+  offline: "var(--muted-foreground)",
+};
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -49,83 +68,75 @@ export const Route = createFileRoute("/")({
   component: OverviewPage,
 });
 
-type RankingMetric = "power" | "production" | "efficiency" | "quality";
-
-const rankingOptions: Record<RankingMetric, { label: string; unit: string; ascending: boolean }> = {
-  power: { label: "Potência CAG", unit: "kW", ascending: false },
-  production: { label: "Produção térmica", unit: "TR", ascending: false },
-  efficiency: { label: "kW/TR — CAGs elétricas", unit: "kW/TR", ascending: true },
-  quality: { label: "Qualidade dos dados", unit: "%", ascending: false },
-};
-
-function n(value: unknown): number | null {
-  return typeof value === "number" && Number.isFinite(value) ? value : null;
-}
-
 function OverviewPage() {
-  const { tick } = useDashboardRuntime();
-  const [portfolio, setPortfolio] = useState<PortfolioApiResponse | null>(null);
-  const [selectedCode, setSelectedCode] = useState("BLD");
-  const [period, setPeriod] = useState<HistoryPeriod>("24h");
-  const [shoppingData, setShoppingData] = useState<ShoppingApiResponse | null>(null);
+  const {
+    tick,
+    selectedShoppingCode,
+    setSelectedShoppingCode,
+    historyPeriod,
+    setHistoryPeriod,
+  } = useDashboardRuntime();
+  const [portfolioPage, setPortfolioPage] = useState(0);
   const [rankingMetric, setRankingMetric] = useState<RankingMetric>("power");
-  const [loading, setLoading] = useState(true);
-  const [historyLoading, setHistoryLoading] = useState(true);
+  const [portfolio, setPortfolio] = useState<PortfolioApiResponse | null>(null);
+  const [shoppingData, setShoppingData] = useState<ShoppingApiResponse | null>(null);
+  const [loadingPortfolio, setLoadingPortfolio] = useState(true);
+  const [loadingHistory, setLoadingHistory] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
-    setLoading(true);
-    dashboardService
-      .getPortfolioLive()
+    setLoadingPortfolio(true);
+
+    liveDashboardService
+      .getPortfolio()
       .then((result) => {
         if (!alive) return;
         setPortfolio(result);
-        let preferred = selectedCode;
-        try {
-          preferred = window.localStorage.getItem("ancar:selectedShopping") || preferred;
-        } catch {}
-        if (result.shoppings.some((item) => item.code === preferred)) {
-          setSelectedCode(preferred);
-        } else if (!result.shoppings.some((item) => item.code === selectedCode)) {
-          setSelectedCode(result.shoppings[0]?.code ?? "");
-        }
         setError(null);
+        if (result.shoppings.length && !result.shoppings.some((s) => s.code === selectedShoppingCode)) {
+          setSelectedShoppingCode(result.shoppings[0].code);
+        }
       })
       .catch((err: unknown) => {
         if (alive) setError(err instanceof Error ? err.message : "Falha ao consultar a API ANCAR.");
       })
       .finally(() => {
-        if (alive) setLoading(false);
+        if (alive) setLoadingPortfolio(false);
       });
+
     return () => {
       alive = false;
     };
-  }, [tick]);
+  }, [tick, selectedShoppingCode, setSelectedShoppingCode]);
 
   useEffect(() => {
-    if (!selectedCode) return;
+    if (!selectedShoppingCode) return;
     let alive = true;
-    setHistoryLoading(true);
-    dashboardService
-      .getShoppingLive(selectedCode, period)
+    setLoadingHistory(true);
+
+    liveDashboardService
+      .getShopping(selectedShoppingCode, historyPeriod)
       .then((result) => {
-        if (alive) setShoppingData(result);
+        if (!alive) return;
+        setShoppingData(result);
+        setError(null);
       })
       .catch((err: unknown) => {
-        if (alive) setError(err instanceof Error ? err.message : "Falha ao consultar histórico ANCAR.");
+        if (alive) setError(err instanceof Error ? err.message : "Falha ao consultar o histórico ANCAR.");
       })
       .finally(() => {
-        if (alive) setHistoryLoading(false);
+        if (alive) setLoadingHistory(false);
       });
+
     return () => {
       alive = false;
     };
-  }, [selectedCode, period, tick]);
+  }, [selectedShoppingCode, historyPeriod, tick]);
 
-  const selectedSummary = useMemo(
-    () => portfolio?.shoppings.find((item) => item.code === selectedCode) ?? null,
-    [portfolio, selectedCode],
+  const selectedShopping = useMemo(
+    () => portfolio?.shoppings.find((item) => item.code === selectedShoppingCode) ?? null,
+    [portfolio, selectedShoppingCode],
   );
 
   const portfolioCards = useMemo<Shopping[]>(
@@ -133,116 +144,70 @@ function OverviewPage() {
     [portfolio],
   );
 
-  const ranking = useMemo(() => {
-    const opt = rankingOptions[rankingMetric];
-    return (portfolio?.shoppings ?? [])
-      .map((item) => {
-        const k = item.latest?.kpis ?? {};
-        const health = item.latest?.health ?? {};
-        const total = n(health.pointsTotal) ?? item.registry.pointsTotal;
-        const ok = n(health.pointsOk) ?? 0;
-        const quality = total > 0 ? (ok / total) * 100 : null;
-        const allElectric =
-          k.modelo_energetico === "all_electric_chillers" ||
-          (item.registry.chillersTotal > 0 && item.registry.chillersAbsorption === 0);
-        let value: number | null = null;
-        if (rankingMetric === "power") value = n(k.kw_cag);
-        if (rankingMetric === "production") value = n(k.tr_total);
-        if (rankingMetric === "efficiency") {
-          value = allElectric ? n(k.kw_tr_eletrico_cag ?? k.kw_tr_cag) : null;
-        }
-        if (rankingMetric === "quality") value = quality;
-        return { item, value };
-      })
-      .filter((row): row is { item: LiveShoppingSummary; value: number } => row.value !== null)
-      .sort((a, b) => (opt.ascending ? a.value - b.value : b.value - a.value));
-  }, [portfolio, rankingMetric]);
+  const ranking = useMemo(
+    () => makeLiveRanking(portfolio?.shoppings ?? [], rankingMetric),
+    [portfolio, rankingMetric],
+  );
 
-  const insights = useMemo(() => makePortfolioInsights(portfolio?.shoppings ?? []), [portfolio]);
+  const insights = useMemo(
+    () => makePortfolioInsights(portfolio?.shoppings ?? []),
+    [portfolio],
+  );
 
-  if (loading && !portfolio) return <LoadingBlock h={820} />;
+  if (loadingPortfolio && !portfolio) {
+    return <LoadingBlock h={880} />;
+  }
 
-  if (!portfolio || !selectedSummary) {
+  if (!portfolio || !selectedShopping) {
     return (
-      <div className="panel p-8 text-center">
+      <section className="panel p-8 text-center">
         <h1 className="text-lg font-semibold">Visão Geral indisponível</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          {error ?? "Nenhum shopping ativo foi retornado pela API."}
+          {error ?? "Nenhum shopping ativo foi retornado pela API ANCAR."}
         </p>
-      </div>
+      </section>
     );
   }
 
-  const latest = selectedSummary.latest;
-  const k = latest?.kpis ?? {};
-  const mixed =
-    k.modelo_energetico === "mixed_absorption_electric" || selectedSummary.registry.chillersAbsorption > 0;
-  const activeChillers = n(k.chillers_ativos ?? k.chillers_ativos_por_status);
-  const totalChillers = selectedSummary.registry.chillersTotal;
-  const kwTr = n(k.kw_tr_eletrico_cag ?? k.kw_tr_cag);
-  const history = shoppingData?.shopping?.code === selectedCode ? shoppingData.history : [];
-  const temperature = n(k.temperatura_externa_c);
+  const history =
+    shoppingData?.shopping?.code === selectedShoppingCode ? shoppingData.history ?? [] : [];
+  const kpis = selectedShopping.latest?.kpis ?? {};
+  const isMixed =
+    kpis.modelo_energetico === "mixed_absorption_electric" ||
+    selectedShopping.registry.chillersAbsorption > 0;
+  const kwCag = asNumber(kpis.kw_cag);
+  const trTotal = asNumber(kpis.tr_total);
+  const kwTr = asNumber(kpis.kw_tr_eletrico_cag ?? kpis.kw_tr_cag);
+  const activeChillers = asNumber(kpis.chillers_ativos ?? kpis.chillers_ativos_por_status);
+  const kwAux = asNumber(kpis.kw_auxiliares);
+  const temperature = asNumber(kpis.temperatura_externa_c);
+  const totalChillers = selectedShopping.registry.chillersTotal;
 
-  const historyKw = history.map((point) => point.kwCag).filter((value): value is number => value !== null);
-  const historyTr = history.map((point) => point.trTotal).filter((value): value is number => value !== null);
-  const historyKwTr = history.map((point) => point.kwTr).filter((value): value is number => value !== null);
+  const historyKw = history.map((point) => point.kwCag).filter(isNumber);
+  const historyTr = history.map((point) => point.trTotal).filter(isNumber);
+  const historyKwTr = history.map((point) => point.kwTr).filter(isNumber);
+  const historyAux = history.map((point) => point.kwAux).filter(isNumber);
+  const activeSeries = activeChillers === null ? [] : [activeChillers, activeChillers];
 
-  const selectShopping = (shopping: Shopping) => {
-    setSelectedCode(shopping.code);
-    try { window.localStorage.setItem("ancar:selectedShopping", shopping.code); } catch {}
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  const selectedRanking = rankingOptions[rankingMetric];
+  const rankingValues = ranking.map((item) => item.value);
+  const rankingMin = rankingValues.length ? Math.min(...rankingValues) : 0;
+  const rankingMax = rankingValues.length ? Math.max(...rankingValues) : 0;
+
+  const portfolioPageSize = 6;
+  const portfolioPageCount = Math.max(1, Math.ceil(portfolioCards.length / portfolioPageSize));
+  const safePortfolioPage = Math.min(portfolioPage, portfolioPageCount - 1);
+  const portfolioItems = portfolioCards.slice(
+    safePortfolioPage * portfolioPageSize,
+    safePortfolioPage * portfolioPageSize + portfolioPageSize,
+  );
+
+  const portfolioHealth = makePortfolioHealth(portfolio.shoppings);
 
   return (
     <div className="overview-dashboard space-y-4">
-      <section className="panel flex flex-col gap-3 p-4 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--accent-cyan)]">
-            Visão Geral
-          </div>
-          <h1 className="mt-1 text-xl font-semibold tracking-tight">Panorama operacional</h1>
-          <p className="mt-1 text-xs text-muted-foreground">
-            O topo acompanha o shopping selecionado; ranking, portfólio, mapa e insights representam a carteira.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          <label className="flex min-w-[260px] flex-col gap-1 text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
-            Shopping selecionado
-            <select
-              value={selectedCode}
-              onChange={(event) => {
-                const code = event.target.value;
-                setSelectedCode(code);
-                try { window.localStorage.setItem("ancar:selectedShopping", code); } catch {}
-              }}
-              className="h-10 rounded-lg border border-border/60 bg-background/60 px-3 text-sm font-medium normal-case tracking-normal text-foreground outline-none focus:border-primary/55"
-            >
-              {portfolio.shoppings.map((shopping) => (
-                <option key={shopping.code} value={shopping.code}>
-                  {shopping.name} ({shopping.code})
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="flex min-w-[150px] flex-col gap-1 text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
-            Período do gráfico
-            <select
-              value={period}
-              onChange={(event) => setPeriod(event.target.value as HistoryPeriod)}
-              className="h-10 rounded-lg border border-border/60 bg-background/60 px-3 text-sm font-medium normal-case tracking-normal text-foreground outline-none focus:border-primary/55"
-            >
-              <option value="24h">Últimas 24 horas</option>
-              <option value="7d">Últimos 7 dias</option>
-              <option value="30d">Últimos 30 dias</option>
-            </select>
-          </label>
-        </div>
-      </section>
-
       {error && (
-        <div className="rounded-lg border border-[var(--accent-yellow)]/30 bg-[var(--accent-yellow)]/8 px-3 py-2 text-xs text-[var(--accent-yellow)]">
+        <div className="rounded-lg border border-[color-mix(in_oklab,var(--accent-yellow)_38%,transparent)] bg-[color-mix(in_oklab,var(--accent-yellow)_8%,transparent)] px-3 py-2 text-xs text-[var(--accent-yellow)]">
           {error}
         </div>
       )}
@@ -251,7 +216,7 @@ function OverviewPage() {
         <KpiCard
           icon={Zap}
           label="Potência CAG"
-          value={display(n(k.kw_cag), 1)}
+          value={display(kwCag, 1)}
           unit="kW"
           accent="cyan"
           series={historyKw}
@@ -259,201 +224,234 @@ function OverviewPage() {
         <KpiCard
           icon={Activity}
           label="Produção Térmica"
-          value={display(n(k.tr_total), 1)}
+          value={display(trTotal, 1)}
           unit="TR"
           accent="blue"
           series={historyTr}
         />
         <KpiCard
           icon={Gauge}
-          label={mixed ? "Intensidade Elétrica" : "Eficiência da CAG"}
+          label={isMixed ? "Intensidade Elétrica" : "Eficiência da CAG"}
           value={display(kwTr, 3)}
           unit="kW/TR"
           accent="green"
           series={historyKwTr}
         />
         <KpiCard
-          icon={Building2}
+          icon={Activity}
           label="Chillers Ativos"
           value={activeChillers === null ? "—" : `${activeChillers} / ${totalChillers}`}
           accent="purple"
+          series={activeSeries}
         />
         <KpiCard
           icon={Fan}
           label="Periféricos"
-          value={display(n(k.kw_auxiliares), 1)}
+          value={display(kwAux, 1)}
           unit="kW"
           accent="yellow"
+          series={historyAux}
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.08fr_.92fr]">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <section className="panel p-4">
-          <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
+          <div className="mb-2 flex items-center justify-between gap-3">
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-sm font-semibold">Comportamento da CAG</h2>
-                <span className="rounded-md bg-muted/30 px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
-                  {selectedSummary.code}
+              <h2 className="text-sm font-semibold">
+                Comportamento da CAG
+                <span className="ml-1.5 text-xs font-normal text-muted-foreground">
+                  ({selectedShopping.code})
                 </span>
-              </div>
-              <div className="mt-1 flex flex-wrap gap-4 text-[10px] text-muted-foreground">
+              </h2>
+              <div className="mt-1 flex flex-wrap gap-4 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-[var(--accent-cyan)]" /> Potência CAG (kW)
+                  <span className="h-2 w-2 rounded-full bg-[var(--accent-cyan)]" />
+                  Potência CAG (kW)
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-[var(--accent-blue)]" /> Produção térmica (TR)
+                  <span className="h-2 w-2 rounded-full bg-[var(--accent-blue)]" />
+                  Produção (TR)
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-[var(--accent-green)]" />
+                  {isMixed ? "Intensidade" : "Eficiência"} (kW/TR)
                 </span>
                 {temperature !== null && (
                   <span className="flex items-center gap-1.5">
-                    <Thermometer className="h-3 w-3 text-[var(--accent-yellow)]" /> {display(temperature, 1)} °C externo
+                    <Thermometer className="h-3 w-3 text-[var(--accent-yellow)]" />
+                    {display(temperature, 1)} °C
                   </span>
                 )}
               </div>
             </div>
-            <div className="text-right text-[10px] text-muted-foreground">
-              <div>Última coleta</div>
-              <div className="mt-0.5 font-medium text-foreground">
-                {latest?.collectedAt ? formatRelative(latest.collectedAt) : "Sem coleta"}
-              </div>
-            </div>
+            <select
+              value={historyPeriod}
+              onChange={(event) => setHistoryPeriod(event.target.value as HistoryPeriod)}
+              aria-label="Período do gráfico"
+              className="h-8 rounded-md border border-border/60 bg-card/60 px-2.5 text-xs text-foreground outline-none focus:border-primary/60"
+            >
+              <option value="24h">24h</option>
+              <option value="7d">7 dias</option>
+              <option value="30d">30 dias</option>
+            </select>
           </div>
 
-          {historyLoading ? (
-            <LoadingBlock h={286} />
-          ) : history.length === 0 ? (
-            <div className="grid h-[286px] place-items-center">
-              <DataUnavailable label="Histórico ainda não disponível para este período" />
-            </div>
-          ) : (
-            <div className="h-[286px]">
+          <div className="overview-chart h-[272px] 2xl:h-[286px]">
+            {loadingHistory && history.length === 0 ? (
+              <LoadingBlock h={272} />
+            ) : history.length === 0 ? (
+              <div className="grid h-full place-items-center">
+                <DataUnavailable label="Histórico ainda não disponível para este período" />
+              </div>
+            ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={history} margin={{ top: 8, right: 0, bottom: 0, left: -8 }}>
+                <ComposedChart data={history} margin={{ top: 8, right: 0, bottom: 0, left: -12 }}>
                   <defs>
-                    <linearGradient id="kw-cag-area" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="var(--accent-cyan)" stopOpacity={0.28} />
+                    <linearGradient id="cagPowerArea" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--accent-cyan)" stopOpacity={0.34} />
                       <stop offset="100%" stopColor="var(--accent-cyan)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid stroke="oklch(0.35 0.03 260 / 30%)" strokeDasharray="3 3" vertical={false} />
+                  <CartesianGrid
+                    stroke="oklch(0.35 0.03 260 / 30%)"
+                    strokeDasharray="3 3"
+                    vertical={false}
+                  />
                   <XAxis
                     dataKey="timestamp"
-                    tickFormatter={(value) => formatChartTime(String(value), period)}
+                    tickFormatter={(value) => formatChartTime(String(value), historyPeriod)}
                     stroke="oklch(0.6 0.02 250)"
-                    tick={{ fontSize: 9 }}
-                    minTickGap={24}
+                    tick={{ fontSize: 10 }}
+                    minTickGap={historyPeriod === "30d" ? 18 : 8}
                     tickLine={false}
                     axisLine={{ stroke: "oklch(0.38 0.03 260 / 60%)" }}
                   />
                   <YAxis
-                    yAxisId="kw"
+                    yAxisId="eff"
                     stroke="oklch(0.6 0.02 250)"
-                    tick={{ fontSize: 9 }}
+                    tick={{ fontSize: 10 }}
                     tickLine={false}
                     axisLine={false}
-                    width={48}
+                    width={38}
                   />
                   <YAxis
-                    yAxisId="tr"
+                    yAxisId="load"
                     orientation="right"
                     stroke="oklch(0.6 0.02 250)"
-                    tick={{ fontSize: 9 }}
+                    tick={{ fontSize: 10 }}
                     tickLine={false}
                     axisLine={false}
                     width={48}
                   />
                   <Tooltip
-                    labelFormatter={(value) => new Date(String(value)).toLocaleString("pt-BR")}
+                    labelFormatter={(value) => formatTooltipTime(String(value))}
                     contentStyle={{
                       background: "oklch(0.20 0.03 260)",
                       border: "1px solid oklch(0.35 0.03 260)",
                       borderRadius: 8,
-                      fontSize: 11,
+                      fontSize: 12,
                     }}
+                    labelStyle={{ color: "var(--foreground)" }}
                   />
                   <Area
-                    yAxisId="kw"
+                    yAxisId="load"
                     type="monotone"
                     dataKey="kwCag"
                     name="Potência CAG (kW)"
                     stroke="var(--accent-cyan)"
                     strokeWidth={2}
-                    fill="url(#kw-cag-area)"
+                    fill="url(#cagPowerArea)"
+                    activeDot={{ r: 4 }}
                     connectNulls
                   />
                   <Line
-                    yAxisId="tr"
+                    yAxisId="load"
                     type="monotone"
                     dataKey="trTotal"
-                    name="Produção térmica (TR)"
+                    name="Produção (TR)"
                     stroke="var(--accent-blue)"
                     strokeWidth={2}
                     dot={false}
+                    activeDot={{ r: 4 }}
+                    connectNulls
+                  />
+                  <Line
+                    yAxisId="eff"
+                    type="monotone"
+                    dataKey="kwTr"
+                    name={`${isMixed ? "Intensidade" : "Eficiência"} (kW/TR)`}
+                    stroke="var(--accent-green)"
+                    strokeWidth={2}
+                    dot={{ r: 2.2, fill: "var(--accent-green)", strokeWidth: 0 }}
+                    activeDot={{ r: 4 }}
                     connectNulls
                   />
                 </ComposedChart>
               </ResponsiveContainer>
-            </div>
-          )}
-
-          <div className="mt-2 flex flex-wrap gap-2 border-t border-border/40 pt-3 text-[10px] text-muted-foreground">
-            <span>{mixed ? "CAG com absorção: kW/TR representa intensidade elétrica." : "CAG totalmente elétrica."}</span>
-            {n(k.cop_cag) !== null && <span>• COP atual: {display(n(k.cop_cag), 2)}</span>}
-            {mixed && <span>• COP global não exibido sem energia térmica de entrada.</span>}
+            )}
           </div>
         </section>
 
         <section className="panel p-4">
           <div className="mb-3 flex items-center justify-between gap-3">
-            <div>
-              <h2 className="text-sm font-semibold">Ranking dos Shoppings</h2>
-              <p className="mt-1 text-[10px] text-muted-foreground">Portfólio atual</p>
-            </div>
+            <h2 className="text-sm font-semibold">Ranking dos Shoppings</h2>
             <select
               value={rankingMetric}
               onChange={(event) => setRankingMetric(event.target.value as RankingMetric)}
-              className="h-9 rounded-lg border border-border/60 bg-background/55 px-2.5 text-xs text-foreground outline-none"
+              aria-label="Métrica do ranking"
+              className="h-8 rounded-md border border-border/60 bg-card/60 px-2.5 text-xs text-foreground outline-none focus:border-primary/60"
             >
-              {Object.entries(rankingOptions).map(([key, option]) => (
-                <option key={key} value={key}>{option.label}</option>
+              {Object.entries(rankingOptions).map(([value, option]) => (
+                <option key={value} value={value}>
+                  {option.label} ({option.unit})
+                </option>
               ))}
             </select>
           </div>
 
-          <div className="space-y-2.5">
+          <div className="space-y-1.5">
             {ranking.length === 0 ? (
-              <DataUnavailable label="Nenhum shopping comparável nesta métrica" />
+              <div className="grid h-[250px] place-items-center">
+                <DataUnavailable label="Nenhum shopping comparável nesta métrica" />
+              </div>
             ) : (
-              ranking.slice(0, 8).map((row, index) => {
-                const max = Math.max(...ranking.map((item) => item.value));
-                const min = Math.min(...ranking.map((item) => item.value));
-                const normalized = max === min ? 100 : rankingOptions[rankingMetric].ascending
-                  ? 35 + ((max - row.value) / (max - min)) * 65
-                  : 35 + ((row.value - min) / (max - min)) * 65;
+              ranking.slice(0, 8).map((item) => {
+                const width = getRankingWidth(
+                  item.value,
+                  rankingMin,
+                  rankingMax,
+                  selectedRanking.lowerIsBetter,
+                );
+                const color = statusColor[item.status];
+
                 return (
-                  <button
-                    key={row.item.code}
-                    type="button"
-                    onClick={() => {
-                      setSelectedCode(row.item.code);
-                      try { window.localStorage.setItem("ancar:selectedShopping", row.item.code); } catch {}
-                    }}
-                    className="grid w-full grid-cols-[24px_minmax(150px,1fr)_minmax(100px,.8fr)_74px] items-center gap-2 rounded-lg px-1 py-1.5 text-left transition-colors hover:bg-muted/20"
+                  <Link
+                    key={item.shoppingId}
+                    to="/shoppings/$shoppingId"
+                    params={{ shoppingId: item.shoppingId }}
+                    className="group grid grid-cols-[24px_minmax(210px,1fr)_minmax(150px,0.9fr)_72px_10px] items-center gap-3 rounded-lg px-1.5 py-1.5 text-sm transition-colors hover:bg-muted/30"
                   >
-                    <span className="text-center text-[11px] text-muted-foreground">{index + 1}</span>
-                    <span className="truncate text-xs font-medium">
-                      {row.item.name} <span className="text-muted-foreground">({row.item.code})</span>
+                    <span className="text-right text-xs text-muted-foreground">{item.position}</span>
+                    <span className="min-w-0 truncate font-medium">
+                      {item.name}{" "}
+                      <span className="font-normal text-muted-foreground">({item.code})</span>
                     </span>
-                    <span className="h-1.5 overflow-hidden rounded-full bg-muted/35">
+                    <span className="h-1.5 overflow-hidden rounded-full bg-muted/50">
                       <span
-                        className="block h-full rounded-full bg-[var(--accent-cyan)]"
-                        style={{ width: `${normalized}%` }}
+                        className="block h-full rounded-full transition-[width] duration-300"
+                        style={{
+                          width: `${width}%`,
+                          background: `linear-gradient(90deg, ${color}, color-mix(in oklab, ${color} 74%, white))`,
+                          boxShadow: `0 0 10px color-mix(in oklab, ${color} 48%, transparent)`,
+                        }}
                       />
                     </span>
-                    <span className="text-right text-xs font-semibold">
-                      {display(row.value, rankingMetric === "efficiency" ? 2 : 0)} {rankingOptions[rankingMetric].unit}
+                    <span className="metric-value whitespace-nowrap text-right text-xs">
+                      {formatRankingValue(item.value, rankingMetric)}
                     </span>
-                  </button>
+                    <StatusDot status={item.status} />
+                  </Link>
                 );
               })
             )}
@@ -462,79 +460,162 @@ function OverviewPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
-        <section className="panel p-4 xl:col-span-6">
+        <section className="panel p-4 xl:col-span-5">
           <div className="mb-3 flex items-center justify-between">
-            <div>
-              <h2 className="text-sm font-semibold">Visão do Portfólio</h2>
-              <p className="mt-1 text-[10px] text-muted-foreground">{portfolioCards.length} shoppings monitorados</p>
-            </div>
-            <span className="text-[10px] text-muted-foreground">Clique para analisar no topo</span>
+            <h2 className="text-sm font-semibold">
+              Visão do Portfólio
+              <span className="ml-1 text-xs font-normal text-muted-foreground">
+                ({portfolioCards.length} Shoppings)
+              </span>
+            </h2>
+            <Link to="/shoppings" className="text-xs text-[var(--accent-cyan)] hover:underline">
+              Ver todos
+            </Link>
           </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {portfolioCards.map((shopping) => (
-              <ShoppingCard
-                key={shopping.id}
-                shopping={shopping}
-                selected={shopping.code === selectedCode}
-                onSelect={selectShopping}
-              />
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+            {portfolioItems.map((shopping) => (
+              <ShoppingCard key={shopping.id} shopping={shopping} />
+            ))}
+          </div>
+          {portfolioPageCount > 1 && (
+            <div className="mt-3 flex items-center justify-between gap-3 text-[10px] text-muted-foreground">
+              <span>
+                Exibindo {safePortfolioPage * portfolioPageSize + 1}–
+                {Math.min((safePortfolioPage + 1) * portfolioPageSize, portfolioCards.length)} de{" "}
+                {portfolioCards.length}
+              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  aria-label="Página anterior"
+                  disabled={safePortfolioPage === 0}
+                  onClick={() => setPortfolioPage((page) => Math.max(0, page - 1))}
+                  className="grid h-7 w-7 place-items-center rounded-md border border-border/55 bg-muted/15 transition-colors hover:border-primary/40 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-35"
+                >
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                </button>
+                {Array.from({ length: portfolioPageCount }, (_, page) => (
+                  <button
+                    type="button"
+                    key={page}
+                    aria-label={`Ir para a página ${page + 1}`}
+                    aria-current={page === safePortfolioPage ? "page" : undefined}
+                    onClick={() => setPortfolioPage(page)}
+                    className={`grid h-7 min-w-7 place-items-center rounded-md border px-2 text-[10px] font-medium transition-colors ${
+                      page === safePortfolioPage
+                        ? "border-primary/55 bg-primary/12 text-primary"
+                        : "border-border/55 bg-muted/15 hover:border-primary/40 hover:text-foreground"
+                    }`}
+                  >
+                    {page + 1}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  aria-label="Próxima página"
+                  disabled={safePortfolioPage === portfolioPageCount - 1}
+                  onClick={() =>
+                    setPortfolioPage((page) => Math.min(portfolioPageCount - 1, page + 1))
+                  }
+                  className="grid h-7 w-7 place-items-center rounded-md border border-border/55 bg-muted/15 transition-colors hover:border-primary/40 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-35"
+                >
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
+          )}
+        </section>
+
+        <section className="panel p-4 xl:col-span-3">
+          <h2 className="mb-3 text-sm font-semibold">Mapa / Distribuição</h2>
+          <BrazilMap items={portfolioCards} />
+        </section>
+
+        <section className="panel flex h-full min-h-[330px] flex-col p-4 xl:col-span-2">
+          <div className="mb-3 flex items-end justify-between gap-3">
+            <div>
+              <h2 className="text-sm font-semibold">Oportunidades / Insights</h2>
+              <p className="mt-0.5 text-[10px] text-muted-foreground">Prioridades do portfólio</p>
+            </div>
+            <Link
+              to="/analises"
+              className="text-[10px] font-medium text-[var(--accent-cyan)] hover:underline"
+            >
+              Ver análises
+            </Link>
+          </div>
+          <div className="grid flex-1 auto-rows-fr gap-2">
+            {insights.map((insight) => (
+              <InsightCard key={insight.id} insight={insight} />
             ))}
           </div>
         </section>
 
-        <section className="panel p-4 xl:col-span-3">
-          <div className="mb-2">
-            <h2 className="text-sm font-semibold">Mapa / Distribuição</h2>
-            <p className="mt-1 text-[10px] text-muted-foreground">Portfólio monitorado</p>
-          </div>
-          <BrazilMap items={portfolioCards} />
-        </section>
-
-        <section className="panel p-4 xl:col-span-3">
-          <div className="mb-3">
-            <h2 className="text-sm font-semibold">Oportunidades / Insights</h2>
-            <p className="mt-1 text-[10px] text-muted-foreground">Prioridades derivadas dos dados disponíveis</p>
-          </div>
-          <div className="space-y-2.5">
-            {insights.map((insight) => <InsightCard key={insight.id} insight={insight} />)}
-          </div>
-        </section>
+        <div className="xl:col-span-2">
+          <PortfolioHealthCard metrics={portfolioHealth} />
+        </div>
       </div>
     </div>
   );
 }
 
-function display(value: number | null, digits = 1) {
-  return value === null ? "—" : formatNumber(value, { maximumFractionDigits: digits, minimumFractionDigits: 0 });
-}
+function makeLiveRanking(items: LiveShoppingSummary[], metric: RankingMetric): RankingItem[] {
+  const option = rankingOptions[metric];
+  const rows = items
+    .map((item) => {
+      const kpis = item.latest?.kpis ?? {};
+      const total = asNumber(item.latest?.health?.pointsTotal) ?? item.registry.pointsTotal;
+      const ok = asNumber(item.latest?.health?.pointsOk) ?? 0;
+      const quality = total > 0 ? (ok / total) * 100 : null;
+      const allElectric =
+        kpis.modelo_energetico === "all_electric_chillers" ||
+        (item.registry.chillersTotal > 0 && item.registry.chillersAbsorption === 0);
 
-function formatChartTime(value: string, period: HistoryPeriod) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  if (period === "24h") return date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-  if (period === "7d") return date.toLocaleDateString("pt-BR", { weekday: "short", hour: "2-digit" });
-  return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+      let value: number | null = null;
+      if (metric === "power") value = asNumber(kpis.kw_cag);
+      if (metric === "production") value = asNumber(kpis.tr_total);
+      if (metric === "efficiency") {
+        value = allElectric ? asNumber(kpis.kw_tr_eletrico_cag ?? kpis.kw_tr_cag) : null;
+      }
+      if (metric === "quality") value = quality;
+
+      return { item, value };
+    })
+    .filter((row): row is { item: LiveShoppingSummary; value: number } => row.value !== null)
+    .sort((a, b) => (option.lowerIsBetter ? a.value - b.value : b.value - a.value));
+
+  return rows.map(({ item, value }, index) => ({
+    position: index + 1,
+    shoppingId: item.id || item.code.toLowerCase(),
+    code: item.code,
+    name: item.name,
+    value,
+    unit: option.unit,
+    trend: 0,
+    status: mapLiveShoppingToLegacy(item).status,
+  }));
 }
 
 function makePortfolioInsights(items: LiveShoppingSummary[]): Insight[] {
-  const offline = items.filter((item) => {
-    const collected = item.latest?.collectedAt;
-    return !collected || Date.now() - Date.parse(collected) > 15 * 60 * 1000;
-  });
+  const stale = items.filter((item) => isStale(item.latest?.collectedAt));
   const balanceWarnings = items.filter((item) => item.latest?.kpis?.balanco_status === "warning");
-  const highAux = items.filter((item) => (n(item.latest?.kpis?.auxiliares_pct_kw_cag) ?? 0) > 25);
+  const highAux = items.filter(
+    (item) => (asNumber(item.latest?.kpis?.auxiliares_pct_kw_cag) ?? 0) > 25,
+  );
   const mixed = items.filter((item) => item.registry.chillersAbsorption > 0);
 
   const result: Insight[] = [];
-  if (offline.length) {
+
+  if (stale.length) {
     result.push({
-      id: "offline",
+      id: "stale",
       type: "alerta",
       icon: "warning",
-      title: `${offline.length} shopping(s) com dados desatualizados`,
+      title: `${stale.length} shopping(s) com dados desatualizados`,
       subtitle: "Verifique comunicação e última coleta.",
     });
   }
+
   if (balanceWarnings.length) {
     result.push({
       id: "balance",
@@ -544,6 +625,7 @@ function makePortfolioInsights(items: LiveShoppingSummary[]): Insight[] {
       subtitle: "Há diferença relevante entre CAG medida e cargas conhecidas.",
     });
   }
+
   if (highAux.length) {
     result.push({
       id: "aux",
@@ -553,23 +635,99 @@ function makePortfolioInsights(items: LiveShoppingSummary[]): Insight[] {
       subtitle: "Priorize análise de bombas, torres e cargas auxiliares.",
     });
   }
+
   if (mixed.length) {
     result.push({
       id: "mixed",
       type: "destaque",
       icon: "trend",
       title: `${mixed.length} CAG(s) com chillers de absorção`,
-      subtitle: "Comparações de COP global ficam indisponíveis sem energia térmica de entrada.",
+      subtitle: "COP global fica indisponível sem medição da energia térmica de entrada.",
     });
   }
+
   if (!result.length) {
     result.push({
       id: "normal",
       type: "destaque",
       icon: "trend",
-      title: "Portfólio operando sem desvios prioritários",
+      title: "Portfólio sem desvios prioritários",
       subtitle: "Nenhum alerta derivado dos dados disponíveis no momento.",
     });
   }
+
   return result.slice(0, 3);
+}
+
+function makePortfolioHealth(items: LiveShoppingSummary[]) {
+  let pointsOk = 0;
+  let pointsTotal = 0;
+  let online = 0;
+  let stale = 0;
+
+  for (const item of items) {
+    const total = asNumber(item.latest?.health?.pointsTotal) ?? item.registry.pointsTotal ?? 0;
+    const ok = asNumber(item.latest?.health?.pointsOk) ?? 0;
+    pointsTotal += total;
+    pointsOk += ok;
+    if (isStale(item.latest?.collectedAt)) stale += 1;
+    else online += 1;
+  }
+
+  return {
+    qualityPct: pointsTotal > 0 ? (pointsOk / pointsTotal) * 100 : 0,
+    pointsOk,
+    pointsTotal,
+    online,
+    stale,
+    totalShoppings: items.length,
+  };
+}
+
+function isStale(collectedAt?: string) {
+  if (!collectedAt) return true;
+  const timestamp = Date.parse(collectedAt);
+  return !Number.isFinite(timestamp) || Date.now() - timestamp > STALE_AFTER_MS;
+}
+
+function isNumber(value: number | null): value is number {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
+function display(value: number | null, digits = 1) {
+  return value === null
+    ? "—"
+    : formatNumber(value, { maximumFractionDigits: digits, minimumFractionDigits: 0 });
+}
+
+function formatChartTime(value: string, period: HistoryPeriod) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  if (period === "24h") {
+    return date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  }
+  if (period === "7d") {
+    return date.toLocaleDateString("pt-BR", { weekday: "short", hour: "2-digit" });
+  }
+  return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+}
+
+function formatTooltipTime(value: string) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleString("pt-BR");
+}
+
+function getRankingWidth(value: number, min: number, max: number, lowerIsBetter: boolean) {
+  if (max === min) return 100;
+  const normalized = (value - min) / (max - min);
+  const score = lowerIsBetter ? 1 - normalized : normalized;
+  return 36 + score * 64;
+}
+
+function formatRankingValue(value: number, metric: RankingMetric) {
+  if (metric === "quality") return `${formatNumber(value, { maximumFractionDigits: 0 })}%`;
+  if (metric === "efficiency") {
+    return `${formatNumber(value, { maximumFractionDigits: 2 })} kW/TR`;
+  }
+  return `${formatNumber(value, { maximumFractionDigits: 0 })} ${rankingOptions[metric].unit}`;
 }

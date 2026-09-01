@@ -42,8 +42,6 @@ export interface LiveKpis {
   cop_cag?: number | null;
   cop_cag_disponivel?: boolean | null;
   cop_cag_indisponivel_motivo?: string | null;
-  kw_tr_chillers?: number | null;
-  kw_aux_por_tr?: number | null;
   auxiliares_pct_kw_cag?: number | null;
   chillers_pct_kw_cag?: number | null;
   chillers_eletricos_pct_kw_cag?: number | null;

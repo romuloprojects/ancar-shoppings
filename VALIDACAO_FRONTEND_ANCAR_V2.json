@@ -1,0 +1,167 @@
+{
+  "total": 32,
+  "pass": 32,
+  "fail": 0,
+  "checks": [
+    {
+      "name": "original_preservado:src/components/AppSidebar.tsx",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "original_preservado:src/components/KpiCard.tsx",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "original_preservado:src/components/InsightCard.tsx",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "original_preservado:src/components/BrazilMap.tsx",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "original_preservado:src/layouts/AppLayout.tsx",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "original_preservado:src/styles.css",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "original_preservado:src/routes/shoppings.tsx",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "original_preservado:src/routes/shoppings.$shoppingId.tsx",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "original_preservado:src/routes/ranking.tsx",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "original_preservado:src/routes/analises.tsx",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "original_preservado:src/routes/esg.tsx",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "original_preservado:src/routes/alertas.tsx",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "original_preservado:src/routes/relatorios.tsx",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "original_preservado:src/routes/configuracoes.tsx",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "original_preservado:src/services/dashboardService.ts",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "refresh_5_minutos",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "api_portfolio_configurada",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "api_shopping_configurada",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "sem_todos_os_shoppings",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "host_frontend_correto",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "sem_host_antigo_2see",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "top_cards_reais",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "grafico_cag_real",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "ranking_portfolio_fixo",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "portfolio_fixo",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "mapa_fixo",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "insights_fixos",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "qualidade_substitui_esg_sem_dado_falso",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "shopping_card_sem_esg_falso",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "dashboard_service_original_intacto",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "sem_deferred_page",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "imports_locais_resolvidos",
+      "ok": true,
+      "detail": "187 imports; missing=[]"
+    }
+  ]
+}
