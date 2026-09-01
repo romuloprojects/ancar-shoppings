@@ -78,16 +78,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Monitoramento Energético e ESG" },
+      { title: "ANCAR | Monitoramento CAG" },
       {
         name: "description",
         content:
-          "Plataforma executiva de monitoramento energético e ESG do portfólio de shoppings.",
+          "Plataforma ANCAR de monitoramento operacional e energético das centrais de água gelada.",
       },
-      { property: "og:title", content: "Monitoramento Energético e ESG" },
+      { property: "og:title", content: "ANCAR | Monitoramento CAG" },
       {
         property: "og:description",
-        content: "Plataforma executiva de monitoramento energético e ESG do portfólio.",
+        content: "Plataforma ANCAR de monitoramento operacional e energético das centrais de água gelada.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -100,7 +100,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.png", type: "image/png" },
+      { rel: "shortcut icon", href: "/favicon.ico" },
     ],
   }),
   shellComponent: RootShell,

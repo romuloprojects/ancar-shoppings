@@ -32,6 +32,29 @@ assert(allSrc.includes('analysis-workspace-body'),'Análises: composição princ
 assert(allSrc.includes('alerts-workspace-body'),'Alertas: composição fila + filtros ausente');
 assert(allSrc.includes('energy-workspace-body'),'Energia: composição gráfico + resumo ausente');
 assert(allSrc.includes('reports-workspace-body'),'Relatórios: composição biblioteca + prévia ausente');
+
+const topBar=fs.readFileSync(path.join(src,'components','TopBar.tsx'),'utf8');
+assert(topBar.includes('a.code.localeCompare(b.code, "pt-BR")'),'TopBar: seletor de shoppings deve ordenar por sigla');
+const locations=fs.readFileSync(path.join(src,'data','shoppingLocations.ts'),'utf8');
+for(const code of ['BAN','BLD','BPS','CVS','GOL','ITA','MAD','NAT','NSF','NSJ','NSM','PAN','PVS','RDB','SNA','SNI','VSS']) assert(locations.includes(`${code}:`),`Localização mestre ausente: ${code}`);
+const map=fs.readFileSync(path.join(src,'components','BrazilMap.tsx'),'utf8');
+assert(map.includes('const point = project(shopping.latitude, shopping.longitude)'),'Mapa: marcadores devem usar latitude/longitude reais');
+assert(!map.includes('STATE_ANCHORS'),'Mapa: âncoras artificiais por estado não devem ser usadas');
+const health=fs.readFileSync(path.join(src,'components','PortfolioHealthCard.tsx'),'utf8');
+assert(health.includes('portfolio-health-gauge'),'Qualidade dos Dados: gauge compacto ausente');
+assert(health.includes('portfolio-health-label'),'Qualidade dos Dados: status deve ficar fora do centro do gauge');
+const viteConfig=fs.readFileSync(path.join(root,'vite.config.ts'),'utf8');
+assert(viteConfig.includes('@tanstack/react-start/plugin/vite'),'Vite: configuração TanStack Start padrão ausente');
+const formerBuilder=['lova','ble'].join('');
+assert(!viteConfig.toLowerCase().includes(formerBuilder),'Vite: referência ao construtor anterior encontrada');
+const packageJson=fs.readFileSync(path.join(root,'package.json'),'utf8');
+assert(!packageJson.toLowerCase().includes(formerBuilder),'package.json: referência ao construtor anterior encontrada');
+assert(fs.existsSync(path.join(root,'public','favicon.png')),'Favicon ANCAR PNG ausente');
+const forbiddenText=[];
+function scanForbidden(d){for(const n of fs.readdirSync(d)){const p=path.join(d,n);const st=fs.statSync(p);if(st.isDirectory()){if(n==='validation' || n==='node_modules')continue;scanForbidden(p)}else if(/\.(?:ts|tsx|js|mjs|json|md|toml|html|css)$/.test(n)){const t=fs.readFileSync(p,'utf8');if(t.toLowerCase().includes(formerBuilder))forbiddenText.push(path.relative(root,p));}}}
+scanForbidden(root);
+assert(forbiddenText.length===0,`Referências ao construtor anterior encontradas: ${forbiddenText.join(', ')}`);
+
 const fmt=fs.readFileSync(path.join(src,'utils','format.ts'),'utf8');
 assert(/minimumFractionDigits\s*:\s*2/.test(fmt)&&/maximumFractionDigits\s*:\s*2/.test(fmt),'formatKwTr deve exibir exatamente 2 casas');
 for(const route of ['index.tsx','shoppings.tsx','shoppings.$shoppingId.tsx','ranking.tsx','analises.tsx','alertas.tsx','esg.tsx','relatorios.tsx','configuracoes.tsx']) assert(fs.existsSync(path.join(src,'routes',route)),`Rota ausente: ${route}`);

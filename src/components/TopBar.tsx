@@ -79,9 +79,10 @@ export function TopBar() {
       .getShoppings()
       .then((items) => {
         if (!alive) return;
-        setShoppings(items);
-        if (items.length && !items.some((shopping) => shopping.code === selectedShoppingCode)) {
-          setSelectedShoppingCode(items[0].code);
+        const sortedItems = [...items].sort((a, b) => a.code.localeCompare(b.code, "pt-BR"));
+        setShoppings(sortedItems);
+        if (sortedItems.length && !sortedItems.some((shopping) => shopping.code === selectedShoppingCode)) {
+          setSelectedShoppingCode(sortedItems[0].code);
         }
       })
       .catch(() => {

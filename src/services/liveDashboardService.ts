@@ -1,3 +1,4 @@
+import { SHOPPING_LOCATIONS } from "@/data/shoppingLocations";
 import { API_BASE_URL } from "@/config";
 import type { Alert, Shopping } from "@/types";
 import type {
@@ -63,6 +64,7 @@ export function getLiveStatus(item: LiveShoppingSummary): Shopping["status"] {
 
 export function mapLiveShoppingToLegacy(item: LiveShoppingSummary): Shopping {
   const location = item.metadata?.location ?? {};
+  const masterLocation = SHOPPING_LOCATIONS[item.code];
   const kpis = item.latest?.kpis ?? {};
   const coveragePct = getDataQualityPct(item);
   const quality = coveragePct >= 99 ? "alta" : coveragePct >= 80 ? "media" : "baixa";
@@ -74,11 +76,11 @@ export function mapLiveShoppingToLegacy(item: LiveShoppingSummary): Shopping {
     id: item.id || item.code.toLowerCase(),
     code: item.code,
     name: item.name,
-    state: String(location.state ?? "Não informado"),
-    stateCode: String(location.stateCode ?? "--"),
-    city: String(location.city ?? "Não informado"),
-    latitude: asNumber(location.latitude) ?? 0,
-    longitude: asNumber(location.longitude) ?? 0,
+    state: String(masterLocation?.state ?? location.state ?? "Não informado"),
+    stateCode: String(masterLocation?.stateCode ?? location.stateCode ?? "--"),
+    city: String(masterLocation?.city ?? location.city ?? "Não informado"),
+    latitude: masterLocation?.latitude ?? asNumber(location.latitude) ?? 0,
+    longitude: masterLocation?.longitude ?? asNumber(location.longitude) ?? 0,
     status: getLiveStatus(item),
     lastUpdate: item.latest?.collectedAt ?? new Date(0).toISOString(),
     dataQuality: quality,

@@ -17,42 +17,7 @@ const STATE_COLOR: Record<string, string> = {
   RO: "var(--accent-cyan)",
 };
 
-const LEGEND_ORDER = ["RJ", "SP", "CE", "RN", "MT", "RO"];
-
-// Âncoras visuais centralizadas dentro de cada estado/região do mapa.
-// Elas preservam a leitura geográfica, mas evitam que pontos próximos à costa
-// fiquem sobrepostos ou extrapolem o contorno do Brasil.
-const STATE_ANCHORS: Record<string, { x: number; y: number }> = {
-  SP: { x: 286, y: 252 },
-  RJ: { x: 320, y: 247 },
-  CE: { x: 365, y: 107 },
-  RN: { x: 392, y: 119 },
-  MT: { x: 192, y: 191 },
-  RO: { x: 113, y: 139 },
-};
-
-const STATE_CLUSTER_OFFSETS: Record<string, { x: number; y: number }[]> = {
-  RJ: [
-    { x: -9, y: -8 },
-    { x: 0, y: -10 },
-    { x: 9, y: -7 },
-    { x: -9, y: 7 },
-    { x: 0, y: 9 },
-    { x: 9, y: 6 },
-  ],
-  SP: [
-    { x: -8, y: -7 },
-    { x: 7, y: -6 },
-    { x: -7, y: 7 },
-    { x: 8, y: 7 },
-  ],
-  CE: [
-    { x: -7, y: -7 },
-    { x: 7, y: -6 },
-    { x: -6, y: 7 },
-    { x: 7, y: 7 },
-  ],
-};
+const PREFERRED_LEGEND_ORDER = ["RJ", "SP", "CE", "RN", "MT", "RO"];
 
 function project(lat: number, lng: number) {
   const x =
@@ -69,33 +34,79 @@ function clampMarker(value: number, min: number, max: number) {
 }
 
 type Marker = Shopping & { markerX: number; markerY: number; color: string };
+type ProjectedMarker = Shopping & { x: number; y: number; color: string };
 
+function hasValidCoordinates(shopping: Shopping) {
+  return (
+    Number.isFinite(shopping.latitude) &&
+    Number.isFinite(shopping.longitude) &&
+    shopping.latitude >= BRAZIL_MAP_BOUNDS.minLat &&
+    shopping.latitude <= BRAZIL_MAP_BOUNDS.maxLat &&
+    shopping.longitude >= BRAZIL_MAP_BOUNDS.minLng &&
+    shopping.longitude <= BRAZIL_MAP_BOUNDS.maxLng
+  );
+}
+
+function distance(a: ProjectedMarker, b: ProjectedMarker) {
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+// Mantém cada shopping na posição geográfica real. Quando duas unidades da mesma
+// região ficariam praticamente sobrepostas no mapa nacional, aplica apenas um
+// deslocamento visual mínimo em torno do ponto geográfico original.
 function makeMarkers(items: Shopping[]): Marker[] {
-  const byState = new Map<string, Shopping[]>();
-  items.forEach((shopping) => {
-    const current = byState.get(shopping.stateCode) ?? [];
-    current.push(shopping);
-    byState.set(shopping.stateCode, current);
-  });
-
-  return Array.from(byState.entries()).flatMap(([stateCode, stateItems]) => {
-    const sorted = [...stateItems].sort((a, b) => a.code.localeCompare(b.code));
-    const anchor = STATE_ANCHORS[stateCode];
-    const offsets = STATE_CLUSTER_OFFSETS[stateCode] ?? [{ x: 0, y: 0 }];
-
-    return sorted.map((shopping, index) => {
-      const geographicPosition = project(shopping.latitude, shopping.longitude);
-      const base = anchor ?? geographicPosition;
-      const offset = sorted.length > 1 ? offsets[index % offsets.length] : { x: 0, y: 0 };
-
+  const projected: ProjectedMarker[] = items
+    .filter(hasValidCoordinates)
+    .map((shopping) => {
+      const point = project(shopping.latitude, shopping.longitude);
       return {
         ...shopping,
-        markerX: clampMarker(base.x + offset.x, 14, BRAZIL_MAP_WIDTH - 14),
-        markerY: clampMarker(base.y + offset.y, 14, BRAZIL_MAP_HEIGHT - 14),
-        color: STATE_COLOR[stateCode] ?? "var(--accent-cyan)",
+        x: point.x,
+        y: point.y,
+        color: STATE_COLOR[shopping.stateCode] ?? "var(--accent-cyan)",
       };
+    })
+    .sort((a, b) => a.code.localeCompare(b.code, "pt-BR"));
+
+  const visited = new Set<string>();
+  const markers: Marker[] = [];
+
+  for (const base of projected) {
+    if (visited.has(base.id)) continue;
+
+    const cluster = projected.filter(
+      (candidate) =>
+        !visited.has(candidate.id) &&
+        candidate.stateCode === base.stateCode &&
+        distance(base, candidate) < 9,
+    );
+
+    cluster.forEach((item) => visited.add(item.id));
+
+    if (cluster.length === 1) {
+      markers.push({
+        ...base,
+        markerX: clampMarker(base.x, 10, BRAZIL_MAP_WIDTH - 10),
+        markerY: clampMarker(base.y, 10, BRAZIL_MAP_HEIGHT - 10),
+      });
+      continue;
+    }
+
+    const centerX = cluster.reduce((sum, item) => sum + item.x, 0) / cluster.length;
+    const centerY = cluster.reduce((sum, item) => sum + item.y, 0) / cluster.length;
+    const radius = cluster.length <= 2 ? 3.8 : 5.2;
+
+    cluster.forEach((item, index) => {
+      const angle = -Math.PI / 2 + (index * Math.PI * 2) / cluster.length;
+      markers.push({
+        ...item,
+        markerX: clampMarker(centerX + Math.cos(angle) * radius, 10, BRAZIL_MAP_WIDTH - 10),
+        markerY: clampMarker(centerY + Math.sin(angle) * radius, 10, BRAZIL_MAP_HEIGHT - 10),
+      });
     });
-  });
+  }
+
+  return markers;
 }
 
 export function BrazilMap({ items = [] }: { items?: Shopping[] }) {
@@ -104,11 +115,22 @@ export function BrazilMap({ items = [] }: { items?: Shopping[] }) {
   const grouped = useMemo(() => {
     const value: Record<string, Shopping[]> = {};
     items.forEach((shopping) => {
+      if (!shopping.stateCode || shopping.stateCode === "--") return;
       value[shopping.stateCode] = value[shopping.stateCode] ?? [];
       value[shopping.stateCode].push(shopping);
     });
     return value;
   }, [items]);
+
+  const legendOrder = useMemo(() => {
+    const states = Object.keys(grouped);
+    return [
+      ...PREFERRED_LEGEND_ORDER.filter((state) => states.includes(state)),
+      ...states
+        .filter((state) => !PREFERRED_LEGEND_ORDER.includes(state))
+        .sort((a, b) => a.localeCompare(b, "pt-BR")),
+    ];
+  }, [grouped]);
 
   const markers = useMemo(() => makeMarkers(items), [items]);
   const hovered = markers.find((marker) => marker.id === hoveredId);
@@ -232,7 +254,7 @@ export function BrazilMap({ items = [] }: { items?: Shopping[] }) {
       </svg>
 
       <div className="mt-2 grid grid-cols-3 gap-x-3 gap-y-1.5 text-[10px] text-muted-foreground">
-        {LEGEND_ORDER.filter((uf) => grouped[uf]?.length).map((uf) => (
+        {legendOrder.map((uf) => (
           <div key={uf} className="flex items-center gap-1.5">
             <span
               className="inline-block h-2 w-2 rounded-full shadow-[0_0_8px_currentColor]"
@@ -242,7 +264,7 @@ export function BrazilMap({ items = [] }: { items?: Shopping[] }) {
               }}
             />
             <span>
-              {uf} ({grouped[uf].length})
+              {uf} ({grouped[uf]?.length ?? 0})
             </span>
           </div>
         ))}

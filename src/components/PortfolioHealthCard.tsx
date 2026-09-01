@@ -15,67 +15,72 @@ const circumference = 2 * Math.PI * 42;
 export function PortfolioHealthCard({ metrics }: { metrics: PortfolioHealthMetrics }) {
   const quality = Math.max(0, Math.min(100, metrics.qualityPct));
   const dash = (quality / 100) * circumference;
+  const qualityLabel = quality >= 99 ? "Dados íntegros" : quality >= 80 ? "Acompanhar" : "Atenção";
 
   return (
     <section className="panel portfolio-health-card flex h-full min-h-0 flex-col overflow-hidden p-3">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h2 className="text-sm font-semibold">Qualidade dos Dados</h2>
-          <p className="mt-0.5 text-[10px] text-muted-foreground">Saúde consolidada do portfólio</p>
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <h2 className="truncate text-sm font-semibold">Qualidade dos Dados</h2>
+          <p className="mt-0.5 truncate text-[10px] text-muted-foreground">Saúde consolidada do portfólio</p>
         </div>
-        <div className="grid h-8 w-8 place-items-center rounded-lg border border-[color-mix(in_oklab,var(--accent-green)_28%,transparent)] bg-[color-mix(in_oklab,var(--accent-green)_10%,transparent)] text-[var(--accent-green)]">
+        <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-[color-mix(in_oklab,var(--accent-green)_28%,transparent)] bg-[color-mix(in_oklab,var(--accent-green)_10%,transparent)] text-[var(--accent-green)]">
           <Database className="h-4 w-4" strokeWidth={1.9} />
         </div>
       </div>
 
-      <div className="relative mx-auto grid h-[108px] w-[108px] place-items-center">
-        <div className="absolute inset-[21px] rounded-full bg-[radial-gradient(circle,color-mix(in_oklab,var(--accent-cyan)_8%,transparent),transparent_66%)] blur-xl" />
-        <svg
-          viewBox="0 0 100 100"
-          className="absolute inset-0 -rotate-90 overflow-visible"
-          role="img"
-          aria-label={`Qualidade dos dados ${quality.toFixed(0)} por cento`}
-        >
-          <defs>
-            <filter id="qualityGlow" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="1.7" result="blur" />
-              <feMerge>
-                <feMergeNode in="blur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          </defs>
-          <circle
-            cx="50"
-            cy="50"
-            r="42"
-            fill="none"
-            stroke="oklch(0.28 0.03 260 / 72%)"
-            strokeWidth="8"
-          />
-          <circle
-            cx="50"
-            cy="50"
-            r="42"
-            fill="none"
-            stroke="var(--accent-green)"
-            strokeWidth="8"
-            strokeLinecap="round"
-            strokeDasharray={`${dash} ${circumference - dash}`}
-            filter="url(#qualityGlow)"
-          />
-        </svg>
+      <div className="portfolio-health-gauge-wrap mt-1 flex shrink-0 flex-col items-center">
+        <div className="portfolio-health-gauge relative grid h-[82px] w-[82px] place-items-center">
+          <div className="absolute inset-[18px] rounded-full bg-[radial-gradient(circle,color-mix(in_oklab,var(--accent-cyan)_8%,transparent),transparent_66%)] blur-xl" />
+          <svg
+            viewBox="0 0 100 100"
+            className="absolute inset-0 -rotate-90 overflow-visible"
+            role="img"
+            aria-label={`Qualidade dos dados ${quality.toFixed(0)} por cento`}
+          >
+            <defs>
+              <filter id="qualityGlow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="1.7" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+            <circle
+              cx="50"
+              cy="50"
+              r="42"
+              fill="none"
+              stroke="oklch(0.28 0.03 260 / 72%)"
+              strokeWidth="8"
+            />
+            <circle
+              cx="50"
+              cy="50"
+              r="42"
+              fill="none"
+              stroke="var(--accent-green)"
+              strokeWidth="8"
+              strokeLinecap="round"
+              strokeDasharray={`${dash} ${circumference - dash}`}
+              filter="url(#qualityGlow)"
+            />
+          </svg>
 
-        <div className="relative text-center">
-          <div className="metric-value text-[28px] leading-none">{formatNumber(quality, { maximumFractionDigits: 0 })}</div>
-          <div className="mt-1 text-[9px] uppercase tracking-[0.12em] text-muted-foreground">%</div>
-          <div className="mt-1.5 text-[10px] font-semibold text-[var(--accent-green)]">
-            {quality >= 99 ? "Dados íntegros" : quality >= 80 ? "Acompanhar" : "Atenção"}
+          <div className="relative text-center">
+            <div className="metric-value text-[23px] leading-none">
+              {formatNumber(quality, { maximumFractionDigits: 0 })}
+            </div>
+            <div className="mt-0.5 text-[8px] uppercase tracking-[0.1em] text-muted-foreground">%</div>
           </div>
+        </div>
+        <div className="portfolio-health-label -mt-0.5 text-center text-[9px] font-semibold leading-none text-[var(--accent-green)]">
+          {qualityLabel}
         </div>
       </div>
 
-      <div className="mt-1 space-y-1.5 text-[10px]">
+      <div className="portfolio-health-rows mt-2 space-y-1.5 text-[10px]">
         <HealthRow
           icon={CheckCircle2}
           label="Pontos OK"
@@ -96,7 +101,7 @@ export function PortfolioHealthCard({ metrics }: { metrics: PortfolioHealthMetri
         />
       </div>
 
-      <div className="mt-auto rounded-lg border border-border/55 bg-muted/15 px-2.5 py-1.5 text-center text-[9px] text-muted-foreground">
+      <div className="portfolio-health-footer mt-auto rounded-lg border border-border/55 bg-muted/15 px-2.5 py-1.5 text-center text-[9px] leading-tight text-muted-foreground">
         Atualização automática a cada 5 minutos
       </div>
     </section>
@@ -115,10 +120,10 @@ function HealthRow({
   color: string;
 }) {
   return (
-    <div className="grid grid-cols-[18px_1fr_auto] items-center gap-2 rounded-lg border border-border/35 bg-muted/10 px-2.5 py-1.5">
+    <div className="grid min-h-7 grid-cols-[16px_minmax(0,1fr)_auto] items-center gap-1.5 rounded-lg border border-border/35 bg-muted/10 px-2 py-1.5">
       <Icon className="h-3.5 w-3.5" style={{ color }} strokeWidth={1.9} />
-      <span className="text-muted-foreground">{label}</span>
-      <span className="metric-value text-foreground">{value}</span>
+      <span className="truncate text-muted-foreground">{label}</span>
+      <span className="metric-value whitespace-nowrap text-foreground">{value}</span>
     </div>
   );
 }
