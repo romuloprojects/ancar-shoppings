@@ -9,7 +9,7 @@ const errors=[];
 for(const file of files){const text=fs.readFileSync(file,'utf8');const out=ts.transpileModule(text,{compilerOptions:{jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext},reportDiagnostics:true,fileName:file});for(const d of out.diagnostics||[]){if(d.category===ts.DiagnosticCategory.Error)errors.push(`${path.relative(root,file)}: ${ts.flattenDiagnosticMessageText(d.messageText,' ')}`)}}
 function assert(cond,msg){if(!cond)errors.push(msg)}
 const styles=fs.readFileSync(path.join(src,'styles.css'),'utf8');
-assert(styles.includes('grid-template-rows: 116px minmax(0, 1.15fr) minmax(0, 0.95fr)'),'Visão Geral: proporção V3.4 ausente');
+assert(styles.includes('grid-template-rows: 116px minmax(320px, 1fr) 330px'),'Visão Geral: proporção V3.9 ausente');
 assert(styles.includes('grid-template-columns: repeat(5, minmax(0, 1fr)) !important'),'Visão Geral: grid de 5 KPIs homologado ausente');
 assert(styles.includes('grid-template-columns: minmax(0, 5fr) minmax(0, 3fr) minmax(0, 2fr) minmax(0, 2fr) !important'),'Visão Geral: faixa inferior 5/3/2/2 ausente');
 assert(styles.includes('.ranking-workspace-body'),'Ranking: workspace lateral ausente');
@@ -22,7 +22,7 @@ const allSrc=files.map(f=>fs.readFileSync(f,'utf8')).join('\n');
 assert(allSrc.includes('const portfolioPageSize = 6'),'Visão Geral: paginação deve voltar a 6 cards por página');
 assert(allSrc.includes('h-[116px]'),'KpiCard: altura original de 116px ausente');
 assert(allSrc.includes('min-h-[146px]'),'ShoppingCard: altura original de 146px ausente');
-assert(allSrc.includes('max-h-[286px]'),'BrazilMap: escala original de 286px ausente');
+assert(allSrc.includes('portfolio-map-root') && allSrc.includes('portfolio-map-legend'),'BrazilMap: estrutura flexível V3.9 ausente');
 assert(allSrc.includes('overview-chart h-[272px]'),'Visão Geral: altura-base original do gráfico ausente');
 assert(!/\bMWh\b/.test(allSrc),'Unidade MWh encontrada no frontend');
 assert(!/\bMW\b/.test(allSrc),'Unidade MW encontrada no frontend');
@@ -79,9 +79,10 @@ for(const route of ['index.tsx','shoppings.$shoppingId.tsx','analises.tsx','esg.
   assert(text.includes('formatHistoryTick'),`V3.6 ${route}: formatação por período ausente`);
   assert(!text.includes('type="monotone"'),`V3.6 ${route}: interpolação monotone não deve ser usada em telemetria`);
 }
-assert(styles.includes('grid-template-rows: 108px minmax(0, 1.38fr) minmax(0, .94fr)'),'V3.6: faixa inferior da Visão Geral não foi ampliada');
-assert(styles.includes('max-height: min(27svh, 235px) !important'),'V3.6: mapa não recebeu altura adicional');
-assert(health.includes('text-[19px]'),'V3.6: valor central do gauge deve ser menor');
+assert(styles.includes('grid-template-rows: 108px minmax(285px, 1fr) 320px'),'V3.9: faixa inferior 820–860 px deve ter 320 px');
+assert(styles.includes('grid-template-rows: 96px minmax(235px, 1fr) 260px'),'V3.9: faixa inferior 720–819 px deve ter 260 px');
+assert(styles.includes('flex: 1 1 0') && styles.includes('max-height: none !important') && styles.includes('.portfolio-map-legend'),'V3.9: mapa deve usar flex sizing sem corte por max-height');
+assert(health.includes('text-[11px]'),'V3.9: valor central do gauge deve usar 11 px');
 
 // Imports locais @/ devem apontar para arquivos reais.
 for(const file of files){

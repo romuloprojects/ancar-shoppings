@@ -147,10 +147,10 @@ export function BrazilMap({ items = [] }: { items?: Shopping[] }) {
     : 0;
 
   return (
-    <div className="relative w-full">
+    <div className="portfolio-map-root relative flex min-h-0 w-full flex-1 flex-col">
       <svg
         viewBox={`0 0 ${BRAZIL_MAP_WIDTH} ${BRAZIL_MAP_HEIGHT}`}
-        className="portfolio-map-svg max-h-[286px] w-full overflow-visible"
+        className="portfolio-map-svg min-h-0 w-full flex-1 overflow-visible"
         role="img"
         aria-label="Distribuição dos shoppings no Brasil"
         onMouseLeave={() => setHoveredId(null)}
@@ -253,7 +253,7 @@ export function BrazilMap({ items = [] }: { items?: Shopping[] }) {
         )}
       </svg>
 
-      <div className="mt-2 grid grid-cols-3 gap-x-3 gap-y-1.5 text-[10px] text-muted-foreground">
+      <div className="portfolio-map-legend mt-2 grid grid-cols-3 gap-x-3 gap-y-1.5 text-[10px] text-muted-foreground">
         {legendOrder.map((uf) => (
           <div key={uf} className="flex items-center gap-1.5">
             <span

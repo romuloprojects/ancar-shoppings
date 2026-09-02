@@ -12,9 +12,10 @@
     "format": "prettier --write .",
     "validate:source": "node scripts/validate-source.mjs",
     "validate:visual": "python scripts/validate-visual.py",
-    "validate": "npm run validate:source && npm run validate:history && npm run validate:visual",
+    "validate": "npm run validate:source && node scripts/validate-history.mjs && npm run validate:overview-layout && npm run validate:visual",
     "start": "node .output/server/index.mjs",
-    "validate:history": "node scripts/validate-history.mjs"
+    "validate:history": "node scripts/validate-history.mjs",
+    "validate:overview-layout": "python scripts/validate-overview-layout.py"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -88,5 +89,5 @@
     "typescript-eslint": "^8.56.1",
     "vite": "^8.0.16"
   },
-  "version": "3.6.0"
+  "version": "3.9.0"
 }

@@ -30,8 +30,8 @@ export function PortfolioHealthCard({ metrics }: { metrics: PortfolioHealthMetri
       </div>
 
       <div className="portfolio-health-gauge-wrap mt-1 flex shrink-0 flex-col items-center">
-        <div className="portfolio-health-gauge relative grid h-[64px] w-[64px] place-items-center">
-          <div className="absolute inset-[16px] rounded-full bg-[radial-gradient(circle,color-mix(in_oklab,var(--accent-cyan)_8%,transparent),transparent_66%)] blur-xl" />
+        <div className="portfolio-health-gauge relative grid h-[56px] w-[56px] place-items-center">
+          <div className="absolute inset-[14px] rounded-full bg-[radial-gradient(circle,color-mix(in_oklab,var(--accent-cyan)_8%,transparent),transparent_66%)] blur-xl" />
           <svg
             viewBox="0 0 100 100"
             className="absolute inset-0 -rotate-90 overflow-visible"
@@ -69,7 +69,7 @@ export function PortfolioHealthCard({ metrics }: { metrics: PortfolioHealthMetri
           </svg>
 
           <div className="relative text-center">
-            <div className="metric-value text-[14px] leading-none">
+            <div className="metric-value text-[11px] leading-none">
               {formatNumber(quality, { maximumFractionDigits: 0 })}
             </div>
             <div className="mt-0.5 text-[8px] uppercase tracking-[0.1em] text-muted-foreground">%</div>
