@@ -50,6 +50,8 @@ export interface RankingItem {
   status: ShoppingStatus;
   trend?: number;
   comparable?: boolean;
+  targetDeviationPct?: number | null;
+  targetKwTr?: number | null;
   reason?: string;
 }
 
@@ -90,6 +92,8 @@ export type {
   LiveRegistrySummary,
   LiveShoppingMetadata,
   LiveShoppingSummary,
+  ComparisonWindowSummary,
+  PeriodComparison,
   PeriodSummary,
   PortfolioApiResponse,
   SettingsApiResponse,

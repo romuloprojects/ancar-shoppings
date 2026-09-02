@@ -1,0 +1,805 @@
+{
+  "result": "PASS",
+  "results": [
+    {
+      "viewport": [
+        1024,
+        650
+      ],
+      "count": 6,
+      "row": {
+        "w": 908,
+        "h": 92,
+        "x": 92,
+        "y": 20
+      },
+      "cards": [
+        {
+          "rect": {
+            "w": 142.671875,
+            "h": 92,
+            "x": 92,
+            "y": 20
+          },
+          "sw": 141,
+          "cw": 141,
+          "sh": 90,
+          "ch": 90,
+          "label": "Potência CAG",
+          "comparison": "↗-4,2%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 142.671875,
+            "h": 92,
+            "x": 245.0625,
+            "y": 20
+          },
+          "sw": 141,
+          "cw": 141,
+          "sh": 90,
+          "ch": 90,
+          "label": "Produção Térmica",
+          "comparison": "↗+3,1%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 142.671875,
+            "h": 92,
+            "x": 398.125,
+            "y": 20
+          },
+          "sw": 141,
+          "cw": 141,
+          "sh": 90,
+          "ch": 90,
+          "label": "Eficiência da CAG",
+          "comparison": "↗-2,8%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 142.671875,
+            "h": 92,
+            "x": 551.1875,
+            "y": 20
+          },
+          "sw": 141,
+          "cw": 141,
+          "sh": 90,
+          "ch": 90,
+          "label": "Chillers Ativos",
+          "comparison": "↗-12,5%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 142.671875,
+            "h": 92,
+            "x": 704.25,
+            "y": 20
+          },
+          "sw": 141,
+          "cw": 141,
+          "sh": 90,
+          "ch": 90,
+          "label": "Periféricos",
+          "comparison": "↗+6,3%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 142.6875,
+            "h": 92,
+            "x": 857.3125,
+            "y": 20
+          },
+          "sw": 141,
+          "cw": 141,
+          "sh": 90,
+          "ch": 90,
+          "label": "Temperatura Externa",
+          "comparison": "↗+1,2°Cvs ontem"
+        }
+      ],
+      "ok": true
+    },
+    {
+      "viewport": [
+        1152,
+        700
+      ],
+      "count": 6,
+      "row": {
+        "w": 1036,
+        "h": 92,
+        "x": 92,
+        "y": 20
+      },
+      "cards": [
+        {
+          "rect": {
+            "w": 164,
+            "h": 92,
+            "x": 92,
+            "y": 20
+          },
+          "sw": 162,
+          "cw": 162,
+          "sh": 90,
+          "ch": 90,
+          "label": "Potência CAG",
+          "comparison": "↗-4,2%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 164.015625,
+            "h": 92,
+            "x": 266.390625,
+            "y": 20
+          },
+          "sw": 162,
+          "cw": 162,
+          "sh": 90,
+          "ch": 90,
+          "label": "Produção Térmica",
+          "comparison": "↗+3,1%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 164,
+            "h": 92,
+            "x": 440.796875,
+            "y": 20
+          },
+          "sw": 162,
+          "cw": 162,
+          "sh": 90,
+          "ch": 90,
+          "label": "Eficiência da CAG",
+          "comparison": "↗-2,8%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 164.015625,
+            "h": 92,
+            "x": 615.1875,
+            "y": 20
+          },
+          "sw": 162,
+          "cw": 162,
+          "sh": 90,
+          "ch": 90,
+          "label": "Chillers Ativos",
+          "comparison": "↗-12,5%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 164,
+            "h": 92,
+            "x": 789.59375,
+            "y": 20
+          },
+          "sw": 162,
+          "cw": 162,
+          "sh": 90,
+          "ch": 90,
+          "label": "Periféricos",
+          "comparison": "↗+6,3%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 164.015625,
+            "h": 92,
+            "x": 963.984375,
+            "y": 20
+          },
+          "sw": 162,
+          "cw": 162,
+          "sh": 90,
+          "ch": 90,
+          "label": "Temperatura Externa",
+          "comparison": "↗+1,2°Cvs ontem"
+        }
+      ],
+      "ok": true
+    },
+    {
+      "viewport": [
+        1280,
+        720
+      ],
+      "count": 6,
+      "row": {
+        "w": 1164,
+        "h": 92,
+        "x": 92,
+        "y": 20
+      },
+      "cards": [
+        {
+          "rect": {
+            "w": 185.328125,
+            "h": 92,
+            "x": 92,
+            "y": 20
+          },
+          "sw": 183,
+          "cw": 183,
+          "sh": 90,
+          "ch": 90,
+          "label": "Potência CAG",
+          "comparison": "↗-4,2%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 185.34375,
+            "h": 92,
+            "x": 287.71875,
+            "y": 20
+          },
+          "sw": 183,
+          "cw": 183,
+          "sh": 90,
+          "ch": 90,
+          "label": "Produção Térmica",
+          "comparison": "↗+3,1%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 185.34375,
+            "h": 92,
+            "x": 483.453125,
+            "y": 20
+          },
+          "sw": 183,
+          "cw": 183,
+          "sh": 90,
+          "ch": 90,
+          "label": "Eficiência da CAG",
+          "comparison": "↗-2,8%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 185.34375,
+            "h": 92,
+            "x": 679.1875,
+            "y": 20
+          },
+          "sw": 183,
+          "cw": 183,
+          "sh": 90,
+          "ch": 90,
+          "label": "Chillers Ativos",
+          "comparison": "↗-12,5%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 185.34375,
+            "h": 92,
+            "x": 874.921875,
+            "y": 20
+          },
+          "sw": 183,
+          "cw": 183,
+          "sh": 90,
+          "ch": 90,
+          "label": "Periféricos",
+          "comparison": "↗+6,3%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 185.328125,
+            "h": 92,
+            "x": 1070.65625,
+            "y": 20
+          },
+          "sw": 183,
+          "cw": 183,
+          "sh": 90,
+          "ch": 90,
+          "label": "Temperatura Externa",
+          "comparison": "↗+1,2°Cvs ontem"
+        }
+      ],
+      "ok": true
+    },
+    {
+      "viewport": [
+        1366,
+        768
+      ],
+      "count": 6,
+      "row": {
+        "w": 1250,
+        "h": 92,
+        "x": 92,
+        "y": 20
+      },
+      "cards": [
+        {
+          "rect": {
+            "w": 199.671875,
+            "h": 92,
+            "x": 92,
+            "y": 20
+          },
+          "sw": 198,
+          "cw": 198,
+          "sh": 90,
+          "ch": 90,
+          "label": "Potência CAG",
+          "comparison": "↗-4,2%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 199.671875,
+            "h": 92,
+            "x": 302.0625,
+            "y": 20
+          },
+          "sw": 198,
+          "cw": 198,
+          "sh": 90,
+          "ch": 90,
+          "label": "Produção Térmica",
+          "comparison": "↗+3,1%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 199.671875,
+            "h": 92,
+            "x": 512.125,
+            "y": 20
+          },
+          "sw": 198,
+          "cw": 198,
+          "sh": 90,
+          "ch": 90,
+          "label": "Eficiência da CAG",
+          "comparison": "↗-2,8%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 199.671875,
+            "h": 92,
+            "x": 722.1875,
+            "y": 20
+          },
+          "sw": 198,
+          "cw": 198,
+          "sh": 90,
+          "ch": 90,
+          "label": "Chillers Ativos",
+          "comparison": "↗-12,5%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 199.671875,
+            "h": 92,
+            "x": 932.25,
+            "y": 20
+          },
+          "sw": 198,
+          "cw": 198,
+          "sh": 90,
+          "ch": 90,
+          "label": "Periféricos",
+          "comparison": "↗+6,3%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 199.6875,
+            "h": 92,
+            "x": 1142.3125,
+            "y": 20
+          },
+          "sw": 198,
+          "cw": 198,
+          "sh": 90,
+          "ch": 90,
+          "label": "Temperatura Externa",
+          "comparison": "↗+1,2°Cvs ontem"
+        }
+      ],
+      "ok": true
+    },
+    {
+      "viewport": [
+        1524,
+        722
+      ],
+      "count": 6,
+      "row": {
+        "w": 1408,
+        "h": 92,
+        "x": 92,
+        "y": 20
+      },
+      "cards": [
+        {
+          "rect": {
+            "w": 226,
+            "h": 92,
+            "x": 92,
+            "y": 20
+          },
+          "sw": 224,
+          "cw": 224,
+          "sh": 90,
+          "ch": 90,
+          "label": "Potência CAG",
+          "comparison": "↗-4,2%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 226.015625,
+            "h": 92,
+            "x": 328.390625,
+            "y": 20
+          },
+          "sw": 224,
+          "cw": 224,
+          "sh": 90,
+          "ch": 90,
+          "label": "Produção Térmica",
+          "comparison": "↗+3,1%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 226,
+            "h": 92,
+            "x": 564.796875,
+            "y": 20
+          },
+          "sw": 224,
+          "cw": 224,
+          "sh": 90,
+          "ch": 90,
+          "label": "Eficiência da CAG",
+          "comparison": "↗-2,8%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 226.015625,
+            "h": 92,
+            "x": 801.1875,
+            "y": 20
+          },
+          "sw": 224,
+          "cw": 224,
+          "sh": 90,
+          "ch": 90,
+          "label": "Chillers Ativos",
+          "comparison": "↗-12,5%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 226,
+            "h": 92,
+            "x": 1037.59375,
+            "y": 20
+          },
+          "sw": 224,
+          "cw": 224,
+          "sh": 90,
+          "ch": 90,
+          "label": "Periféricos",
+          "comparison": "↗+6,3%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 226.015625,
+            "h": 92,
+            "x": 1273.984375,
+            "y": 20
+          },
+          "sw": 224,
+          "cw": 224,
+          "sh": 90,
+          "ch": 90,
+          "label": "Temperatura Externa",
+          "comparison": "↗+1,2°Cvs ontem"
+        }
+      ],
+      "ok": true
+    },
+    {
+      "viewport": [
+        1792,
+        862
+      ],
+      "count": 6,
+      "row": {
+        "w": 1676,
+        "h": 92,
+        "x": 92,
+        "y": 20
+      },
+      "cards": [
+        {
+          "rect": {
+            "w": 270.671875,
+            "h": 92,
+            "x": 92,
+            "y": 20
+          },
+          "sw": 269,
+          "cw": 269,
+          "sh": 90,
+          "ch": 90,
+          "label": "Potência CAG",
+          "comparison": "↗-4,2%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 270.671875,
+            "h": 92,
+            "x": 373.0625,
+            "y": 20
+          },
+          "sw": 269,
+          "cw": 269,
+          "sh": 90,
+          "ch": 90,
+          "label": "Produção Térmica",
+          "comparison": "↗+3,1%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 270.671875,
+            "h": 92,
+            "x": 654.125,
+            "y": 20
+          },
+          "sw": 269,
+          "cw": 269,
+          "sh": 90,
+          "ch": 90,
+          "label": "Eficiência da CAG",
+          "comparison": "↗-2,8%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 270.671875,
+            "h": 92,
+            "x": 935.1875,
+            "y": 20
+          },
+          "sw": 269,
+          "cw": 269,
+          "sh": 90,
+          "ch": 90,
+          "label": "Chillers Ativos",
+          "comparison": "↗-12,5%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 270.671875,
+            "h": 92,
+            "x": 1216.25,
+            "y": 20
+          },
+          "sw": 269,
+          "cw": 269,
+          "sh": 90,
+          "ch": 90,
+          "label": "Periféricos",
+          "comparison": "↗+6,3%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 270.671875,
+            "h": 92,
+            "x": 1497.3125,
+            "y": 20
+          },
+          "sw": 269,
+          "cw": 269,
+          "sh": 90,
+          "ch": 90,
+          "label": "Temperatura Externa",
+          "comparison": "↗+1,2°Cvs ontem"
+        }
+      ],
+      "ok": true
+    },
+    {
+      "viewport": [
+        1905,
+        902
+      ],
+      "count": 6,
+      "row": {
+        "w": 1789,
+        "h": 92,
+        "x": 92,
+        "y": 20
+      },
+      "cards": [
+        {
+          "rect": {
+            "w": 289.5,
+            "h": 92,
+            "x": 92,
+            "y": 20
+          },
+          "sw": 288,
+          "cw": 288,
+          "sh": 90,
+          "ch": 90,
+          "label": "Potência CAG",
+          "comparison": "↗-4,2%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 289.515625,
+            "h": 92,
+            "x": 391.890625,
+            "y": 20
+          },
+          "sw": 288,
+          "cw": 288,
+          "sh": 90,
+          "ch": 90,
+          "label": "Produção Térmica",
+          "comparison": "↗+3,1%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 289.5,
+            "h": 92,
+            "x": 691.796875,
+            "y": 20
+          },
+          "sw": 288,
+          "cw": 288,
+          "sh": 90,
+          "ch": 90,
+          "label": "Eficiência da CAG",
+          "comparison": "↗-2,8%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 289.515625,
+            "h": 92,
+            "x": 991.6875,
+            "y": 20
+          },
+          "sw": 288,
+          "cw": 288,
+          "sh": 90,
+          "ch": 90,
+          "label": "Chillers Ativos",
+          "comparison": "↗-12,5%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 289.5,
+            "h": 92,
+            "x": 1291.59375,
+            "y": 20
+          },
+          "sw": 288,
+          "cw": 288,
+          "sh": 90,
+          "ch": 90,
+          "label": "Periféricos",
+          "comparison": "↗+6,3%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 289.515625,
+            "h": 92,
+            "x": 1591.484375,
+            "y": 20
+          },
+          "sw": 288,
+          "cw": 288,
+          "sh": 90,
+          "ch": 90,
+          "label": "Temperatura Externa",
+          "comparison": "↗+1,2°Cvs ontem"
+        }
+      ],
+      "ok": true
+    },
+    {
+      "viewport": [
+        1920,
+        1080
+      ],
+      "count": 6,
+      "row": {
+        "w": 1804,
+        "h": 92,
+        "x": 92,
+        "y": 20
+      },
+      "cards": [
+        {
+          "rect": {
+            "w": 292,
+            "h": 92,
+            "x": 92,
+            "y": 20
+          },
+          "sw": 290,
+          "cw": 290,
+          "sh": 90,
+          "ch": 90,
+          "label": "Potência CAG",
+          "comparison": "↗-4,2%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 292.015625,
+            "h": 92,
+            "x": 394.390625,
+            "y": 20
+          },
+          "sw": 290,
+          "cw": 290,
+          "sh": 90,
+          "ch": 90,
+          "label": "Produção Térmica",
+          "comparison": "↗+3,1%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 292,
+            "h": 92,
+            "x": 696.796875,
+            "y": 20
+          },
+          "sw": 290,
+          "cw": 290,
+          "sh": 90,
+          "ch": 90,
+          "label": "Eficiência da CAG",
+          "comparison": "↗-2,8%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 292.015625,
+            "h": 92,
+            "x": 999.1875,
+            "y": 20
+          },
+          "sw": 290,
+          "cw": 290,
+          "sh": 90,
+          "ch": 90,
+          "label": "Chillers Ativos",
+          "comparison": "↗-12,5%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 292,
+            "h": 92,
+            "x": 1301.59375,
+            "y": 20
+          },
+          "sw": 290,
+          "cw": 290,
+          "sh": 90,
+          "ch": 90,
+          "label": "Periféricos",
+          "comparison": "↗+6,3%vs ontem"
+        },
+        {
+          "rect": {
+            "w": 292.015625,
+            "h": 92,
+            "x": 1603.984375,
+            "y": 20
+          },
+          "sw": 290,
+          "cw": 290,
+          "sh": 90,
+          "ch": 90,
+          "label": "Temperatura Externa",
+          "comparison": "↗+1,2°Cvs ontem"
+        }
+      ],
+      "ok": true
+    }
+  ]
+}

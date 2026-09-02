@@ -32,12 +32,13 @@ import { InsightCard } from "@/components/InsightCard";
 import { PortfolioHealthCard } from "@/components/PortfolioHealthCard";
 import { DataUnavailable } from "@/components/DataUnavailable";
 import { formatKwTr, formatNumber } from "@/utils/format";
+import { absoluteChange, getComparisonLabel, percentageChange, targetDeviationPct } from "@/utils/comparison";
 import { buildChartHistory, formatHistoryTick, formatHistoryTooltip, getHistoryTimeDomain, historyTickCount } from "@/utils/history";
 
 type RankingMetric = "power" | "production" | "efficiency" | "quality";
 
 
-const OVERVIEW_LAYOUT_V44_CSS = `
+const OVERVIEW_LAYOUT_V45_CSS = `
 @media (min-width: 1024px) {
   .app-inset {
     height: 100svh !important;
@@ -55,12 +56,13 @@ const OVERVIEW_LAYOUT_V44_CSS = `
     height: auto !important;
     min-height: 0 !important;
     max-height: none !important;
-    grid-template-rows: 100px 285px auto !important;
+    grid-template-rows: 92px 285px auto !important;
     gap: .75rem !important;
     overflow: visible !important;
   }
   .overview-dashboard > * + * { margin-top: 0 !important; }
-  .overview-kpis, .overview-kpis > article { height: 100px !important; }
+  .overview-kpis { height: 92px !important; grid-template-columns: repeat(6, minmax(0, 1fr)) !important; gap: .65rem !important; }
+  .overview-kpis > article { height: 92px !important; }
   .overview-primary-grid {
     height: 285px !important;
     min-height: 285px !important;
@@ -348,11 +350,17 @@ function OverviewPage() {
   const temperature = asNumber(kpis.temperatura_externa_c);
   const totalChillers = selectedShopping.registry.chillersTotal;
 
-  const historyKw = history.map((point) => point.kwCag).filter(isNumber);
-  const historyTr = history.map((point) => point.trTotal).filter(isNumber);
-  const historyKwTr = history.map((point) => point.kwTr).filter(isNumber);
-  const historyAux = history.map((point) => point.kwAux).filter(isNumber);
-  const activeSeries = activeChillers === null ? [] : [activeChillers, activeChillers];
+  const comparison =
+    shoppingData && shoppingData.shopping.code === selectedShoppingCode && shoppingData.period === historyPeriod
+      ? shoppingData.comparison ?? null
+      : null;
+  const comparisonLabel = getComparisonLabel(historyPeriod);
+  const kwComparison = percentageChange(comparison?.current.avgKw, comparison?.previous.avgKw);
+  const trComparison = percentageChange(comparison?.current.avgTr, comparison?.previous.avgTr);
+  const kwTrComparison = percentageChange(comparison?.current.avgKwTr, comparison?.previous.avgKwTr);
+  const activeComparison = percentageChange(comparison?.current.avgActiveChillers, comparison?.previous.avgActiveChillers);
+  const auxComparison = percentageChange(comparison?.current.avgAuxKw, comparison?.previous.avgAuxKw);
+  const temperatureComparison = absoluteChange(comparison?.current.avgTemperatureC, comparison?.previous.avgTemperatureC);
 
   const selectedRanking = rankingOptions[rankingMetric];
   const rankingValues = ranking.map((item) => item.value).filter(isNumber);
@@ -370,21 +378,22 @@ function OverviewPage() {
   const portfolioHealth = makePortfolioHealth(portfolio.shoppings);
 
   return (
-    <><style data-ancar-overview-layout="4.4">{OVERVIEW_LAYOUT_V44_CSS}</style><div className="overview-dashboard space-y-4" data-ancar-ui-version="4.4">
+    <><style data-ancar-overview-layout="4.5">{OVERVIEW_LAYOUT_V45_CSS}</style><div className="overview-dashboard space-y-4" data-ancar-ui-version="4.5">
       {error && (
         <div className="overview-error rounded-lg border border-[color-mix(in_oklab,var(--accent-yellow)_38%,transparent)] bg-[color-mix(in_oklab,var(--accent-yellow)_8%,transparent)] px-3 py-2 text-xs text-[var(--accent-yellow)]">
           {error}
         </div>
       )}
 
-      <div className="overview-kpis grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="overview-kpis grid grid-cols-2 gap-2.5 md:grid-cols-3 lg:grid-cols-6">
         <KpiCard
           icon={Zap}
           label="Potência CAG"
           value={display(kwCag, 1)}
           unit="kW"
           accent="cyan"
-          series={historyKw}
+          comparisonValue={kwComparison}
+          comparisonLabel={comparisonLabel}
         />
         <KpiCard
           icon={Activity}
@@ -392,7 +401,8 @@ function OverviewPage() {
           value={display(trTotal, 1)}
           unit="TR"
           accent="blue"
-          series={historyTr}
+          comparisonValue={trComparison}
+          comparisonLabel={comparisonLabel}
         />
         <KpiCard
           icon={Gauge}
@@ -400,14 +410,17 @@ function OverviewPage() {
           value={formatKwTr(kwTr)}
           unit="kW/TR"
           accent="green"
-          series={historyKwTr}
+          comparisonValue={kwTrComparison}
+          comparisonLabel={comparisonLabel}
+          comparisonTone="lower-better"
         />
         <KpiCard
           icon={Activity}
           label="Chillers Ativos"
           value={activeChillers === null ? "—" : `${activeChillers} / ${totalChillers}`}
           accent="purple"
-          series={activeSeries}
+          comparisonValue={activeComparison}
+          comparisonLabel={comparisonLabel}
         />
         <KpiCard
           icon={Fan}
@@ -415,7 +428,19 @@ function OverviewPage() {
           value={display(kwAux, 1)}
           unit="kW"
           accent="yellow"
-          series={historyAux}
+          comparisonValue={auxComparison}
+          comparisonLabel={comparisonLabel}
+          comparisonTone="lower-better"
+        />
+        <KpiCard
+          icon={Thermometer}
+          label="Temperatura Externa"
+          value={display(temperature, 1)}
+          unit="°C"
+          accent="orange"
+          comparisonValue={temperatureComparison}
+          comparisonLabel={comparisonLabel}
+          comparisonUnit="°C"
         />
       </div>
 
@@ -610,8 +635,26 @@ function OverviewPage() {
                       {item.name}{" "}
                       <span className="font-normal text-muted-foreground">({item.code})</span>
                     </span>
-                    <span className="metric-value whitespace-nowrap text-right text-xs sm:order-none">
-                      {formatRankingValue(item.value, rankingMetric)}
+                    <span className="flex min-w-[86px] flex-col items-end whitespace-nowrap text-right sm:order-none">
+                      <span className="metric-value text-xs">{formatRankingValue(item.value, rankingMetric)}</span>
+                      {item.targetDeviationPct !== null && item.targetDeviationPct !== undefined && (
+                        <span
+                          className={`mt-0.5 text-[9px] font-semibold ${
+                            item.targetDeviationPct <= 0
+                              ? "text-[var(--accent-green)]"
+                              : "text-[var(--accent-red)]"
+                          }`}
+                          title={`Meta configurada: ${formatKwTr(item.targetKwTr ?? null)} kW/TR`}
+                        >
+                          {Math.abs(item.targetDeviationPct).toFixed(1).replace(".", ",")}% {
+                            Math.abs(item.targetDeviationPct) < 0.05
+                              ? "na"
+                              : item.targetDeviationPct < 0
+                                ? "abaixo da"
+                                : "acima da"
+                          } meta kW/TR
+                        </span>
+                      )}
                     </span>
                     <span className="col-span-2 ml-[32px] h-1.5 overflow-hidden rounded-full bg-muted/50 sm:col-span-1 sm:ml-0">
                       {item.value !== null && (
@@ -761,10 +804,16 @@ function makeLiveRanking(items: LiveShoppingSummary[], metric: RankingMetric): R
     const status = mapLiveShoppingToLegacy(item).status;
     if (status === "offline") value = null;
 
+    const currentKwTr = asNumber(kpis.kw_tr_eletrico_cag ?? kpis.kw_tr_cag);
+    const targetKwTr = asNumber(item.settings?.targetKwTr);
+    const deviationFromTarget = targetDeviationPct(currentKwTr, targetKwTr);
+
     return {
       item,
       value,
       status,
+      targetKwTr,
+      targetDeviationPct: deviationFromTarget,
       reason: status === "offline" ? "Dados desatualizados" : value === null ? "Sem dado disponível" : undefined,
     };
   });
@@ -781,7 +830,7 @@ function makeLiveRanking(items: LiveShoppingSummary[], metric: RankingMetric): R
       if (pa !== pb) return pa - pb;
       return a.item.name.localeCompare(b.item.name, "pt-BR");
     })
-    .map(({ item, value, status, reason }) => ({
+    .map(({ item, value, status, reason, targetKwTr, targetDeviationPct }) => ({
       position: positions.get(item.id) ?? null,
       shoppingId: item.id || item.code.toLowerCase(),
       code: item.code,
@@ -790,6 +839,8 @@ function makeLiveRanking(items: LiveShoppingSummary[], metric: RankingMetric): R
       unit: option.unit,
       status,
       comparable: true,
+      targetKwTr,
+      targetDeviationPct,
       reason,
     }));
 }

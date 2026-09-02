@@ -3,6 +3,7 @@ import { API_BASE_URL } from "@/config";
 import { normalizeShoppingHistory } from "@/utils/history";
 import type { Alert, Shopping } from "@/types";
 import type {
+  ComparisonWindowSummary,
   HistoryPeriod,
   LiveShoppingSummary,
   PortfolioApiResponse,
@@ -32,6 +33,18 @@ export function asNumber(value: unknown): number | null {
     return Number.isFinite(parsed) ? parsed : null;
   }
   return null;
+}
+
+
+function normalizeComparisonWindow(input?: Partial<ComparisonWindowSummary> | null): ComparisonWindowSummary {
+  return {
+    avgKw: asNumber(input?.avgKw),
+    avgTr: asNumber(input?.avgTr),
+    avgKwTr: asNumber(input?.avgKwTr),
+    avgAuxKw: asNumber(input?.avgAuxKw),
+    avgTemperatureC: asNumber(input?.avgTemperatureC),
+    avgActiveChillers: asNumber(input?.avgActiveChillers),
+  };
 }
 
 export function getDataQualityPct(item: LiveShoppingSummary): number {
@@ -163,6 +176,10 @@ export const liveDashboardService = {
     result.history = normalizeShoppingHistory(Array.isArray(result.history) ? result.history : []);
     result.equipmentRegistry = Array.isArray(result.equipmentRegistry) ? result.equipmentRegistry : [];
     result.summary = result.summary ?? { energyKwh: null, thermalTrh: null, savedKwh: null, avoidedKgCo2: null, avgKwTr: null, avgKw: null, maxKw: null, avgTr: null, maxTr: null, avgAuxKw: null, avgDataQualityPct: null };
+    result.comparison = result.comparison ? {
+      current: normalizeComparisonWindow(result.comparison.current),
+      previous: normalizeComparisonWindow(result.comparison.previous),
+    } : null;
     return result;
   },
 

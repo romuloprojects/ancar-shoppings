@@ -191,6 +191,20 @@ export interface PeriodSummary {
   avgDataQualityPct: number | null;
 }
 
+export interface ComparisonWindowSummary {
+  avgKw: number | null;
+  avgTr: number | null;
+  avgKwTr: number | null;
+  avgAuxKw: number | null;
+  avgTemperatureC: number | null;
+  avgActiveChillers: number | null;
+}
+
+export interface PeriodComparison {
+  current: ComparisonWindowSummary;
+  previous: ComparisonWindowSummary;
+}
+
 export interface EquipmentRegistryItem {
   equipmentKey: string;
   equipmentName: string | null;
@@ -208,6 +222,7 @@ export interface ShoppingApiResponse {
   equipmentRegistry: EquipmentRegistryItem[];
   history: ShoppingHistoryPoint[];
   summary: PeriodSummary;
+  comparison?: PeriodComparison | null;
 }
 
 export interface SettingsApiResponse {
