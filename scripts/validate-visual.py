@@ -8,7 +8,7 @@ logo=contract/'assets'/'logo-ancar-white.png'; logo_uri='data:image/png;base64,'
 html=html.replace('<link rel="stylesheet" href="styles.css" />',f'<style>{css}</style>').replace('<script src="app.js"></script>',f'<script>{js}</script>')
 if logo_uri: html=html.replace('assets/logo-ancar-white.png',logo_uri)
 pages=['overview','shoppings','detail','ranking','analises','alertas','esg','relatorios','configuracoes']
-contract_page={'esg':'energy'}; viewports=[(1920,1080),(1440,900),(1366,768)]
+contract_page={'esg':'energy'}; viewports=[(1920,1080),(1791,857),(1440,900),(1366,768)]
 results=[]; failures=[]; shot_paths={}
 with sync_playwright() as pw:
     browser=pw.chromium.launch(headless=True,executable_path='/usr/bin/chromium',args=['--no-sandbox'])
@@ -18,7 +18,7 @@ with sync_playwright() as pw:
             pg.evaluate('(name)=>showPage(name)',contract_page.get(name,name)); pg.wait_for_timeout(25)
             m=pg.evaluate("""() => { const main=document.querySelector('.main'); const body=document.body; return {bodyW:body.scrollWidth,innerW:innerWidth,mainH:main?.clientHeight||0,mainScrollH:main?.scrollHeight||0}; }""")
             ok=(m['bodyW']<=m['innerW']+1 and m['mainScrollH']<=m['mainH']+2); results.append({'page':name,'viewport':f'{w}x{h}','ok':ok,**m}); failures += [] if ok else [results[-1]]
-            if (w,h) in [(1920,1080),(1366,768)]:
+            if (w,h) in [(1920,1080),(1791,857),(1366,768)]:
                 p=out/f'{name}_{w}x{h}.png'; pg.screenshot(path=str(p),full_page=False); shot_paths[(name,w,h)]=p
         ctx.close()
     browser.close()

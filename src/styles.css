@@ -1661,7 +1661,7 @@
 
 @media (min-width: 1280px) and (max-height: 860px) {
   .overview-dashboard {
-    grid-template-rows: 108px minmax(0, 1.5fr) minmax(0, .82fr);
+    grid-template-rows: 108px minmax(0, 1.38fr) minmax(0, .94fr);
     gap: .75rem;
   }
   .overview-kpis,
@@ -1675,7 +1675,7 @@
   .overview-map-panel,
   .overview-insights-panel { padding: .75rem !important; }
   .overview-portfolio-panel .group.relative.flex { min-height: 132px; }
-  .overview-map-panel .portfolio-map-svg { max-height: min(22svh, 220px) !important; }
+  .overview-map-panel .portfolio-map-svg { max-height: min(27svh, 235px) !important; }
 }
 
 @media (min-width: 1024px) and (max-width: 1279px) {
@@ -1685,10 +1685,10 @@
   .overview-portfolio-panel { grid-column: span 2 !important; }
 }
 
-/* V3.5 — cartão de qualidade: gauge compacto sem sobreposição em 2/12 colunas. */
+/* V3.6 — cartão de qualidade: gauge menor e mais espaço vertical na faixa inferior. */
 .portfolio-health-card .portfolio-health-gauge {
-  width: 82px !important;
-  height: 82px !important;
+  width: 76px !important;
+  height: 76px !important;
 }
 .portfolio-health-card .portfolio-health-gauge svg {
   width: 100% !important;
@@ -1700,8 +1700,8 @@
 }
 @media (min-width: 1024px) and (max-height: 800px) {
   .portfolio-health-card .portfolio-health-gauge {
-    width: 64px !important;
-    height: 64px !important;
+    width: 60px !important;
+    height: 60px !important;
   }
   .portfolio-health-card .portfolio-health-gauge-wrap {
     margin-top: 0 !important;
@@ -1718,11 +1718,11 @@
     display: none;
   }
   .portfolio-health-card .portfolio-health-gauge {
-    width: 52px !important;
-    height: 52px !important;
+    width: 56px !important;
+    height: 56px !important;
   }
   .portfolio-health-card .portfolio-health-gauge .metric-value {
-    font-size: 18px !important;
+    font-size: 15px !important;
   }
   .portfolio-health-card .portfolio-health-label {
     font-size: 8px !important;

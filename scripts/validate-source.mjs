@@ -58,4 +58,39 @@ assert(forbiddenText.length===0,`Referências ao construtor anterior encontradas
 const fmt=fs.readFileSync(path.join(src,'utils','format.ts'),'utf8');
 assert(/minimumFractionDigits\s*:\s*2/.test(fmt)&&/maximumFractionDigits\s*:\s*2/.test(fmt),'formatKwTr deve exibir exatamente 2 casas');
 for(const route of ['index.tsx','shoppings.tsx','shoppings.$shoppingId.tsx','ranking.tsx','analises.tsx','alertas.tsx','esg.tsx','relatorios.tsx','configuracoes.tsx']) assert(fs.existsSync(path.join(src,'routes',route)),`Rota ausente: ${route}`);
+
+// V3.6 — atualização silenciosa, horário real da telemetria e histórico temporal coerente.
+const config=fs.readFileSync(path.join(src,'config.ts'),'utf8');
+assert(config.includes('REFRESH_INTERVAL_MS = 3 * 60 * 1000'),'V3.6: polling deve ser de 3 minutos');
+const refreshHook=fs.readFileSync(path.join(src,'hooks','useAutoRefresh.ts'),'utf8');
+assert(refreshHook.includes('visibilitychange'),'V3.6: retorno à aba deve disparar verificação de atualização');
+assert(topBar.includes('🟢 Última atualização'),'V3.6: texto padrão de última atualização ausente');
+assert(topBar.includes('selectedShopping?.lastUpdate'),'V3.6: TopBar deve usar collectedAt mapeado da telemetria');
+assert(!topBar.includes('formatRelative(lastUpdate'),'V3.6: TopBar não deve exibir horário do polling como horário dos dados');
+const historyUtils=fs.readFileSync(path.join(src,'utils','history.ts'),'utf8');
+assert(historyUtils.includes('normalizeShoppingHistory'),'V3.6: normalização temporal ausente');
+assert(historyUtils.includes('buildChartHistory'),'V3.6: tratamento de lacunas do gráfico ausente');
+assert(historyUtils.includes('getHistoryTimeDomain'),'V3.6: domínio temporal por período ausente');
+const liveService=fs.readFileSync(path.join(src,'services','liveDashboardService.ts'),'utf8');
+assert(liveService.includes('normalizeShoppingHistory'),'V3.6: API frontend deve ordenar/deduplicar o histórico recebido');
+for(const route of ['index.tsx','shoppings.$shoppingId.tsx','analises.tsx','esg.tsx','relatorios.tsx']){
+  const text=fs.readFileSync(path.join(src,'routes',route),'utf8');
+  assert(text.includes('chartTimestamp'),`V3.6 ${route}: eixo temporal real ausente`);
+  assert(text.includes('formatHistoryTick'),`V3.6 ${route}: formatação por período ausente`);
+  assert(!text.includes('type="monotone"'),`V3.6 ${route}: interpolação monotone não deve ser usada em telemetria`);
+}
+assert(styles.includes('grid-template-rows: 108px minmax(0, 1.38fr) minmax(0, .94fr)'),'V3.6: faixa inferior da Visão Geral não foi ampliada');
+assert(styles.includes('max-height: min(27svh, 235px) !important'),'V3.6: mapa não recebeu altura adicional');
+assert(health.includes('text-[19px]'),'V3.6: valor central do gauge deve ser menor');
+
+// Imports locais @/ devem apontar para arquivos reais.
+for(const file of files){
+  const text=fs.readFileSync(file,'utf8');
+  for(const match of text.matchAll(/from\s+["']@\/([^"']+)["']/g)){
+    const target=path.join(src,match[1]);
+    const candidates=[target,`${target}.ts`,`${target}.tsx`,path.join(target,'index.ts'),path.join(target,'index.tsx')];
+    assert(candidates.some(fs.existsSync),`${path.relative(root,file)}: import local ausente @/${match[1]}`);
+  }
+}
+
 console.log(`TS/TSX analisados: ${files.length}`); console.log(`Erros: ${errors.length}`); if(errors.length){console.error(errors.join('\n'));process.exit(1)} console.log('VALIDAÇÃO DE FONTE: PASS');

@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { formatDateTime, formatKwTr, formatNumber } from "@/utils/format";
 import { asNumber, buildCurrentAlerts, mapLiveShoppingToLegacy } from "@/services/liveDashboardService";
 import { useDashboardRuntime } from "@/contexts/dashboard-runtime-context";
+import { buildChartHistory, formatHistoryTick, formatHistoryTooltip, getHistoryTimeDomain, historyTickCount } from "@/utils/history";
 
 export const Route = createFileRoute("/shoppings/$shoppingId")({
   head: ({ params }) => ({ meta: [{ title: `${params.shoppingId.toUpperCase()} — Detalhe do Shopping` }] }),
@@ -19,19 +20,18 @@ export const Route = createFileRoute("/shoppings/$shoppingId")({
 
 function ShoppingDetailPage() {
   const { shoppingId } = Route.useParams();
-  const { tick } = useDashboardRuntime();
-  const [period, setPeriod] = useState<HistoryPeriod>("24h");
+  const { tick, historyPeriod: period, setHistoryPeriod: setPeriod } = useDashboardRuntime();
   const [data, setData] = useState<ShoppingApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true; setLoading(true);
-    dashboardService.getShoppingById(shoppingId, period).then((result) => { if (alive) { setData(result); setError(result ? null : "Shopping não encontrado."); } }).catch((e) => { if (alive) setError(e instanceof Error ? e.message : "Falha ao carregar dados."); }).finally(() => { if (alive) setLoading(false); });
+    dashboardService.getShoppingById(shoppingId, period).then((result) => { if (alive) { setData(result); setError(result ? null : "Shopping não encontrado."); } }).catch((e) => { if (alive && !(data?.shopping && data.period === period)) setError(e instanceof Error ? e.message : "Falha ao carregar dados."); }).finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
   }, [shoppingId, period, tick]);
 
-  if (loading && !data) return <LoadingBlock h={760}/>;
+  if (loading && (!data || data.period !== period)) return <LoadingBlock h={760}/>;
   if (!data?.shopping) return <EmptyState title="Shopping indisponível" description={error ?? "Não foi possível consultar esta unidade."}/>;
 
   const raw = data.shopping;
@@ -40,6 +40,8 @@ function ShoppingDetailPage() {
   const alerts = buildCurrentAlerts([raw]);
   const equipments = Object.entries(k.equipamentos ?? {}).map(([key, eq]) => ({ key, status: eq.status ?? null, kw: eq.kw ?? null, tr: eq.tr ?? null, kw_tr: eq.kw_tr ?? null, cop: eq.cop ?? null }));
   const settings = raw.settings;
+  const chartHistory = buildChartHistory(data.history, period);
+  const historyDomain = getHistoryTimeDomain(period, data.generatedAt);
 
   return <InternalPage className="compact-page compact-detail-page">
     <PageHeader eyebrow={`${shopping.code} · ${shopping.city}/${shopping.stateCode}`} title={shopping.name} subtitle={raw.latest?.collectedAt ? `Última coleta: ${formatDateTime(raw.latest.collectedAt)}` : "Sem coleta disponível"} icon={Activity}
@@ -65,7 +67,7 @@ function ShoppingDetailPage() {
         <div className="detail-behavior-grid min-h-0">
           <SectionPanel title="Comportamento da CAG" subtitle="Potência, produção térmica e kW/TR no período selecionado" icon={Activity}
             right={<div className="segmented-control w-full sm:w-auto">{(["24h","7d","30d"] as HistoryPeriod[]).map((p)=><button type="button" key={p} data-active={period===p} onClick={()=>setPeriod(p)}>{p}</button>)}</div>} className="compact-fill-panel">
-            <div className="detail-main-chart h-[230px] min-w-0 sm:h-[260px] lg:h-[290px]"><ResponsiveContainer width="100%" height="100%"><ComposedChart data={data.history}><CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false}/><XAxis dataKey="timestamp" tickFormatter={timeLabel} minTickGap={30} tick={{fontSize:10,fill:"var(--muted-foreground)"}}/><YAxis yAxisId="left" tick={{fontSize:10,fill:"var(--muted-foreground)"}}/><YAxis yAxisId="right" orientation="right" tick={{fontSize:10,fill:"var(--muted-foreground)"}}/><Tooltip contentStyle={chartTooltipStyle} labelFormatter={(v)=>formatDateTime(String(v))} formatter={(value,name)=>{const n=typeof value==="number"?value:Number(value);return [String(name).includes("kW/TR")?formatKwTr(n):formatNumber(n,{maximumFractionDigits:1}),String(name)]}}/><Line yAxisId="left" type="monotone" dataKey="kwCag" name="Potência CAG (kW)" stroke="var(--accent-cyan)" dot={false} strokeWidth={2}/><Line yAxisId="left" type="monotone" dataKey="trTotal" name="Produção (TR)" stroke="var(--accent-blue)" dot={false} strokeWidth={1.8}/><Line yAxisId="right" type="monotone" dataKey="kwTr" name="kW/TR" stroke="var(--accent-green)" dot={false} strokeWidth={1.8}/></ComposedChart></ResponsiveContainer></div>
+            <div className="detail-main-chart h-[230px] min-w-0 sm:h-[260px] lg:h-[290px]"><ResponsiveContainer width="100%" height="100%"><ComposedChart data={chartHistory}><CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false}/><XAxis dataKey="chartTimestamp" type="number" scale="time" domain={historyDomain} tickCount={historyTickCount(period)} tickFormatter={(v)=>formatHistoryTick(Number(v),period)} minTickGap={24} tick={{fontSize:10,fill:"var(--muted-foreground)"}} allowDataOverflow/><YAxis yAxisId="left" tick={{fontSize:10,fill:"var(--muted-foreground)"}}/><YAxis yAxisId="right" orientation="right" tick={{fontSize:10,fill:"var(--muted-foreground)"}}/><Tooltip contentStyle={chartTooltipStyle} labelFormatter={(v)=>formatHistoryTooltip(typeof v==="number"?v:Number(v))} formatter={(value,name)=>{const n=typeof value==="number"?value:Number(value);return [String(name).includes("kW/TR")?formatKwTr(n):formatNumber(n,{maximumFractionDigits:1}),String(name)]}}/><Line yAxisId="left" type="linear" dataKey="kwCag" name="Potência CAG (kW)" stroke="var(--accent-cyan)" dot={false} strokeWidth={2} connectNulls={false}/><Line yAxisId="left" type="linear" dataKey="trTotal" name="Produção (TR)" stroke="var(--accent-blue)" dot={false} strokeWidth={1.8} connectNulls={false}/><Line yAxisId="right" type="linear" dataKey="kwTr" name="kW/TR" stroke="var(--accent-green)" dot={false} strokeWidth={1.8} connectNulls={false}/></ComposedChart></ResponsiveContainer></div>
             <div className="detail-summary-strip mt-2 grid grid-cols-2 gap-1.5 lg:grid-cols-4"><Mini label="Energia" value={num(data.summary.energyKwh,1)} unit="kWh"/><Mini label="Frio acumulado" value={num(data.summary.thermalTrh,1)} unit="TRh"/><Mini label="Média kW/TR" value={formatKwTr(data.summary.avgKwTr)} unit="kW/TR"/><Mini label="Pico potência" value={num(data.summary.maxKw,1)} unit="kW"/></div>
           </SectionPanel>
           <SectionPanel title="Equipamentos" subtitle={`${equipments.length} equipamento(s) com dados cadastrados`} icon={Activity} className="compact-fill-panel" contentClassName="compact-scroll-region">
@@ -95,7 +97,6 @@ function ShoppingDetailPage() {
 }
 
 function num(v:number|null|undefined,d=1){return v===null||v===undefined?"—":formatNumber(v,{maximumFractionDigits:d});}
-function timeLabel(v:string){const d=new Date(v);return Number.isNaN(d.getTime())?v:new Intl.DateTimeFormat("pt-BR",{day:"2-digit",hour:"2-digit",minute:"2-digit"}).format(d);}
 function labelEquipment(k:string){return k.replace(/_/g," ").replace(/\b\w/g,(c)=>c.toUpperCase());}
 function Mini({label,value,unit}:{label:string;value:string;unit:string}){return <div><div className="text-[10px] uppercase tracking-[.1em] text-muted-foreground">{label}</div><div className="mt-1 metric-value text-lg">{value} <span className="text-[10px] text-muted-foreground">{unit}</span></div></div>}
 function ConfigItem({label,value,unit}:{label:string;value:number|null;unit:string}){const formatted=value===null?"Não configurado":`${unit==="kW/TR"?formatKwTr(value):formatNumber(value,{maximumFractionDigits:4})} ${unit}`;return <div className="rounded-xl border border-border/55 bg-muted/15 p-4"><div className="text-[10px] uppercase tracking-[.12em] text-muted-foreground">{label}</div><div className="mt-2 text-lg font-semibold">{formatted}</div></div>}

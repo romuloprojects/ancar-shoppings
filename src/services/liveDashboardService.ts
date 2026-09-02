@@ -1,5 +1,6 @@
 import { SHOPPING_LOCATIONS } from "@/data/shoppingLocations";
 import { API_BASE_URL } from "@/config";
+import { normalizeShoppingHistory } from "@/utils/history";
 import type { Alert, Shopping } from "@/types";
 import type {
   HistoryPeriod,
@@ -159,7 +160,7 @@ export const liveDashboardService = {
     const result = await requestJson<ShoppingApiResponse>(url.toString());
     if (!result?.ok || !result.shopping) throw new Error(`Shopping ${code} não encontrado na API ANCAR.`);
     result.shopping.settings = normalizeSettings(result.shopping.settings);
-    result.history = Array.isArray(result.history) ? result.history : [];
+    result.history = normalizeShoppingHistory(Array.isArray(result.history) ? result.history : []);
     result.equipmentRegistry = Array.isArray(result.equipmentRegistry) ? result.equipmentRegistry : [];
     result.summary = result.summary ?? { energyKwh: null, thermalTrh: null, savedKwh: null, avoidedKgCo2: null, avgKwTr: null, avgKw: null, maxKw: null, avgTr: null, maxTr: null, avgAuxKw: null, avgDataQualityPct: null };
     return result;

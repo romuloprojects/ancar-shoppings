@@ -32,6 +32,7 @@ import { InsightCard } from "@/components/InsightCard";
 import { PortfolioHealthCard } from "@/components/PortfolioHealthCard";
 import { DataUnavailable } from "@/components/DataUnavailable";
 import { formatKwTr, formatNumber } from "@/utils/format";
+import { buildChartHistory, formatHistoryTick, formatHistoryTooltip, getHistoryTimeDomain, historyTickCount } from "@/utils/history";
 
 type RankingMetric = "power" | "production" | "efficiency" | "quality";
 
@@ -97,7 +98,7 @@ function OverviewPage() {
         }
       })
       .catch((err: unknown) => {
-        if (alive) setError(err instanceof Error ? err.message : "Falha ao consultar a API ANCAR.");
+        if (alive && !portfolio) setError(err instanceof Error ? err.message : "Falha ao consultar a API ANCAR.");
       })
       .finally(() => {
         if (alive) setLoadingPortfolio(false);
@@ -121,7 +122,7 @@ function OverviewPage() {
         setError(null);
       })
       .catch((err: unknown) => {
-        if (alive) setError(err instanceof Error ? err.message : "Falha ao consultar o histórico ANCAR.");
+        if (alive && !(shoppingData?.shopping?.code === selectedShoppingCode && shoppingData.period === historyPeriod)) setError(err instanceof Error ? err.message : "Falha ao consultar o histórico ANCAR.");
       })
       .finally(() => {
         if (alive) setLoadingHistory(false);
@@ -152,6 +153,21 @@ function OverviewPage() {
     [portfolio],
   );
 
+  const chartHistory = useMemo(
+    () => buildChartHistory(
+      shoppingData?.shopping?.code === selectedShoppingCode && shoppingData.period === historyPeriod ? shoppingData.history ?? [] : [],
+      historyPeriod,
+    ),
+    [shoppingData, selectedShoppingCode, historyPeriod],
+  );
+  const historyDomain = useMemo(
+    () => getHistoryTimeDomain(
+      historyPeriod,
+      shoppingData?.shopping?.code === selectedShoppingCode && shoppingData.period === historyPeriod ? shoppingData.generatedAt : null,
+    ),
+    [historyPeriod, shoppingData, selectedShoppingCode],
+  );
+
   if (loadingPortfolio && !portfolio) {
     return <LoadingBlock h={880} />;
   }
@@ -168,7 +184,7 @@ function OverviewPage() {
   }
 
   const history =
-    shoppingData && shoppingData.shopping.code === selectedShoppingCode ? shoppingData.history ?? [] : [];
+    shoppingData && shoppingData.shopping.code === selectedShoppingCode && shoppingData.period === historyPeriod ? shoppingData.history ?? [] : [];
   const kpis = selectedShopping.latest?.kpis ?? {};
   const isMixed =
     kpis.modelo_energetico === "mixed_absorption_electric" ||
@@ -304,7 +320,7 @@ function OverviewPage() {
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={history} margin={{ top: 8, right: 0, bottom: 0, left: -12 }}>
+                <ComposedChart data={chartHistory} margin={{ top: 8, right: 0, bottom: 0, left: -12 }}>
                   <defs>
                     <linearGradient id="cagPowerArea" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="var(--accent-cyan)" stopOpacity={0.34} />
@@ -317,13 +333,18 @@ function OverviewPage() {
                     vertical={false}
                   />
                   <XAxis
-                    dataKey="timestamp"
-                    tickFormatter={(value) => formatChartTime(String(value), historyPeriod)}
+                    dataKey="chartTimestamp"
+                    type="number"
+                    scale="time"
+                    domain={historyDomain}
+                    tickCount={historyTickCount(historyPeriod)}
+                    tickFormatter={(value) => formatHistoryTick(Number(value), historyPeriod)}
                     stroke="oklch(0.6 0.02 250)"
                     tick={{ fontSize: 10 }}
-                    minTickGap={historyPeriod === "30d" ? 18 : 8}
+                    minTickGap={18}
                     tickLine={false}
                     axisLine={{ stroke: "oklch(0.38 0.03 260 / 60%)" }}
+                    allowDataOverflow
                   />
                   <YAxis
                     yAxisId="eff"
@@ -343,7 +364,7 @@ function OverviewPage() {
                     width={48}
                   />
                   <Tooltip
-                    labelFormatter={(value) => formatTooltipTime(String(value))}
+                    labelFormatter={(value) => formatHistoryTooltip(typeof value === "number" ? value : Number(value))}
                     formatter={(value, name) => {
                       const label = String(name);
                       const numeric = typeof value === "number" ? value : Number(value);
@@ -360,36 +381,36 @@ function OverviewPage() {
                   />
                   <Area
                     yAxisId="load"
-                    type="monotone"
+                    type="linear"
                     dataKey="kwCag"
                     name="Potência CAG (kW)"
                     stroke="var(--accent-cyan)"
                     strokeWidth={2}
                     fill="url(#cagPowerArea)"
                     activeDot={{ r: 4 }}
-                    connectNulls
+                    connectNulls={false}
                   />
                   <Line
                     yAxisId="load"
-                    type="monotone"
+                    type="linear"
                     dataKey="trTotal"
                     name="Produção (TR)"
                     stroke="var(--accent-blue)"
                     strokeWidth={2}
                     dot={false}
                     activeDot={{ r: 4 }}
-                    connectNulls
+                    connectNulls={false}
                   />
                   <Line
                     yAxisId="eff"
-                    type="monotone"
+                    type="linear"
                     dataKey="kwTr"
                     name={`${isMixed ? "Intensidade" : "Eficiência"} (kW/TR)`}
                     stroke="var(--accent-green)"
                     strokeWidth={2}
                     dot={{ r: 2.2, fill: "var(--accent-green)", strokeWidth: 0 }}
                     activeDot={{ r: 4 }}
-                    connectNulls
+                    connectNulls={false}
                   />
                 </ComposedChart>
               </ResponsiveContainer>
@@ -735,23 +756,6 @@ function display(value: number | null, digits = 1) {
   return value === null
     ? "—"
     : formatNumber(value, { maximumFractionDigits: digits, minimumFractionDigits: 0 });
-}
-
-function formatChartTime(value: string, period: HistoryPeriod) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  if (period === "24h") {
-    return date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-  }
-  if (period === "7d") {
-    return date.toLocaleDateString("pt-BR", { weekday: "short", hour: "2-digit" });
-  }
-  return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
-}
-
-function formatTooltipTime(value: string) {
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? value : date.toLocaleString("pt-BR");
 }
 
 function getRankingWidth(value: number, min: number, max: number, lowerIsBetter: boolean) {

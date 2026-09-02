@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Activity, BarChart3, Fan, Gauge, ShieldCheck, Thermometer, Zap } from "lucide-react";
 import {
   CartesianGrid,
@@ -26,6 +26,7 @@ import {
   chartTooltipStyle,
 } from "@/components/InternalPage";
 import { formatKwTr, formatMetric } from "@/utils/format";
+import { buildChartHistory, formatHistoryTick, formatHistoryTooltip, getHistoryTimeDomain, historyTickCount } from "@/utils/history";
 import { useDashboardRuntime } from "@/contexts/dashboard-runtime-context";
 
 export const Route = createFileRoute("/analises")({
@@ -57,8 +58,8 @@ function AnalyticsPage() {
   const {
     tick,
     selectedShoppingCode,
-    historyPeriod,
-    setHistoryPeriod,
+    historyPeriod: period,
+    setHistoryPeriod: setPeriod,
     comparisonShoppingCodes,
     setComparisonShoppingCodes,
     comparisonMetric,
@@ -67,8 +68,8 @@ function AnalyticsPage() {
   const [portfolio, setPortfolio] = useState<LiveShoppingSummary[]>([]);
   const [selected, setSelected] = useState<string[]>(comparisonShoppingCodes);
   const [metric, setMetric] = useState<AnalysisMetric>(comparisonMetric);
-  const [period, setPeriod] = useState<HistoryPeriod>(historyPeriod);
   const [series, setSeries] = useState<ShoppingApiResponse[]>([]);
+  const loadedQueryRef = useRef("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -97,23 +98,33 @@ function AnalyticsPage() {
     setComparisonMetric(metric);
   }, [metric, setComparisonMetric]);
 
-  useEffect(() => {
-    setHistoryPeriod(period);
-  }, [period, setHistoryPeriod]);
 
   useEffect(() => {
+    const queryKey = `${period}|${selected.join(",")}`;
     if (!selected.length) {
       setSeries([]);
       setLoading(false);
+      loadedQueryRef.current = queryKey;
       return;
     }
     let alive = true;
-    setLoading(true);
+    const queryChanged = loadedQueryRef.current !== queryKey;
+    if (queryChanged) setLoading(true);
     Promise.all(
-      selected.map((code) => liveDashboardService.getShopping(code, period).catch(() => null)),
+      selected.map(async (code) => ({
+        code,
+        result: await liveDashboardService.getShopping(code, period).catch(() => null),
+      })),
     )
       .then((results) => {
-        if (alive) setSeries(results.filter((item): item is ShoppingApiResponse => !!item));
+        if (!alive) return;
+        setSeries((current) => {
+          const fresh = new Map(results.filter((item) => item.result).map((item) => [item.code, item.result as ShoppingApiResponse]));
+          return selected
+            .map((code) => fresh.get(code) ?? (!queryChanged ? current.find((item) => item.shopping?.code === code) : null) ?? null)
+            .filter((item): item is ShoppingApiResponse => item !== null);
+        });
+        loadedQueryRef.current = queryKey;
       })
       .finally(() => {
         if (alive) setLoading(false);
@@ -138,7 +149,11 @@ function AnalyticsPage() {
   const avg = average(summaryValues);
   const max = summaryValues.length ? Math.max(...summaryValues) : null;
   const min = summaryValues.length ? Math.min(...summaryValues) : null;
-  const chartData = useMemo(() => mergeSeries(series, metric), [series, metric]);
+  const chartData = useMemo(() => mergeSeries(series, metric, period), [series, metric, period]);
+  const historyDomain = useMemo(() => {
+    const generatedAt = series.map((item) => Date.parse(item.generatedAt)).filter(Number.isFinite);
+    return getHistoryTimeDomain(period, generatedAt.length ? Math.max(...generatedAt) : null);
+  }, [series, period]);
 
   const displayValue = (value: number | null | undefined) =>
     config.unit === "kW/TR" ? formatKwTr(value) : formatMetric(value, config.unit, 1);
@@ -238,12 +253,12 @@ function AnalyticsPage() {
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData} margin={{ top: 8, right: 8, bottom: 4, left: -12 }}>
                     <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="timestamp" tickFormatter={(value) => labelTime(String(value), period)} minTickGap={28} tick={{ fontSize: 9, fill: "var(--muted-foreground)" }} />
+                    <XAxis dataKey="chartTimestamp" type="number" scale="time" domain={historyDomain} tickCount={historyTickCount(period)} tickFormatter={(value) => formatHistoryTick(Number(value), period)} minTickGap={24} tick={{ fontSize: 9, fill: "var(--muted-foreground)" }} allowDataOverflow />
                     <YAxis tick={{ fontSize: 9, fill: "var(--muted-foreground)" }} width={52} />
-                    <Tooltip contentStyle={chartTooltipStyle} labelFormatter={(value) => new Date(String(value)).toLocaleString("pt-BR")} formatter={(value, name) => [displayValue(typeof value === "number" ? value : Number(value)), `${String(name)} (${config.unit})`]} />
+                    <Tooltip contentStyle={chartTooltipStyle} labelFormatter={(value) => formatHistoryTooltip(typeof value === "number" ? value : Number(value))} formatter={(value, name) => [displayValue(typeof value === "number" ? value : Number(value)), `${String(name)} (${config.unit})`]} />
                     {series.map((shopping, index) => {
                       const code = shopping.shopping?.code ?? `S${index + 1}`;
-                      return <Line key={code} type="monotone" dataKey={code} name={code} stroke={SERIES_COLORS[index % SERIES_COLORS.length]} dot={false} strokeWidth={2} connectNulls />;
+                      return <Line key={code} type="linear" dataKey={code} name={code} stroke={SERIES_COLORS[index % SERIES_COLORS.length]} dot={false} strokeWidth={2} connectNulls={false} />;
                     })}
                   </LineChart>
                 </ResponsiveContainer>
@@ -284,32 +299,26 @@ function AnalyticsPage() {
 
 function AnalysisMini({label,value,unit}:{label:string;value:string;unit:string}){return <div className="rounded-lg border border-border/45 bg-muted/10 px-2.5 py-2"><div className="text-[9px] uppercase tracking-[.1em] text-muted-foreground">{label}</div><div className="mt-1 metric-value text-sm">{value} {unit&&<span className="text-[9px] font-normal text-muted-foreground">{unit}</span>}</div></div>}
 
-function mergeSeries(series: ShoppingApiResponse[], metric: AnalysisMetric) {
-  const rows = new Map<string, Record<string, string | number | null>>();
+function mergeSeries(series: ShoppingApiResponse[], metric: AnalysisMetric, period: HistoryPeriod) {
+  const rows = new Map<number, Record<string, string | number | null>>();
   for (const shopping of series) {
     const code = shopping.shopping?.code;
     if (!code) continue;
-    for (const point of shopping.history) {
-      const row = rows.get(point.timestamp) ?? { timestamp: point.timestamp };
+    for (const point of buildChartHistory(shopping.history, period)) {
+      const row = rows.get(point.chartTimestamp) ?? {
+        timestamp: point.timestamp,
+        chartTimestamp: point.chartTimestamp,
+      };
       row[code] = point[metric] as number | null;
-      rows.set(point.timestamp, row);
+      rows.set(point.chartTimestamp, row);
     }
   }
   return Array.from(rows.values()).sort(
-    (a, b) => Date.parse(String(a.timestamp)) - Date.parse(String(b.timestamp)),
+    (a, b) => Number(a.chartTimestamp) - Number(b.chartTimestamp),
   );
 }
 
 function average(values: (number | null | undefined)[]) {
   const valid = values.filter((value): value is number => typeof value === "number" && Number.isFinite(value));
   return valid.length ? valid.reduce((sum, value) => sum + value, 0) / valid.length : null;
-}
-
-function labelTime(value: string, period: HistoryPeriod) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  if (period === "24h") {
-    return new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" }).format(date);
-  }
-  return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit" }).format(date);
 }

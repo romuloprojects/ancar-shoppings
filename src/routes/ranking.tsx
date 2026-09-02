@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { BarChart3, Gauge, Medal, ShieldCheck, Trophy, Zap } from "lucide-react";
 import { dashboardService, type RankingMetric } from "@/services/dashboardService";
 import type { RankingItem } from "@/types";
@@ -37,15 +37,20 @@ function RankingPage() {
   const [metric, setMetric] = useState<RankingMetric>("intensidade");
   const [rows, setRows] = useState<RankingItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const loadedMetricRef = useRef<RankingMetric | null>(null);
 
   useEffect(() => {
     let alive = true;
-    setLoading(true);
+    const metricChanged = loadedMetricRef.current !== metric;
+    if (metricChanged) { setLoading(true); setRows([]); }
     dashboardService
       .getRanking(metric)
       .then((result) => {
-        if (alive) setRows(result);
+        if (!alive) return;
+        setRows(result);
+        loadedMetricRef.current = metric;
       })
+      .catch(() => {})
       .finally(() => {
         if (alive) setLoading(false);
       });

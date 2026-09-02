@@ -13,7 +13,7 @@ export const Route = createFileRoute("/alertas")({ head: () => ({ meta: [{ title
 
 function AlertsPage(){
  const {tick}=useDashboardRuntime(); const [alerts,setAlerts]=useState<Alert[]>([]); const [loading,setLoading]=useState(true); const [severity,setSeverity]=useState("todos"); const [q,setQ]=useState("");
- useEffect(()=>{let alive=true;setLoading(true);dashboardService.getAlerts().then(r=>{if(alive)setAlerts(r)}).finally(()=>{if(alive)setLoading(false)});return()=>{alive=false}},[tick]);
+ useEffect(()=>{let alive=true;dashboardService.getAlerts().then(r=>{if(alive)setAlerts(r)}).catch(()=>{}).finally(()=>{if(alive)setLoading(false)});return()=>{alive=false}},[tick]);
  const filtered=useMemo(()=>alerts.filter(a=>{if(severity!=="todos"&&a.severity!==severity)return false;const query=q.trim().toLowerCase();return !query||a.title.toLowerCase().includes(query)||a.shoppingName.toLowerCase().includes(query)||a.shoppingCode.toLowerCase().includes(query)}),[alerts,severity,q]);
  const critical=alerts.filter(a=>a.severity==="critico").length, attention=alerts.filter(a=>a.severity==="atencao").length;
  return <InternalPage className="compact-page compact-alerts-page"><PageHeader eyebrow="Operação atual" title="Central de Alertas" subtitle="Alertas gerados com os limites configurados por shopping e com a qualidade da aquisição." icon={Bell}/>

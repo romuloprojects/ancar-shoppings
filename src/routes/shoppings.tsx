@@ -31,8 +31,8 @@ function ShoppingsPage() {
   const [quality, setQuality] = useState("Todos");
 
   useEffect(() => {
-    let alive = true; setLoading(true);
-    dashboardService.getShoppings().then((items) => { if (alive) setList(items); }).finally(() => { if (alive) setLoading(false); });
+    let alive = true;
+    dashboardService.getShoppings().then((items) => { if (alive) setList(items); }).catch(() => {}).finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
   }, [tick]);
 

@@ -32,7 +32,6 @@ import { liveDashboardService } from "@/services/liveDashboardService";
 import type { Shopping } from "@/types";
 import type { AnalysisMetric, HistoryPeriod } from "@/types/live";
 import { useDashboardRuntime } from "@/contexts/dashboard-runtime-context";
-import { formatRelative } from "@/utils/format";
 
 const controlClass =
   "h-9 shrink-0 gap-2 rounded-xl border-border/55 bg-[color-mix(in_oklab,var(--card)_76%,transparent)] px-3 text-[11px] font-medium text-foreground/90 shadow-none hover:bg-accent/55 hover:text-foreground";
@@ -57,7 +56,6 @@ export function TopBar() {
   const navigate = useNavigate();
   const {
     tick,
-    lastUpdate,
     selectedShoppingCode,
     setSelectedShoppingCode,
     historyPeriod,
@@ -86,7 +84,7 @@ export function TopBar() {
         }
       })
       .catch(() => {
-        if (alive) setShoppings([]);
+        // Mantém o último estado válido durante falhas transitórias do polling.
       });
     return () => {
       alive = false;
@@ -162,9 +160,8 @@ export function TopBar() {
               <GitCompareArrows className="h-3.5 w-3.5 opacity-70" />
               Comparar
             </Button>
-            <div className="flex items-center gap-2 whitespace-nowrap px-1 text-[11px] text-muted-foreground">
-              <span className="inline-flex h-2 w-2 rounded-full bg-[var(--accent-cyan)]" />
-              Atualizado {formatRelative(lastUpdate.toISOString())}
+            <div className="whitespace-nowrap px-1 text-[11px] text-muted-foreground">
+              {formatLastTelemetryUpdate(selectedShopping?.lastUpdate)}
             </div>
           </div>
 
@@ -225,7 +222,7 @@ export function TopBar() {
                   </Button>
 
                   <div className="rounded-lg border border-border/55 bg-muted/15 px-3 py-2 text-xs text-muted-foreground">
-                    Atualizado {formatRelative(lastUpdate.toISOString())}
+                    {formatLastTelemetryUpdate(selectedShopping?.lastUpdate)}
                   </div>
                 </div>
               </SheetContent>
@@ -336,6 +333,19 @@ export function TopBar() {
       </Dialog>
     </>
   );
+}
+
+function formatLastTelemetryUpdate(value?: string | null) {
+  if (!value) return "🟢 Última atualização —";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime()) || date.getTime() <= 0) return "🟢 Última atualização —";
+  const now = new Date();
+  const sameDay = date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate();
+  const formatted = new Intl.DateTimeFormat("pt-BR", sameDay
+    ? { hour: "2-digit", minute: "2-digit" }
+    : { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }
+  ).format(date);
+  return `🟢 Última atualização ${formatted}`;
 }
 
 function ShoppingDropdown({
