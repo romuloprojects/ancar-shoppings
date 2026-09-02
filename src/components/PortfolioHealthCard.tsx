@@ -30,7 +30,7 @@ export function PortfolioHealthCard({ metrics }: { metrics: PortfolioHealthMetri
       </div>
 
       <div className="portfolio-health-gauge-wrap mt-1 flex shrink-0 flex-col items-center">
-        <div className="portfolio-health-gauge relative grid h-[76px] w-[76px] place-items-center">
+        <div className="portfolio-health-gauge relative grid h-[72px] w-[72px] place-items-center">
           <div className="absolute inset-[18px] rounded-full bg-[radial-gradient(circle,color-mix(in_oklab,var(--accent-cyan)_8%,transparent),transparent_66%)] blur-xl" />
           <svg
             viewBox="0 0 100 100"
@@ -69,7 +69,7 @@ export function PortfolioHealthCard({ metrics }: { metrics: PortfolioHealthMetri
           </svg>
 
           <div className="relative text-center">
-            <div className="metric-value text-[19px] leading-none">
+            <div className="metric-value text-[17px] leading-none">
               {formatNumber(quality, { maximumFractionDigits: 0 })}
             </div>
             <div className="mt-0.5 text-[8px] uppercase tracking-[0.1em] text-muted-foreground">%</div>
@@ -102,7 +102,7 @@ export function PortfolioHealthCard({ metrics }: { metrics: PortfolioHealthMetri
       </div>
 
       <div className="portfolio-health-footer mt-auto rounded-lg border border-border/55 bg-muted/15 px-2.5 py-1.5 text-center text-[9px] leading-tight text-muted-foreground">
-        Atualização automática a cada 5 minutos
+        Atualização automática a cada 3 minutos
       </div>
     </section>
   );
