@@ -1583,7 +1583,7 @@
     display: grid;
     height: 100%;
     min-height: 0;
-    grid-template-rows: 116px minmax(0, 1.12fr) minmax(0, 1.00fr);
+    grid-template-rows: 116px minmax(0, 0.98fr) minmax(0, 1.22fr);
     gap: 1rem;
     overflow: hidden;
   }
@@ -1650,7 +1650,7 @@
   .overview-portfolio-panel .group.relative.flex { min-height: 146px; }
 
   .overview-map-panel .portfolio-map-svg {
-    max-height: min(26svh, 286px) !important;
+    max-height: min(34svh, 320px) !important;
   }
   .overview-insights-list {
     min-height: 0;
@@ -1661,7 +1661,7 @@
 
 @media (min-width: 1280px) and (max-height: 860px) {
   .overview-dashboard {
-    grid-template-rows: 108px minmax(0, 1.28fr) minmax(0, 1.04fr);
+    grid-template-rows: 108px minmax(0, 1.00fr) minmax(0, 1.36fr);
     gap: .75rem;
   }
   .overview-kpis,
@@ -1674,8 +1674,8 @@
   .overview-portfolio-panel,
   .overview-map-panel,
   .overview-insights-panel { padding: .75rem !important; }
-  .overview-portfolio-panel .group.relative.flex { min-height: 132px; }
-  .overview-map-panel .portfolio-map-svg { max-height: min(31svh, 270px) !important; }
+  .overview-portfolio-panel .group.relative.flex { min-height: 138px; }
+  .overview-map-panel .portfolio-map-svg { max-height: min(36svh, 325px) !important; }
 }
 
 @media (min-width: 1024px) and (max-width: 1279px) {
@@ -1687,8 +1687,8 @@
 
 /* V3.6 — cartão de qualidade: gauge menor e mais espaço vertical na faixa inferior. */
 .portfolio-health-card .portfolio-health-gauge {
-  width: 72px !important;
-  height: 72px !important;
+  width: 64px !important;
+  height: 64px !important;
 }
 .portfolio-health-card .portfolio-health-gauge svg {
   width: 100% !important;
@@ -1700,8 +1700,8 @@
 }
 @media (min-width: 1024px) and (max-height: 800px) {
   .portfolio-health-card .portfolio-health-gauge {
-    width: 52px !important;
-    height: 52px !important;
+    width: 46px !important;
+    height: 46px !important;
   }
   .portfolio-health-card .portfolio-health-gauge-wrap {
     margin-top: 0 !important;
@@ -1718,11 +1718,11 @@
     display: none;
   }
   .portfolio-health-card .portfolio-health-gauge {
-    width: 52px !important;
-    height: 52px !important;
+    width: 46px !important;
+    height: 46px !important;
   }
   .portfolio-health-card .portfolio-health-gauge .metric-value {
-    font-size: 14px !important;
+    font-size: 12px !important;
   }
   .portfolio-health-card .portfolio-health-label {
     font-size: 8px !important;
