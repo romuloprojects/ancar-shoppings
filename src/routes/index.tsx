@@ -36,6 +36,157 @@ import { buildChartHistory, formatHistoryTick, formatHistoryTooltip, getHistoryT
 
 type RankingMetric = "power" | "production" | "efficiency" | "quality";
 
+
+const OVERVIEW_LAYOUT_V44_CSS = `
+@media (min-width: 1024px) {
+  .app-inset {
+    height: 100svh !important;
+    min-height: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+  .dashboard-main {
+    height: auto !important;
+    min-height: calc(100svh - var(--ancar-topbar-h)) !important;
+    overflow: visible !important;
+  }
+  .overview-dashboard {
+    display: grid !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    grid-template-rows: 100px 285px auto !important;
+    gap: .75rem !important;
+    overflow: visible !important;
+  }
+  .overview-dashboard > * + * { margin-top: 0 !important; }
+  .overview-kpis, .overview-kpis > article { height: 100px !important; }
+  .overview-primary-grid {
+    height: 285px !important;
+    min-height: 285px !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    gap: .75rem !important;
+  }
+
+  /* Regra definitiva da faixa inferior: 6 ShoppingCards em 3x2. */
+  .overview-portfolio-grid {
+    display: grid !important;
+    height: 408px !important;
+    min-height: 408px !important;
+    max-height: 408px !important;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 3fr) minmax(0, 2fr) minmax(0, 2fr) !important;
+    grid-template-rows: 408px !important;
+    grid-auto-rows: 408px !important;
+    align-items: stretch !important;
+    gap: .75rem !important;
+    overflow: visible !important;
+  }
+  .overview-portfolio-panel,
+  .overview-map-panel,
+  .overview-insights-panel,
+  .overview-health-panel {
+    grid-column: auto !important;
+    height: 408px !important;
+    min-height: 408px !important;
+    max-height: 408px !important;
+    align-self: stretch !important;
+  }
+
+  .overview-portfolio-panel {
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 1rem !important;
+    overflow: hidden !important;
+  }
+  .overview-portfolio-cards {
+    display: grid !important;
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    height: 302px !important;
+    min-height: 302px !important;
+    max-height: 302px !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    grid-template-rows: repeat(2, 146px) !important;
+    grid-auto-rows: 146px !important;
+    gap: 10px !important;
+    align-content: start !important;
+    overflow: hidden !important;
+    padding-right: 0 !important;
+  }
+  .overview-portfolio-cards > a,
+  .overview-portfolio-panel .group.relative.flex {
+    height: 146px !important;
+    min-height: 146px !important;
+    max-height: 146px !important;
+  }
+  .overview-portfolio-panel > .mt-3.flex {
+    flex: 0 0 auto !important;
+    margin-top: .75rem !important;
+  }
+
+  .overview-map-panel {
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 1rem !important;
+    overflow: hidden !important;
+  }
+  .overview-map-panel > h2 {
+    flex: 0 0 auto !important;
+    margin-bottom: .5rem !important;
+  }
+  .overview-map-panel .portfolio-map-root {
+    display: flex !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    flex-direction: column !important;
+  }
+  .overview-map-panel .portfolio-map-svg {
+    display: block !important;
+    flex: 1 1 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: none !important;
+  }
+  .overview-map-panel .portfolio-map-legend {
+    display: flex !important;
+    flex: 0 0 24px !important;
+    min-height: 24px !important;
+    align-items: center !important;
+    gap: .8rem !important;
+    margin-top: .35rem !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    white-space: nowrap !important;
+  }
+
+  .overview-insights-panel {
+    padding: 1rem !important;
+    overflow: hidden !important;
+  }
+  .overview-insights-list {
+    min-height: 0 !important;
+    overflow-y: auto !important;
+  }
+
+  .overview-health-panel { overflow: hidden !important; }
+  .portfolio-health-card {
+    height: 408px !important;
+    min-height: 408px !important;
+    max-height: 408px !important;
+    padding: 1rem !important;
+  }
+  .portfolio-health-card .portfolio-health-gauge {
+    width: 82px !important;
+    height: 82px !important;
+  }
+  .portfolio-health-card .portfolio-health-gauge .metric-value { font-size: 11px !important; }
+  .portfolio-health-card .portfolio-health-gauge-wrap { margin-top: .65rem !important; }
+  .portfolio-health-card .portfolio-health-rows { margin-top: .9rem !important; }
+  .portfolio-health-card .portfolio-health-footer { display: grid !important; }
+}
+`;
+
 const rankingOptions: Record<
   RankingMetric,
   { label: string; unit: string; lowerIsBetter: boolean }
@@ -219,7 +370,7 @@ function OverviewPage() {
   const portfolioHealth = makePortfolioHealth(portfolio.shoppings);
 
   return (
-    <div className="overview-dashboard space-y-4" data-ancar-ui-version="4.3">
+    <><style data-ancar-overview-layout="4.4">{OVERVIEW_LAYOUT_V44_CSS}</style><div className="overview-dashboard space-y-4" data-ancar-ui-version="4.4">
       {error && (
         <div className="overview-error rounded-lg border border-[color-mix(in_oklab,var(--accent-yellow)_38%,transparent)] bg-[color-mix(in_oklab,var(--accent-yellow)_8%,transparent)] px-3 py-2 text-xs text-[var(--accent-yellow)]">
           {error}
@@ -584,7 +735,7 @@ function OverviewPage() {
           <PortfolioHealthCard metrics={portfolioHealth} />
         </div>
       </div>
-    </div>
+    </div></>
   );
 }
 

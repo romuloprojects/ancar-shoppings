@@ -20,7 +20,7 @@ assert(styles.includes('.reports-workspace-body'),'Relatórios: workspace latera
 assert(styles.includes('grid-template-columns:170px minmax(0,1fr)'),'Configurações: navegação lateral homologada ausente');
 const allSrc=files.map(f=>fs.readFileSync(f,'utf8')).join('\n');
 assert(allSrc.includes('const portfolioPageSize = 6'),'Visão Geral: paginação deve voltar a 6 cards por página');
-assert(allSrc.includes('data-ancar-ui-version="4.3"'),'V4.3: marcador de versão da Visão Geral ausente');
+assert(allSrc.includes('data-ancar-ui-version="4.4"'),'V4.4: marcador de versão da Visão Geral ausente');
 assert(allSrc.includes('h-[116px]'),'KpiCard: altura original de 116px ausente');
 assert(allSrc.includes('min-h-[146px]'),'ShoppingCard: altura original de 146px ausente');
 assert(allSrc.includes('portfolio-map-root') && allSrc.includes('portfolio-map-legend'),'BrazilMap: estrutura flexível V3.9 ausente');
@@ -80,17 +80,22 @@ for(const route of ['index.tsx','shoppings.$shoppingId.tsx','analises.tsx','esg.
   assert(text.includes('formatHistoryTick'),`V3.6 ${route}: formatação por período ausente`);
   assert(!text.includes('type="monotone"'),`V3.6 ${route}: interpolação monotone não deve ser usada em telemetria`);
 }
-// V4.3 — regra definitiva da faixa inferior em viewport desktop efetiva.
-assert(styles.includes('@media (min-width: 1024px) and (min-height: 650px)'), 'V4.3: correção deve iniciar em 1024x650 CSS');
-assert(styles.includes('grid-template-rows: repeat(2, 146px) !important'), 'V4.3: Portfólio deve exibir duas linhas fixas de 146px');
-assert(styles.includes('grid-auto-rows: 146px !important'), 'V4.3: linhas adicionais do Portfólio devem preservar 146px');
-assert(styles.includes('.app-inset') && styles.includes('overflow-y: auto !important'), 'V4.3: app-inset deve permitir scroll vertical da página');
-assert(styles.includes('grid-template-rows: var(--overview-kpi-row-v43) var(--overview-primary-row-v43) auto !important'), 'V4.3: faixa inferior deve ser auto e governada pelo conteúdo');
-assert(styles.includes('.overview-portfolio-cards > a') && styles.includes('height: 146px !important'), 'V4.3: ShoppingCard deve preservar 146px');
-assert(styles.includes('.overview-map-panel .portfolio-map-svg') && styles.includes('min-height: 280px !important'), 'V4.3: mapa deve crescer com o card lateral');
-assert(styles.includes('.portfolio-health-card .portfolio-health-gauge') && styles.includes('width: 76px !important'), 'V4.3: Qualidade deve crescer proporcionalmente');
-assert(health.includes('text-[11px]'), 'V4.3: valor central do gauge deve permanecer pequeno');
-assert(map.includes('preserveAspectRatio="xMidYMid meet"'), 'V4.3: mapa deve preservar proporção geográfica');
+// V4.4 — guard de layout junto da própria rota, independente de altura CSS e da cascata histórica.
+const overviewRoute=fs.readFileSync(path.join(src,'routes','index.tsx'),'utf8');
+assert(overviewRoute.includes('const OVERVIEW_LAYOUT_V44_CSS'), 'V4.4: guard runtime da Visão Geral ausente');
+assert(overviewRoute.includes('@media (min-width: 1024px)'), 'V4.4: guard deve depender apenas da largura desktop, sem min-height');
+assert(!overviewRoute.match(/OVERVIEW_LAYOUT_V44_CSS[\s\S]*?@media \(min-width: 1024px\) and \(min-height:/), 'V4.4: guard não pode depender de min-height');
+assert(overviewRoute.includes('grid-template-rows: repeat(2, 146px) !important'), 'V4.4: Portfólio deve ter duas linhas de 146px');
+assert(overviewRoute.includes('height: 302px !important'), 'V4.4: área dos 6 ShoppingCards deve ter 302px');
+assert(overviewRoute.includes('height: 408px !important'), 'V4.4: faixa inferior deve reservar 408px');
+assert(overviewRoute.includes('grid-template-rows: 408px !important'), 'V4.4: todos os painéis inferiores devem compartilhar a mesma track');
+assert(overviewRoute.includes('overflow-y: auto !important'), 'V4.4: app-inset deve permitir scroll vertical da página');
+assert(overviewRoute.includes('data-ancar-overview-layout="4.4"'), 'V4.4: style guard precisa estar montado na rota');
+const rootRoute=fs.readFileSync(path.join(src,'routes','__root.tsx'),'utf8');
+assert(rootRoute.includes('ancar-ui=4.4.0'), 'V4.4: cache-bust do stylesheet ausente');
+assert(rootRoute.includes('ancar-ui-version') && rootRoute.includes('4.4.0'), 'V4.4: meta de versão ausente');
+assert(health.includes('text-[11px]'), 'V4.4: valor central do gauge deve permanecer pequeno');
+assert(map.includes('preserveAspectRatio="xMidYMid meet"'), 'V4.4: mapa deve preservar proporção geográfica');
 
 // Imports locais @/ devem apontar para arquivos reais.
 for(const file of files){
