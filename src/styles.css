@@ -1995,3 +1995,187 @@
     --portfolio-card-gap: .625rem;
   }
 }
+
+/* V4.2 — faixa inferior governada de verdade pelo conteúdo do Portfólio.
+   Regra de produto: 6 shoppings por página, 3 x 2, sem scroll interno e sem reduzir
+   tipografia/métricas. A track inferior assume a altura natural do Portfólio;
+   Mapa, Insights e Qualidade esticam exatamente até a mesma altura. */
+@media (min-width: 1280px) {
+  .dashboard-main {
+    height: auto !important;
+    min-height: calc(100svh - 4rem) !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+
+  .overview-dashboard {
+    --overview-kpi-row-v42: 100px;
+    --overview-primary-row-v42: 285px;
+    display: grid !important;
+    height: auto !important;
+    min-height: calc(100svh - 6.5rem) !important;
+    grid-template-rows: var(--overview-kpi-row-v42) var(--overview-primary-row-v42) auto !important;
+    gap: .75rem !important;
+    overflow: visible !important;
+  }
+
+  .overview-kpis,
+  .overview-kpis > article {
+    height: var(--overview-kpi-row-v42) !important;
+  }
+
+  .overview-primary-grid {
+    height: var(--overview-primary-row-v42) !important;
+    min-height: var(--overview-primary-row-v42) !important;
+  }
+
+  .overview-portfolio-grid {
+    display: grid !important;
+    height: auto !important;
+    min-height: 0 !important;
+    align-items: stretch !important;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 3fr) minmax(0, 2fr) minmax(0, 2fr) !important;
+    gap: .75rem !important;
+    overflow: visible !important;
+  }
+
+  .overview-portfolio-panel,
+  .overview-map-panel,
+  .overview-insights-panel,
+  .overview-health-panel {
+    height: auto !important;
+    min-height: 0 !important;
+    align-self: stretch !important;
+  }
+
+  .overview-portfolio-panel {
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 1rem !important;
+    overflow: hidden !important;
+  }
+
+  .overview-portfolio-cards {
+    display: grid !important;
+    flex: 0 0 auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    grid-template-rows: repeat(2, minmax(146px, auto)) !important;
+    grid-auto-rows: minmax(146px, auto) !important;
+    gap: .625rem !important;
+    align-content: start !important;
+    overflow: visible !important;
+    padding-right: 0 !important;
+  }
+
+  .overview-portfolio-cards > a,
+  .overview-portfolio-panel .group.relative.flex {
+    height: auto !important;
+    min-height: 146px !important;
+    max-height: none !important;
+  }
+
+  .overview-portfolio-panel > .mt-3.flex {
+    flex: 0 0 auto !important;
+  }
+
+  .overview-map-panel {
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 1rem !important;
+    overflow: hidden !important;
+  }
+
+  .overview-map-panel > h2 {
+    flex: 0 0 auto !important;
+    margin-bottom: .5rem !important;
+  }
+
+  .overview-map-panel .portfolio-map-root {
+    display: flex !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    flex-direction: column !important;
+  }
+
+  .overview-map-panel .portfolio-map-svg {
+    display: block !important;
+    flex: 1 1 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 280px !important;
+    max-height: none !important;
+  }
+
+  .overview-map-panel .portfolio-map-legend {
+    flex: 0 0 auto !important;
+    min-height: 22px !important;
+    margin-top: .35rem !important;
+  }
+
+  .overview-insights-panel {
+    padding: 1rem !important;
+    overflow: hidden !important;
+  }
+
+  .overview-health-panel {
+    overflow: hidden !important;
+  }
+
+  .portfolio-health-card {
+    height: 100% !important;
+    min-height: 100% !important;
+    padding: 1rem !important;
+  }
+
+  .portfolio-health-card .portfolio-health-gauge {
+    width: 76px !important;
+    height: 76px !important;
+  }
+
+  .portfolio-health-card .portfolio-health-gauge .metric-value {
+    font-size: 11px !important;
+  }
+
+  .portfolio-health-card .portfolio-health-gauge-wrap {
+    margin-top: .5rem !important;
+  }
+
+  .portfolio-health-card .portfolio-health-rows {
+    margin-top: .75rem !important;
+  }
+
+  .portfolio-health-card .portfolio-health-footer {
+    display: grid !important;
+  }
+}
+
+@media (min-width: 1280px) and (max-height: 719px) {
+  .overview-dashboard {
+    --overview-kpi-row-v42: 84px;
+    --overview-primary-row-v42: 225px;
+  }
+}
+
+@media (min-width: 1280px) and (min-height: 720px) and (max-height: 819px) {
+  .overview-dashboard {
+    --overview-kpi-row-v42: 92px;
+    --overview-primary-row-v42: 255px;
+  }
+}
+
+@media (min-width: 1280px) and (min-height: 820px) and (max-height: 899px) {
+  .overview-dashboard {
+    --overview-kpi-row-v42: 100px;
+    --overview-primary-row-v42: 285px;
+  }
+}
+
+@media (min-width: 1280px) and (min-height: 900px) {
+  .overview-dashboard {
+    --overview-kpi-row-v42: 108px;
+    --overview-primary-row-v42: 330px;
+  }
+}
