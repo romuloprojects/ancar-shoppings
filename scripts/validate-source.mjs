@@ -18,10 +18,10 @@ assert(styles.includes('.energy-workspace-body'),'Energia: workspace lateral aus
 assert(styles.includes('.reports-workspace-body'),'Relatórios: workspace lateral ausente');
 assert(styles.includes('grid-template-columns:170px minmax(0,1fr)'),'Configurações: navegação lateral homologada ausente');
 const allSrc=files.map(f=>fs.readFileSync(f,'utf8')).join('\n');
-assert(allSrc.includes('grid-template-columns: repeat(6, minmax(0, 1fr)) !important'),'V4.7: grid de 6 KPIs compactos ausente');
+assert(allSrc.includes('grid-template-columns: repeat(6, minmax(0, 1fr)) !important'),'V4.8: grid de 6 KPIs compactos ausente');
 assert(allSrc.includes('const portfolioPageSize = 6'),'Visão Geral: paginação deve voltar a 6 cards por página');
-assert(allSrc.includes('data-ancar-ui-version="4.7"'),'V4.7: marcador de versão da Visão Geral ausente');
-assert(allSrc.includes('h-[92px]'),'V4.7: KPI compacto de 92px ausente');
+assert(allSrc.includes('data-ancar-ui-version="4.8"'),'V4.8: marcador de versão da Visão Geral ausente');
+assert(allSrc.includes('h-[92px]'),'V4.8: KPI compacto de 92px ausente');
 assert(allSrc.includes('min-h-[146px]'),'ShoppingCard: altura original de 146px ausente');
 assert(allSrc.includes('portfolio-map-root') && allSrc.includes('portfolio-map-legend'),'BrazilMap: estrutura flexível V3.9 ausente');
 assert(allSrc.includes('overview-chart h-[272px]'),'Visão Geral: altura-base original do gráfico ausente');
@@ -82,34 +82,34 @@ for(const route of ['index.tsx','shoppings.$shoppingId.tsx','analises.tsx','esg.
 }
 // V4.5 — home: 6 KPIs compactos, comparativos históricos e guard de layout preservado.
 const overviewRoute=fs.readFileSync(path.join(src,'routes','index.tsx'),'utf8');
-assert(overviewRoute.includes('const OVERVIEW_LAYOUT_V45_CSS'), 'V4.7: guard runtime da Visão Geral ausente');
-assert(overviewRoute.includes('@media (min-width: 1024px)'), 'V4.7: guard deve depender apenas da largura desktop, sem min-height');
-assert(!overviewRoute.match(/OVERVIEW_LAYOUT_V45_CSS[\s\S]*?@media \(min-width: 1024px\) and \(min-height:/), 'V4.7: guard não pode depender de min-height');
-assert(overviewRoute.includes('grid-template-rows: repeat(2, 146px) !important'), 'V4.7: Portfólio deve ter duas linhas de 146px');
-assert(overviewRoute.includes('height: 302px !important'), 'V4.7: área dos 6 ShoppingCards deve ter 302px');
-assert(overviewRoute.includes('height: 408px !important'), 'V4.7: faixa inferior deve reservar 408px');
-assert(overviewRoute.includes('grid-template-rows: 408px !important'), 'V4.7: todos os painéis inferiores devem compartilhar a mesma track');
-assert(overviewRoute.includes('overflow-y: auto !important'), 'V4.7: app-inset deve permitir scroll vertical da página');
-assert(overviewRoute.includes('data-ancar-overview-layout="4.7"'), 'V4.7: style guard precisa estar montado na rota');
+assert(overviewRoute.includes('const OVERVIEW_LAYOUT_V45_CSS'), 'V4.8: guard runtime da Visão Geral ausente');
+assert(overviewRoute.includes('@media (min-width: 1024px)'), 'V4.8: guard deve depender apenas da largura desktop, sem min-height');
+assert(!overviewRoute.match(/OVERVIEW_LAYOUT_V45_CSS[\s\S]*?@media \(min-width: 1024px\) and \(min-height:/), 'V4.8: guard não pode depender de min-height');
+assert(overviewRoute.includes('grid-template-rows: repeat(2, 146px) !important'), 'V4.8: Portfólio deve ter duas linhas de 146px');
+assert(overviewRoute.includes('height: 302px !important'), 'V4.8: área dos 6 ShoppingCards deve ter 302px');
+assert(overviewRoute.includes('height: 408px !important'), 'V4.8: faixa inferior deve reservar 408px');
+assert(overviewRoute.includes('grid-template-rows: 408px !important'), 'V4.8: todos os painéis inferiores devem compartilhar a mesma track');
+assert(overviewRoute.includes('overflow-y: auto !important'), 'V4.8: app-inset deve permitir scroll vertical da página');
+assert(overviewRoute.includes('data-ancar-overview-layout="4.8"'), 'V4.8: style guard precisa estar montado na rota');
 const rootRoute=fs.readFileSync(path.join(src,'routes','__root.tsx'),'utf8');
-assert(rootRoute.includes('ancar-ui=4.7.0'), 'V4.7: cache-bust do stylesheet ausente');
-assert(rootRoute.includes('ancar-ui-version') && rootRoute.includes('4.7.0'), 'V4.7: meta de versão ausente');
-assert(health.includes('text-[11px]'), 'V4.7: valor central do gauge deve permanecer pequeno');
-assert(map.includes('preserveAspectRatio="xMidYMid meet"'), 'V4.7: mapa deve preservar proporção geográfica');
+assert(rootRoute.includes('ancar-ui=4.8.0'), 'V4.8: cache-bust do stylesheet ausente');
+assert(rootRoute.includes('ancar-ui-version') && rootRoute.includes('4.8.0'), 'V4.8: meta de versão ausente');
+assert(health.includes('text-[11px]'), 'V4.8: valor central do gauge deve permanecer pequeno');
+assert(map.includes('preserveAspectRatio="xMidYMid meet"'), 'V4.8: mapa deve preservar proporção geográfica');
 
 // V4.5 — comparativos e ranking vs meta.
 const kpiCard=fs.readFileSync(path.join(src,'components','KpiCard.tsx'),'utf8');
-assert(!kpiCard.includes('buildSparklineGeometry'),'V4.7: sparkline lateral deve ter sido removido dos KPIs');
-assert(kpiCard.includes('comparisonValue'),'V4.7: KpiCard deve aceitar comparativo do período');
-assert(overviewRoute.includes('label="Temperatura Externa"'),'V4.7: card de Temperatura Externa ausente');
-assert(overviewRoute.includes('comparisonLabel={comparisonLabel}'),'V4.7: KPIs não estão ligados ao comparativo temporal');
-assert(overviewRoute.includes('targetDeviationPct'),'V4.7: ranking não exibe desvio vs meta');
-assert(overviewRoute.includes('abaixo') && overviewRoute.includes('acima'),'V4.7: texto abaixo/acima da meta ausente');
+assert(!kpiCard.includes('buildSparklineGeometry'),'V4.8: sparkline lateral deve ter sido removido dos KPIs');
+assert(kpiCard.includes('comparisonValue'),'V4.8: KpiCard deve aceitar comparativo do período');
+assert(overviewRoute.includes('label="Temperatura Externa"'),'V4.8: card de Temperatura Externa ausente');
+assert(overviewRoute.includes('comparisonLabel={comparisonLabel}'),'V4.8: KPIs não estão ligados ao comparativo temporal');
+assert(overviewRoute.includes('targetDeviationPct'),'V4.8: ranking não exibe desvio vs meta');
+assert(overviewRoute.includes('abaixo') && overviewRoute.includes('acima'),'V4.8: texto abaixo/acima da meta ausente');
 const comparisonUtils=fs.readFileSync(path.join(src,'utils','comparison.ts'),'utf8');
-assert(comparisonUtils.includes('vs ontem') && comparisonUtils.includes('vs semana passada') && comparisonUtils.includes('vs mês anterior'),'V4.7: rótulos dos períodos comparativos ausentes');
-assert(comparisonUtils.includes('targetDeviationPct'),'V4.7: cálculo de desvio vs meta ausente');
+assert(comparisonUtils.includes('vs ontem') && comparisonUtils.includes('vs semana passada') && comparisonUtils.includes('vs mês anterior'),'V4.8: rótulos dos períodos comparativos ausentes');
+assert(comparisonUtils.includes('targetDeviationPct'),'V4.8: cálculo de desvio vs meta ausente');
 const liveTypes=fs.readFileSync(path.join(src,'types','live.ts'),'utf8');
-assert(liveTypes.includes('PeriodComparison') && liveTypes.includes('avgTemperatureC'),'V4.7: contrato de comparação da API ausente');
+assert(liveTypes.includes('PeriodComparison') && liveTypes.includes('avgTemperatureC'),'V4.8: contrato de comparação da API ausente');
 
 // Imports locais @/ devem apontar para arquivos reais.
 for(const file of files){
@@ -121,9 +121,9 @@ for(const file of files){
   }
 }
 
-assert(overviewRoute.includes('useState<RankingMetric>("efficiency")'), 'V4.7: Ranking da Visão Geral deve iniciar em Eficiência Energética');
-assert(overviewRoute.includes('label: "Eficiência Energética", unit: "kW/TR"'), 'V4.7: rótulo Eficiência Energética ausente no Ranking da home');
+assert(overviewRoute.includes('useState<RankingMetric>("efficiency")'), 'V4.8: Ranking da Visão Geral deve iniciar em Eficiência Energética');
+assert(overviewRoute.includes('label: "Eficiência Energética", unit: "kW/TR"'), 'V4.8: rótulo Eficiência Energética ausente no Ranking da home');
 const rankingRoute=fs.readFileSync(path.join(root,'src/routes/ranking.tsx'),'utf8');
-assert(rankingRoute.includes('key: "intensidade"') && rankingRoute.includes('label: "Eficiência Energética"'), 'V4.7: página Ranking deve exibir Eficiência Energética mantendo a chave interna intensidade');
+assert(rankingRoute.includes('key: "intensidade"') && rankingRoute.includes('label: "Eficiência Energética"'), 'V4.8: página Ranking deve exibir Eficiência Energética mantendo a chave interna intensidade');
 console.log(`TS/TSX analisados: ${files.length}`); console.log(`Erros: ${errors.length}`); if(errors.length){console.error(errors.join('\n'));process.exit(1)}
 console.log('VALIDAÇÃO DE FONTE: PASS');

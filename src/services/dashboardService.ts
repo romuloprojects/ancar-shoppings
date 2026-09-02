@@ -78,19 +78,41 @@ export const dashboardService = {
       const comparable = metric !== "eficiencia" || row.raw.registry.chillersAbsorption === 0;
       const stale = row.shopping.status === "offline";
       const value = stale ? null : rawValue;
+      const targetKwTr = Number.isFinite(row.raw.settings?.targetKwTr)
+        ? Number(row.raw.settings?.targetKwTr)
+        : null;
+      const targetDeviationPct =
+        metric === "intensidade" && value !== null && targetKwTr !== null && targetKwTr > 0
+          ? ((value - targetKwTr) / targetKwTr) * 100
+          : null;
       const reason = stale
         ? "Dados desatualizados"
         : !comparable
           ? "Não comparável nesta métrica"
           : value === null || !Number.isFinite(value)
             ? "Sem dado disponível"
-            : undefined;
-      return { ...row, value, comparable, reason };
+            : metric === "intensidade" && targetDeviationPct === null
+              ? "Sem meta configurada · fallback por kW/TR"
+              : undefined;
+      return { ...row, value, comparable, reason, targetKwTr, targetDeviationPct };
     });
 
     const valid = evaluated
       .filter((row): row is typeof row & { value: number } => row.value !== null && Number.isFinite(row.value))
-      .sort((a, b) => (lower.has(metric) ? a.value - b.value : b.value - a.value));
+      .sort((a, b) => {
+        if (metric === "intensidade") {
+          const aHasTarget = a.targetDeviationPct !== null;
+          const bHasTarget = b.targetDeviationPct !== null;
+          if (aHasTarget && bHasTarget) {
+            const deviationDiff = (a.targetDeviationPct as number) - (b.targetDeviationPct as number);
+            if (Math.abs(deviationDiff) > 1e-9) return deviationDiff;
+            return a.value - b.value;
+          }
+          if (aHasTarget !== bHasTarget) return aHasTarget ? -1 : 1;
+          return a.value - b.value;
+        }
+        return lower.has(metric) ? a.value - b.value : b.value - a.value;
+      });
 
     const positions = new Map(valid.map((row, index) => [row.shopping.id, index + 1]));
 
@@ -110,6 +132,8 @@ export const dashboardService = {
         unit: unit[metric],
         status: row.shopping.status,
         comparable: row.comparable,
+        targetKwTr: row.targetKwTr,
+        targetDeviationPct: row.targetDeviationPct,
         reason: row.reason,
       }));
   },

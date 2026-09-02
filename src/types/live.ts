@@ -214,6 +214,19 @@ export interface EquipmentRegistryItem {
   metadata: Record<string, unknown>;
 }
 
+
+export interface HistoryDiagnostics {
+  historyCount: number;
+  historyFrom: string | null;
+  historyTo: string | null;
+  latestCollectedAt: string | null;
+  latestInsideRequestedWindow: boolean;
+  historyInconsistent: boolean;
+  fallbackUsed?: boolean;
+  fallbackReason?: string | null;
+  cachedGeneratedAt?: string | null;
+}
+
 export interface ShoppingApiResponse {
   ok: boolean;
   generatedAt: string;
@@ -223,6 +236,7 @@ export interface ShoppingApiResponse {
   history: ShoppingHistoryPoint[];
   summary: PeriodSummary;
   comparison?: PeriodComparison | null;
+  historyDiagnostics?: HistoryDiagnostics | null;
 }
 
 export interface SettingsApiResponse {

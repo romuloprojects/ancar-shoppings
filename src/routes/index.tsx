@@ -316,12 +316,15 @@ function OverviewPage() {
     [portfolio],
   );
 
+  const currentHistoryQueryKey = `${selectedShoppingCode}:${historyPeriod}`;
+  const hasMatchingHistoryData =
+    shoppingData?.shopping?.code === selectedShoppingCode && shoppingData.period === historyPeriod;
+  // Cobre também o primeiro render após troca de shopping/período, antes do useEffect ligar o loading.
+  const historyTransitionPending = !hasMatchingHistoryData && historyQueryRef.current !== currentHistoryQueryKey;
+
   const chartHistory = useMemo(
-    () => buildChartHistory(
-      shoppingData?.shopping?.code === selectedShoppingCode && shoppingData.period === historyPeriod ? shoppingData.history ?? [] : [],
-      historyPeriod,
-    ),
-    [shoppingData, selectedShoppingCode, historyPeriod],
+    () => buildChartHistory(hasMatchingHistoryData ? shoppingData?.history ?? [] : [], historyPeriod),
+    [shoppingData, hasMatchingHistoryData, historyPeriod],
   );
   const historyDomain = useMemo(
     () => getHistoryTimeDomain(
@@ -346,8 +349,7 @@ function OverviewPage() {
     );
   }
 
-  const history =
-    shoppingData && shoppingData.shopping.code === selectedShoppingCode && shoppingData.period === historyPeriod ? shoppingData.history ?? [] : [];
+  const history = hasMatchingHistoryData ? shoppingData?.history ?? [] : [];
   const kpis = selectedShopping.latest?.kpis ?? {};
   const isMixed =
     kpis.modelo_energetico === "mixed_absorption_electric" ||
@@ -388,7 +390,7 @@ function OverviewPage() {
   const portfolioHealth = makePortfolioHealth(portfolio.shoppings);
 
   return (
-    <><style data-ancar-overview-layout="4.7">{OVERVIEW_LAYOUT_V45_CSS}</style><div className="overview-dashboard space-y-4" data-ancar-ui-version="4.7">
+    <><style data-ancar-overview-layout="4.8">{OVERVIEW_LAYOUT_V45_CSS}</style><div className="overview-dashboard space-y-4" data-ancar-ui-version="4.8">
       {error && (
         <div className="overview-error rounded-lg border border-[color-mix(in_oklab,var(--accent-yellow)_38%,transparent)] bg-[color-mix(in_oklab,var(--accent-yellow)_8%,transparent)] px-3 py-2 text-xs text-[var(--accent-yellow)]">
           {error}
@@ -498,7 +500,7 @@ function OverviewPage() {
           </div>
 
           <div className="overview-chart h-[272px] min-h-0 2xl:h-[286px]">
-            {loadingHistory && history.length === 0 ? (
+            {(loadingHistory || historyTransitionPending) && history.length === 0 ? (
               <LoadingBlock h={272} />
             ) : history.length === 0 ? (
               <div className="grid h-full place-items-center">
@@ -630,7 +632,9 @@ function OverviewPage() {
               ranking.map((item) => {
                 const width = item.value === null
                   ? 0
-                  : getRankingWidth(item.value, rankingMin, rankingMax, selectedRanking.lowerIsBetter);
+                  : rankingMetric === "efficiency"
+                    ? getRankingPositionWidth(item.position, ranking.length)
+                    : getRankingWidth(item.value, rankingMin, rankingMax, selectedRanking.lowerIsBetter);
                 const color = statusColor[item.status];
 
                 return (
@@ -824,13 +828,37 @@ function makeLiveRanking(items: LiveShoppingSummary[], metric: RankingMetric): R
       status,
       targetKwTr,
       targetDeviationPct: deviationFromTarget,
-      reason: status === "offline" ? "Dados desatualizados" : value === null ? "Sem dado disponível" : undefined,
+      reason:
+        status === "offline"
+          ? "Dados desatualizados"
+          : value === null
+            ? "Sem dado disponível"
+            : metric === "efficiency" && deviationFromTarget === null
+              ? "Sem meta configurada · fallback por kW/TR"
+              : undefined,
     };
   });
 
   const valid = evaluated
     .filter((row): row is (typeof evaluated)[number] & { value: number } => row.value !== null)
-    .sort((a, b) => (option.lowerIsBetter ? a.value - b.value : b.value - a.value));
+    .sort((a, b) => {
+      if (metric === "efficiency") {
+        const aHasTarget = a.targetDeviationPct !== null;
+        const bHasTarget = b.targetDeviationPct !== null;
+
+        // Unidades com meta configurada são comparadas pelo desvio percentual relativo à meta.
+        // Unidades sem meta ficam depois e usam kW/TR absoluto apenas como fallback.
+        if (aHasTarget && bHasTarget) {
+          const deviationDiff = (a.targetDeviationPct as number) - (b.targetDeviationPct as number);
+          if (Math.abs(deviationDiff) > 1e-9) return deviationDiff;
+          return a.value - b.value;
+        }
+        if (aHasTarget !== bHasTarget) return aHasTarget ? -1 : 1;
+        return a.value - b.value;
+      }
+
+      return option.lowerIsBetter ? a.value - b.value : b.value - a.value;
+    });
   const positions = new Map(valid.map((row, index) => [row.item.id, index + 1]));
 
   return evaluated
@@ -968,6 +996,13 @@ function display(value: number | null, digits = 1) {
   return value === null
     ? "—"
     : formatNumber(value, { maximumFractionDigits: digits, minimumFractionDigits: 0 });
+}
+
+function getRankingPositionWidth(position: number | null, total: number) {
+  if (position === null || total <= 0) return 0;
+  if (total === 1) return 100;
+  const normalized = 100 - ((position - 1) / Math.max(1, total - 1)) * 72;
+  return Math.max(18, Math.min(100, normalized));
 }
 
 function getRankingWidth(value: number, min: number, max: number, lowerIsBetter: boolean) {

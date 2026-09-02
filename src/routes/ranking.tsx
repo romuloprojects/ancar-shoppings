@@ -17,7 +17,7 @@ const METRICS: { key: RankingMetric; label: string; subtitle: string }[] = [
   {
     key: "intensidade",
     label: "Eficiência Energética",
-    subtitle: "kW/TR elétrico para todas as unidades com potência CAG e produção térmica válidas",
+    subtitle: "Com meta: menor desvio percentual em relação à meta. Sem meta: fallback por kW/TR absoluto.",
   },
   {
     key: "eficiencia",
@@ -75,6 +75,17 @@ function RankingPage() {
     return formatMetric(value, unit, unit === "%" ? 1 : 1);
   };
 
+
+  const rankingCriterionLabel = (row: RankingItem) => {
+    if (metric !== "intensidade" || row.value === null) return null;
+    if (row.targetDeviationPct === null || row.targetDeviationPct === undefined) {
+      return "Sem meta · fallback por kW/TR";
+    }
+    const magnitude = Math.abs(row.targetDeviationPct).toFixed(1).replace(".", ",");
+    if (Math.abs(row.targetDeviationPct) < 0.05) return "0,0% na meta";
+    return `${magnitude}% ${row.targetDeviationPct < 0 ? "abaixo" : "acima"} da meta`;
+  };
+
   return (
     <InternalPage className="compact-page compact-ranking-page">
       <PageHeader
@@ -95,7 +106,7 @@ function RankingPage() {
           label="Melhor resultado"
           value={best ? formatValue(best.value, best.unit) : "—"}
           unit={best?.unit}
-          detail={best ? best.code : "Sem dados"}
+          detail={best ? (metric === "intensidade" ? `${best.code} · ${rankingCriterionLabel(best) ?? "sem meta"}` : best.code) : "Sem dados"}
           icon={Medal}
           accent="green"
         />
@@ -160,7 +171,21 @@ function RankingPage() {
                       <span className="rounded bg-muted px-1.5 py-0.5 text-[9px] font-semibold">{row.code}</span>
                       <span className="min-w-0 truncate text-[11px] font-medium">{row.name}</span>
                     </div>
-                    {row.reason && <div className="mt-0.5 truncate text-[9px] text-muted-foreground">{row.reason}</div>}
+                    {rankingCriterionLabel(row) ? (
+                      <div
+                        className={`mt-0.5 truncate text-[9px] font-semibold ${
+                          row.targetDeviationPct === null || row.targetDeviationPct === undefined
+                            ? "text-muted-foreground"
+                            : row.targetDeviationPct <= 0
+                              ? "text-[var(--accent-green)]"
+                              : "text-[var(--accent-red)]"
+                        }`}
+                      >
+                        {rankingCriterionLabel(row)}
+                      </div>
+                    ) : row.reason ? (
+                      <div className="mt-0.5 truncate text-[9px] text-muted-foreground">{row.reason}</div>
+                    ) : null}
                   </div>
                   <div className="h-1.5 overflow-hidden rounded-full bg-muted/45">
                     {row.value !== null && <span className="block h-full rounded-full bg-[linear-gradient(90deg,var(--accent-cyan),var(--accent-green))]" style={{width:`${Math.max(12, Math.min(100, 100 - ((row.position ?? rows.length)-1) * (75/Math.max(1,rows.length-1))))}%`}} />}

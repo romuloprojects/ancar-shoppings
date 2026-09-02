@@ -5,6 +5,7 @@ import type { Alert, Shopping } from "@/types";
 import type {
   ComparisonWindowSummary,
   HistoryPeriod,
+  HistoryDiagnostics,
   LiveShoppingSummary,
   PortfolioApiResponse,
   SettingsApiResponse,
@@ -35,6 +36,40 @@ export function asNumber(value: unknown): number | null {
   return null;
 }
 
+
+const HISTORY_WINDOW_MS: Record<HistoryPeriod, number> = {
+  "24h": 24 * 60 * 60 * 1000,
+  "7d": 7 * 24 * 60 * 60 * 1000,
+  "30d": 30 * 24 * 60 * 60 * 1000,
+};
+
+// Último histórico válido da sessão, isolado por shopping + período.
+// Serve apenas como proteção contra respostas transitórias vazias do polling.
+const shoppingHistoryCache = new Map<string, ShoppingApiResponse>();
+
+function historyCacheKey(code: string, period: HistoryPeriod) {
+  return `${code.trim().toUpperCase()}:${period}`;
+}
+
+function buildLocalHistoryDiagnostics(result: ShoppingApiResponse, period: HistoryPeriod): HistoryDiagnostics {
+  const timestamps = result.history
+    .map((point) => Date.parse(point.timestamp))
+    .filter(Number.isFinite)
+    .sort((a, b) => a - b);
+  const latestCollectedAt = result.shopping?.latest?.collectedAt ?? null;
+  const latestTs = latestCollectedAt ? Date.parse(latestCollectedAt) : Number.NaN;
+  const generatedTs = Date.parse(result.generatedAt);
+  const windowEnd = Number.isFinite(generatedTs) ? generatedTs : Date.now();
+  const latestInsideRequestedWindow = Number.isFinite(latestTs) && latestTs >= windowEnd - HISTORY_WINDOW_MS[period] && latestTs <= windowEnd + 60_000;
+  return {
+    historyCount: timestamps.length,
+    historyFrom: timestamps.length ? new Date(timestamps[0]).toISOString() : null,
+    historyTo: timestamps.length ? new Date(timestamps[timestamps.length - 1]).toISOString() : null,
+    latestCollectedAt,
+    latestInsideRequestedWindow,
+    historyInconsistent: latestInsideRequestedWindow && timestamps.length === 0,
+  };
+}
 
 function normalizeComparisonWindow(input?: Partial<ComparisonWindowSummary> | null): ComparisonWindowSummary {
   return {
@@ -180,6 +215,42 @@ export const liveDashboardService = {
       current: normalizeComparisonWindow(result.comparison.current),
       previous: normalizeComparisonWindow(result.comparison.previous),
     } : null;
+
+    const key = historyCacheKey(code, period);
+    const localDiagnostics = buildLocalHistoryDiagnostics(result, period);
+    result.historyDiagnostics = {
+      ...localDiagnostics,
+      ...(result.historyDiagnostics ?? {}),
+      historyCount: result.history.length,
+    };
+
+    if (result.history.length > 0) {
+      shoppingHistoryCache.set(key, result);
+      return result;
+    }
+
+    const cached = shoppingHistoryCache.get(key);
+    if (cached?.history?.length) {
+      // Uma resposta vazia do polling não pode apagar um gráfico já válido.
+      // Preservamos apenas os campos históricos; latest/health continuam vindo da resposta nova.
+      result.history = cached.history;
+      result.summary = cached.summary;
+      result.historyDiagnostics = {
+        ...(result.historyDiagnostics ?? localDiagnostics),
+        historyCount: cached.history.length,
+        historyFrom: cached.historyDiagnostics?.historyFrom ?? cached.history[0]?.timestamp ?? null,
+        historyTo: cached.historyDiagnostics?.historyTo ?? cached.history[cached.history.length - 1]?.timestamp ?? null,
+        fallbackUsed: true,
+        fallbackReason: "empty_history_response",
+        cachedGeneratedAt: cached.generatedAt,
+      };
+      return result;
+    }
+
+    if (result.historyDiagnostics?.historyInconsistent) {
+      throw new Error(`API ANCAR retornou histórico vazio inconsistente para ${code} (${period}), apesar de existir coleta recente.`);
+    }
+
     return result;
   },
 
