@@ -83,6 +83,13 @@ assert(styles.includes('grid-template-rows: 108px minmax(285px, 1fr) 320px'),'V3
 assert(styles.includes('grid-template-rows: 96px minmax(235px, 1fr) 260px'),'V3.9: faixa inferior 720–819 px deve ter 260 px');
 assert(styles.includes('flex: 1 1 0') && styles.includes('max-height: none !important') && styles.includes('.portfolio-map-legend'),'V3.9: mapa deve usar flex sizing sem corte por max-height');
 assert(health.includes('text-[11px]'),'V3.9: valor central do gauge deve usar 11 px');
+assert(styles.includes('@media (min-width: 1280px) and (min-height: 650px)'),'V4.0: correção deve iniciar em 650px de altura CSS');
+assert(styles.includes('grid-template-rows: 84px minmax(170px, 1fr) 275px !important'),'V4.0: faixa 650–719 não encontrada');
+assert(styles.includes('grid-template-rows: 92px minmax(200px, 1fr) 305px !important'),'V4.0: faixa 720–819 não encontrada');
+assert(styles.includes('grid-template-rows: 100px minmax(235px, 1fr) 355px !important'),'V4.0: faixa 820–899 não encontrada');
+assert(styles.includes('grid-template-rows: 108px minmax(255px, 1fr) 405px !important'),'V4.0: faixa >=900 não encontrada');
+assert(styles.includes('flex: 0 0 22px !important'),'V4.0: legenda compacta do mapa ausente');
+assert(map.includes('preserveAspectRatio="xMidYMid meet"'),'V4.0: mapa deve preservar proporção geográfica');
 
 // Imports locais @/ devem apontar para arquivos reais.
 for(const file of files){

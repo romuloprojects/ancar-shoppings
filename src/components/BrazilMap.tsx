@@ -150,6 +150,7 @@ export function BrazilMap({ items = [] }: { items?: Shopping[] }) {
     <div className="portfolio-map-root relative flex min-h-0 w-full flex-1 flex-col">
       <svg
         viewBox={`0 0 ${BRAZIL_MAP_WIDTH} ${BRAZIL_MAP_HEIGHT}`}
+        preserveAspectRatio="xMidYMid meet"
         className="portfolio-map-svg min-h-0 w-full flex-1 overflow-visible"
         role="img"
         aria-label="Distribuição dos shoppings no Brasil"
