@@ -79,7 +79,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "ANCAR | Monitoramento CAG" },
-      { name: "ancar-ui-version", content: "4.5.0" },
+      { name: "ancar-ui-version", content: "4.7.0" },
       {
         name: "description",
         content:
@@ -94,7 +94,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
-      { rel: "stylesheet", href: `${appCss}?ancar-ui=4.5.0` },
+      { rel: "stylesheet", href: `${appCss}?ancar-ui=4.7.0` },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {

@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Activity, AlertTriangle, ArrowLeft, Fan, Gauge, Settings, ShieldCheck, Thermometer, Zap } from "lucide-react";
 import { CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { dashboardService } from "@/services/dashboardService";
@@ -24,10 +24,15 @@ function ShoppingDetailPage() {
   const [data, setData] = useState<ShoppingApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const queryRef = useRef<string>("");
 
   useEffect(() => {
-    let alive = true; setLoading(true);
-    dashboardService.getShoppingById(shoppingId, period).then((result) => { if (alive) { setData(result); setError(result ? null : "Shopping não encontrado."); } }).catch((e) => { if (alive && !(data?.shopping && data.period === period)) setError(e instanceof Error ? e.message : "Falha ao carregar dados."); }).finally(() => { if (alive) setLoading(false); });
+    let alive = true;
+    const queryKey = `${shoppingId}:${period}`;
+    const queryChanged = queryRef.current !== queryKey;
+    queryRef.current = queryKey;
+    if (queryChanged && !(data?.shopping && data.period === period)) setLoading(true);
+    dashboardService.getShoppingById(shoppingId, period).then((result) => { if (alive) { setData(result); setError(result ? null : "Shopping não encontrado."); } }).catch((e) => { if (alive && !(data?.shopping && data.period === period)) setError(e instanceof Error ? e.message : "Falha ao carregar dados."); }).finally(() => { if (alive && queryChanged) setLoading(false); });
     return () => { alive = false; };
   }, [shoppingId, period, tick]);
 
@@ -67,7 +72,7 @@ function ShoppingDetailPage() {
         <div className="detail-behavior-grid min-h-0">
           <SectionPanel title="Comportamento da CAG" subtitle="Potência, produção térmica e kW/TR no período selecionado" icon={Activity}
             right={<div className="segmented-control w-full sm:w-auto">{(["24h","7d","30d"] as HistoryPeriod[]).map((p)=><button type="button" key={p} data-active={period===p} onClick={()=>setPeriod(p)}>{p}</button>)}</div>} className="compact-fill-panel">
-            <div className="detail-main-chart h-[230px] min-w-0 sm:h-[260px] lg:h-[290px]"><ResponsiveContainer width="100%" height="100%"><ComposedChart data={chartHistory}><CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false}/><XAxis dataKey="chartTimestamp" type="number" scale="time" domain={historyDomain} tickCount={historyTickCount(period)} tickFormatter={(v)=>formatHistoryTick(Number(v),period)} minTickGap={24} tick={{fontSize:10,fill:"var(--muted-foreground)"}} allowDataOverflow/><YAxis yAxisId="left" tick={{fontSize:10,fill:"var(--muted-foreground)"}}/><YAxis yAxisId="right" orientation="right" tick={{fontSize:10,fill:"var(--muted-foreground)"}}/><Tooltip contentStyle={chartTooltipStyle} labelFormatter={(v)=>formatHistoryTooltip(typeof v==="number"?v:Number(v))} formatter={(value,name)=>{const n=typeof value==="number"?value:Number(value);return [String(name).includes("kW/TR")?formatKwTr(n):formatNumber(n,{maximumFractionDigits:1}),String(name)]}}/><Line yAxisId="left" type="linear" dataKey="kwCag" name="Potência CAG (kW)" stroke="var(--accent-cyan)" dot={false} strokeWidth={2} connectNulls={false}/><Line yAxisId="left" type="linear" dataKey="trTotal" name="Produção (TR)" stroke="var(--accent-blue)" dot={false} strokeWidth={1.8} connectNulls={false}/><Line yAxisId="right" type="linear" dataKey="kwTr" name="kW/TR" stroke="var(--accent-green)" dot={false} strokeWidth={1.8} connectNulls={false}/></ComposedChart></ResponsiveContainer></div>
+            <div className="detail-main-chart h-[230px] min-w-0 sm:h-[260px] lg:h-[290px]"><ResponsiveContainer width="100%" height="100%"><ComposedChart data={chartHistory}><CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false}/><XAxis dataKey="chartTimestamp" type="number" scale="time" domain={historyDomain} tickCount={historyTickCount(period)} tickFormatter={(v)=>formatHistoryTick(Number(v),period)} minTickGap={24} tick={{fontSize:10,fill:"var(--muted-foreground)"}} allowDataOverflow/><YAxis yAxisId="left" tick={{fontSize:10,fill:"var(--muted-foreground)"}}/><YAxis yAxisId="right" orientation="right" tick={{fontSize:10,fill:"var(--muted-foreground)"}}/><Tooltip contentStyle={chartTooltipStyle} labelFormatter={(v)=>formatHistoryTooltip(typeof v==="number"?v:Number(v))} formatter={(value,name)=>{const n=typeof value==="number"?value:Number(value);return [String(name).includes("kW/TR")?formatKwTr(n):formatNumber(n,{maximumFractionDigits:1}),String(name)]}}/><Line isAnimationActive={false} yAxisId="left" type="linear" dataKey="kwCag" name="Potência CAG (kW)" stroke="var(--accent-cyan)" dot={false} strokeWidth={2} connectNulls={false}/><Line isAnimationActive={false} yAxisId="left" type="linear" dataKey="trTotal" name="Produção (TR)" stroke="var(--accent-blue)" dot={false} strokeWidth={1.8} connectNulls={false}/><Line isAnimationActive={false} yAxisId="right" type="linear" dataKey="kwTr" name="kW/TR" stroke="var(--accent-green)" dot={false} strokeWidth={1.8} connectNulls={false}/></ComposedChart></ResponsiveContainer></div>
             <div className="detail-summary-strip mt-2 grid grid-cols-2 gap-1.5 lg:grid-cols-4"><Mini label="Energia" value={num(data.summary.energyKwh,1)} unit="kWh"/><Mini label="Frio acumulado" value={num(data.summary.thermalTrh,1)} unit="TRh"/><Mini label="Média kW/TR" value={formatKwTr(data.summary.avgKwTr)} unit="kW/TR"/><Mini label="Pico potência" value={num(data.summary.maxKw,1)} unit="kW"/></div>
           </SectionPanel>
           <SectionPanel title="Equipamentos" subtitle={`${equipments.length} equipamento(s) com dados cadastrados`} icon={Activity} className="compact-fill-panel" contentClassName="compact-scroll-region">

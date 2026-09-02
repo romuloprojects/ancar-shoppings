@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Activity, ChevronLeft, ChevronRight, Fan, Gauge, Thermometer, Zap } from "lucide-react";
 import {
   Area,
@@ -195,7 +195,7 @@ const rankingOptions: Record<
 > = {
   power: { label: "Potência CAG", unit: "kW", lowerIsBetter: false },
   production: { label: "Produção térmica", unit: "TR", lowerIsBetter: false },
-  efficiency: { label: "Intensidade elétrica", unit: "kW/TR", lowerIsBetter: true },
+  efficiency: { label: "Eficiência Energética", unit: "kW/TR", lowerIsBetter: true },
   quality: { label: "Qualidade dos dados", unit: "%", lowerIsBetter: false },
 };
 
@@ -229,17 +229,17 @@ function OverviewPage() {
     setHistoryPeriod,
   } = useDashboardRuntime();
   const [portfolioPage, setPortfolioPage] = useState(0);
-  const [rankingMetric, setRankingMetric] = useState<RankingMetric>("power");
+  const [rankingMetric, setRankingMetric] = useState<RankingMetric>("efficiency");
   const [portfolio, setPortfolio] = useState<PortfolioApiResponse | null>(null);
   const [shoppingData, setShoppingData] = useState<ShoppingApiResponse | null>(null);
   const [loadingPortfolio, setLoadingPortfolio] = useState(true);
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const historyQueryRef = useRef<string>("");
 
   useEffect(() => {
     let alive = true;
-    setLoadingPortfolio(true);
-
+    // Polling silencioso: depois da carga inicial, mantém o conteúdo atual na tela.
     liveDashboardService
       .getPortfolio()
       .then((result) => {
@@ -265,7 +265,15 @@ function OverviewPage() {
   useEffect(() => {
     if (!selectedShoppingCode) return;
     let alive = true;
-    setLoadingHistory(true);
+    const queryKey = `${selectedShoppingCode}:${historyPeriod}`;
+    const queryChanged = historyQueryRef.current !== queryKey;
+    historyQueryRef.current = queryKey;
+
+    // Só mostra loading quando o usuário realmente troca shopping/período e ainda
+    // não existe um conjunto compatível em memória. O tick de 3 minutos é 100% background.
+    if (queryChanged && !(shoppingData?.shopping?.code === selectedShoppingCode && shoppingData.period === historyPeriod)) {
+      setLoadingHistory(true);
+    }
 
     liveDashboardService
       .getShopping(selectedShoppingCode, historyPeriod)
@@ -275,10 +283,12 @@ function OverviewPage() {
         setError(null);
       })
       .catch((err: unknown) => {
-        if (alive && !(shoppingData?.shopping?.code === selectedShoppingCode && shoppingData.period === historyPeriod)) setError(err instanceof Error ? err.message : "Falha ao consultar o histórico ANCAR.");
+        if (alive && !(shoppingData?.shopping?.code === selectedShoppingCode && shoppingData.period === historyPeriod)) {
+          setError(err instanceof Error ? err.message : "Falha ao consultar o histórico ANCAR.");
+        }
       })
       .finally(() => {
-        if (alive) setLoadingHistory(false);
+        if (alive && queryChanged) setLoadingHistory(false);
       });
 
     return () => {
@@ -378,7 +388,7 @@ function OverviewPage() {
   const portfolioHealth = makePortfolioHealth(portfolio.shoppings);
 
   return (
-    <><style data-ancar-overview-layout="4.5">{OVERVIEW_LAYOUT_V45_CSS}</style><div className="overview-dashboard space-y-4" data-ancar-ui-version="4.5">
+    <><style data-ancar-overview-layout="4.7">{OVERVIEW_LAYOUT_V45_CSS}</style><div className="overview-dashboard space-y-4" data-ancar-ui-version="4.7">
       {error && (
         <div className="overview-error rounded-lg border border-[color-mix(in_oklab,var(--accent-yellow)_38%,transparent)] bg-[color-mix(in_oklab,var(--accent-yellow)_8%,transparent)] px-3 py-2 text-xs text-[var(--accent-yellow)]">
           {error}
@@ -555,7 +565,7 @@ function OverviewPage() {
                     }}
                     labelStyle={{ color: "var(--foreground)" }}
                   />
-                  <Area
+                  <Area isAnimationActive={false}
                     yAxisId="load"
                     type="linear"
                     dataKey="kwCag"
@@ -566,7 +576,7 @@ function OverviewPage() {
                     activeDot={{ r: 4 }}
                     connectNulls={false}
                   />
-                  <Line
+                  <Line isAnimationActive={false}
                     yAxisId="load"
                     type="linear"
                     dataKey="trTotal"
@@ -577,7 +587,7 @@ function OverviewPage() {
                     activeDot={{ r: 4 }}
                     connectNulls={false}
                   />
-                  <Line
+                  <Line isAnimationActive={false}
                     yAxisId="eff"
                     type="linear"
                     dataKey="kwTr"

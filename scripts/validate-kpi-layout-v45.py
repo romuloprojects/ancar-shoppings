@@ -31,6 +31,6 @@ with sync_playwright() as pw:
 errs=[r for r in results if not r['ok']]
 (out/'summary.json').write_text(json.dumps({'result':'PASS' if not errs else 'FAIL','results':results},ensure_ascii=False,indent=2))
 if errs:
- print('VALIDAÇÃO KPI V4.5: FAIL',file=sys.stderr); print(errs,file=sys.stderr); raise SystemExit(1)
-print(f'VALIDAÇÃO KPI V4.5: PASS — {len(results)} viewports, 6 cards, sem overflow')
+ print('VALIDAÇÃO KPI V4.6: FAIL',file=sys.stderr); print(errs,file=sys.stderr); raise SystemExit(1)
+print(f'VALIDAÇÃO KPI V4.6: PASS — {len(results)} viewports, 6 cards, sem overflow')
 for r in results: print(f"{r['viewport'][0]}x{r['viewport'][1]}: card={r['cards'][0]['rect']['w']:.1f}x{r['cards'][0]['rect']['h']:.0f}px")

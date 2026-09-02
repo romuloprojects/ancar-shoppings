@@ -16,7 +16,7 @@ export const Route = createFileRoute("/ranking")({
 const METRICS: { key: RankingMetric; label: string; subtitle: string }[] = [
   {
     key: "intensidade",
-    label: "Intensidade elétrica",
+    label: "Eficiência Energética",
     subtitle: "kW/TR elétrico para todas as unidades com potência CAG e produção térmica válidas",
   },
   {

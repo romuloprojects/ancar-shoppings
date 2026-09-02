@@ -258,7 +258,7 @@ function AnalyticsPage() {
                     <Tooltip contentStyle={chartTooltipStyle} labelFormatter={(value) => formatHistoryTooltip(typeof value === "number" ? value : Number(value))} formatter={(value, name) => [displayValue(typeof value === "number" ? value : Number(value)), `${String(name)} (${config.unit})`]} />
                     {series.map((shopping, index) => {
                       const code = shopping.shopping?.code ?? `S${index + 1}`;
-                      return <Line key={code} type="linear" dataKey={code} name={code} stroke={SERIES_COLORS[index % SERIES_COLORS.length]} dot={false} strokeWidth={2} connectNulls={false} />;
+                      return <Line isAnimationActive={false} key={code} type="linear" dataKey={code} name={code} stroke={SERIES_COLORS[index % SERIES_COLORS.length]} dot={false} strokeWidth={2} connectNulls={false} />;
                     })}
                   </LineChart>
                 </ResponsiveContainer>

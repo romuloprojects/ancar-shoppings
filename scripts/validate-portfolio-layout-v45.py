@@ -10,8 +10,8 @@ if not m:
 v45_css=m.group(1)
 required=['@media (min-width: 1024px)','grid-template-columns: repeat(6, minmax(0, 1fr)) !important','grid-template-rows: repeat(2, 146px) !important','height: 302px !important','height: 408px !important','grid-template-rows: 408px !important','overflow-y: auto !important']
 missing=[x for x in required if x not in v45_css]
-if missing: raise AssertionError('Regras V4.5 ausentes: '+', '.join(missing))
-if 'min-height: 650px' in v45_css: raise AssertionError('V4.5 ainda depende de min-height')
+if missing: raise AssertionError('Regras V4.6 ausentes: '+', '.join(missing))
+if 'min-height: 650px' in v45_css: raise AssertionError('V4.6 ainda depende de min-height')
 
 src=(root/'src/data/brazilMapPaths.ts').read_text()
 pm=re.search(r'export const BRAZIL_OUTLINE_PATH =\s*\n\s*"([^"]+)";',src)
@@ -54,5 +54,5 @@ with sync_playwright() as pw:
 errs=[f"{x['v']['w']}x{x['v']['h']}" for x in results if not x['ok']]
 (out/'summary.json').write_text(json.dumps({'result':'PASS' if not errs else 'FAIL','errors':errs,'metrics':results},indent=2))
 if errs: print('FAIL '+', '.join(errs),file=sys.stderr); raise SystemExit(1)
-print(f'VALIDAÇÃO PORTFÓLIO V4.5: PASS — {len(results)} viewports, incluindo alturas <650px')
+print(f'VALIDAÇÃO PORTFÓLIO V4.6: PASS — {len(results)} viewports, incluindo alturas <650px')
 for x in results: print(f"{x['v']['w']}x{x['v']['h']}: panels={x['panels'][0]['h']:.0f}px rows={len(x['rows'])} portfolioScroll={x['psh']}/{x['pc']} map={x['map']['w']:.0f}x{x['map']['h']:.0f} page={x['inset']['s']}/{x['inset']['c']}")
