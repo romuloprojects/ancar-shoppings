@@ -28,7 +28,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { liveDashboardService } from "@/services/liveDashboardService";
+import { getPortfolioSystemStatus, liveDashboardService, mapLiveShoppingToLegacy } from "@/services/liveDashboardService";
 import type { Shopping } from "@/types";
 import type { AnalysisMetric, HistoryPeriod } from "@/types/live";
 import { useDashboardRuntime } from "@/contexts/dashboard-runtime-context";
@@ -46,7 +46,7 @@ const comparisonMetrics: Record<AnalysisMetric, string> = {
   kwCag: "Potência CAG",
   energyKwh: "Energia elétrica",
   trTotal: "Produção térmica",
-  kwTr: "Intensidade elétrica (kW/TR)",
+  kwTr: "Eficiência Energética (kW/TR)",
   kwAux: "Periféricos",
   temperatureC: "Temperatura externa",
   dataQualityPct: "Qualidade dos dados",
@@ -66,6 +66,7 @@ export function TopBar() {
     setComparisonMetric,
   } = useDashboardRuntime();
   const [shoppings, setShoppings] = useState<Shopping[]>([]);
+  const [systemStatus, setSystemStatus] = useState<{ kind: "checking" | "operational" | "attention" | "degraded" | "api-error"; label: string }>({ kind: "checking", label: "Verificando sistema" });
   const [mobileOpen, setMobileOpen] = useState(false);
   const [compareOpen, setCompareOpen] = useState(false);
   const [draftComparison, setDraftComparison] = useState<string[]>([]);
@@ -74,17 +75,23 @@ export function TopBar() {
   useEffect(() => {
     let alive = true;
     liveDashboardService
-      .getShoppings()
-      .then((items) => {
+      .getPortfolio()
+      .then((portfolio) => {
         if (!alive) return;
-        const sortedItems = [...items].sort((a, b) => a.code.localeCompare(b.code, "pt-BR"));
+        const sortedItems = portfolio.shoppings
+          .map(mapLiveShoppingToLegacy)
+          .sort((a, b) => a.code.localeCompare(b.code, "pt-BR"));
         setShoppings(sortedItems);
+        const acquisition = getPortfolioSystemStatus(portfolio.shoppings);
+        setSystemStatus({ kind: acquisition.kind, label: acquisition.label });
         if (sortedItems.length && !sortedItems.some((shopping) => shopping.code === selectedShoppingCode)) {
           setSelectedShoppingCode(sortedItems[0].code);
         }
       })
       .catch(() => {
-        // Mantém o último estado válido durante falhas transitórias do polling.
+        if (!alive) return;
+        // Valores já carregados permanecem na tela, mas o status deve refletir a indisponibilidade da API.
+        setSystemStatus({ kind: "api-error", label: "API indisponível" });
       });
     return () => {
       alive = false;
@@ -120,6 +127,12 @@ export function TopBar() {
     setCompareOpen(false);
     navigate({ to: "/analises" });
   };
+
+  const systemTone = systemStatus.kind === "operational"
+    ? "var(--accent-green)"
+    : systemStatus.kind === "attention" || systemStatus.kind === "checking"
+      ? "var(--accent-yellow)"
+      : "var(--accent-red)";
 
   return (
     <>
@@ -228,14 +241,14 @@ export function TopBar() {
               </SheetContent>
             </Sheet>
 
-            <div className="hidden items-center gap-2 border-r border-border/55 pr-4 lg:flex">
+            <div className="hidden items-center gap-2 border-r border-border/55 pr-4 lg:flex" title={systemStatus.label}>
               <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--accent-green)] opacity-55" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--accent-green)]" />
+                {systemStatus.kind === "operational" && (
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-45" style={{ backgroundColor: systemTone }} />
+                )}
+                <span className="relative inline-flex h-2 w-2 rounded-full" style={{ backgroundColor: systemTone }} />
               </span>
-              <span className="text-xs text-muted-foreground">
-                {shoppings.length ? "Sistema Operacional" : "API indisponível"}
-              </span>
+              <span className="text-xs text-muted-foreground">{systemStatus.label}</span>
             </div>
 
             <DropdownMenu>

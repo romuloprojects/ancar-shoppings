@@ -89,12 +89,64 @@ export function getDataQualityPct(item: LiveShoppingSummary): number {
   return total > 0 ? Math.max(0, Math.min(100, (ok / total) * 100)) : 0;
 }
 
+export type PortfolioSystemStatusKind = "operational" | "attention" | "degraded";
+
+export interface PortfolioSystemStatus {
+  kind: PortfolioSystemStatusKind;
+  label: string;
+  fallbackCount: number;
+  partialCount: number;
+  criticalMissingCount: number;
+  offlineCount: number;
+}
+
+function latestAgeMinutes(item: LiveShoppingSummary): number | null {
+  if (!item.latest?.collectedAt) return null;
+  const ts = Date.parse(item.latest.collectedAt);
+  return Number.isFinite(ts) ? Math.max(0, (Date.now() - ts) / 60_000) : null;
+}
+
+function hasFallbackValue(item: LiveShoppingSummary): boolean {
+  return Object.values(item.latest?.valueFreshness ?? {}).some((value) => value?.fallback === true);
+}
+
+function hasCriticalValueExpired(item: LiveShoppingSummary): boolean {
+  const freshness = item.latest?.valueFreshness;
+  if (!freshness) return false;
+  return freshness.kw_cag?.valid === false || freshness.tr_total?.valid === false;
+}
+
+export function getPortfolioSystemStatus(items: LiveShoppingSummary[]): PortfolioSystemStatus {
+  let fallbackCount = 0;
+  let partialCount = 0;
+  let criticalMissingCount = 0;
+  let offlineCount = 0;
+  for (const item of items) {
+    const ageMinutes = latestAgeMinutes(item);
+    const technicalLimit = Math.max(10, (item.collectionIntervalMinutes ?? 3) * 3);
+    if (ageMinutes === null || ageMinutes > technicalLimit) offlineCount += 1;
+    if (hasCriticalValueExpired(item)) criticalMissingCount += 1;
+    if (hasFallbackValue(item)) fallbackCount += 1;
+    const health = String(item.latest?.health?.status ?? item.latest?.qualityStatus ?? "");
+    if (health === "partial" || health === "error") partialCount += 1;
+  }
+  if (offlineCount > 0 || criticalMissingCount > 0) {
+    return { kind: "degraded", label: "Comunicação degradada", fallbackCount, partialCount, criticalMissingCount, offlineCount };
+  }
+  if (fallbackCount > 0 || partialCount > 0) {
+    return { kind: "attention", label: "Sistema com atenção", fallbackCount, partialCount, criticalMissingCount, offlineCount };
+  }
+  return { kind: "operational", label: "Sistema Operacional", fallbackCount, partialCount, criticalMissingCount, offlineCount };
+}
+
 export function getLiveStatus(item: LiveShoppingSummary): Shopping["status"] {
   if (!item.latest?.collectedAt) return "offline";
-  const technicalStaleMinutes = Math.max(5, (item.collectionIntervalMinutes ?? 5) * 3);
+  const technicalStaleMinutes = Math.max(10, (item.collectionIntervalMinutes ?? 3) * 3);
   const age = Date.now() - Date.parse(item.latest.collectedAt);
   if (!Number.isFinite(age) || age > technicalStaleMinutes * 60_000) return "offline";
+  if (hasCriticalValueExpired(item)) return "critico";
   const healthStatus = String(item.latest.health?.status ?? item.latest.qualityStatus ?? "");
+  if (hasFallbackValue(item)) return "atencao";
   if (healthStatus === "error") return "critico";
   if (healthStatus === "partial") return "atencao";
   const kpis = item.latest.kpis ?? {};

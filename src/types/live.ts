@@ -29,6 +29,10 @@ export interface LiveHealth {
   apiErrorCount?: number;
   collectionDurationSeconds?: number;
   expectedMinimumDelaySeconds?: number;
+  retryRecoveredPoints?: number;
+  maxAttemptUsed?: number;
+  failedAfterRetries?: number;
+  collectionStrategy?: string;
 }
 
 export interface LiveAlertFlags {
@@ -94,12 +98,24 @@ export interface LiveKpis {
   [key: string]: unknown;
 }
 
+
+export interface LiveValueFreshness {
+  sourceAt: string | null;
+  ageMinutes: number | null;
+  fallback: boolean;
+  valid: boolean;
+  reason?: string | null;
+}
+
 export interface LiveLatest {
   cycleId: string;
   collectedAt: string;
   qualityStatus: LiveQualityStatus;
   settingsVersion?: number | null;
   kpis: LiveKpis;
+  rawKpis?: LiveKpis;
+  valueFreshness?: Record<string, LiveValueFreshness>;
+  fallbackWindowMinutes?: number;
   status: Record<string, unknown>;
   health: LiveHealth;
 }
@@ -152,6 +168,13 @@ export interface PortfolioApiResponse {
   ok: boolean;
   generatedAt: string;
   refreshIntervalMs: number;
+  fallbackWindowMinutes?: number;
+  systemDiagnostics?: {
+    totalShoppings?: number;
+    partialShoppings?: number;
+    fallbackShoppings?: number;
+    criticalMissingShoppings?: number;
+  };
   shoppings: LiveShoppingSummary[];
 }
 
@@ -230,6 +253,7 @@ export interface HistoryDiagnostics {
 export interface ShoppingApiResponse {
   ok: boolean;
   generatedAt: string;
+  fallbackWindowMinutes?: number;
   period: HistoryPeriod;
   shopping: LiveShoppingSummary | null;
   equipmentRegistry: EquipmentRegistryItem[];

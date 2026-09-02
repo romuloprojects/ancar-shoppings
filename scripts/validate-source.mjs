@@ -20,7 +20,7 @@ assert(styles.includes('grid-template-columns:170px minmax(0,1fr)'),'Configuraç
 const allSrc=files.map(f=>fs.readFileSync(f,'utf8')).join('\n');
 assert(allSrc.includes('grid-template-columns: repeat(6, minmax(0, 1fr)) !important'),'V4.8: grid de 6 KPIs compactos ausente');
 assert(allSrc.includes('const portfolioPageSize = 6'),'Visão Geral: paginação deve voltar a 6 cards por página');
-assert(allSrc.includes('data-ancar-ui-version="4.8"'),'V4.8: marcador de versão da Visão Geral ausente');
+assert(allSrc.includes('data-ancar-ui-version="5.0"'),'V4.8: marcador de versão da Visão Geral ausente');
 assert(allSrc.includes('h-[92px]'),'V4.8: KPI compacto de 92px ausente');
 assert(allSrc.includes('min-h-[146px]'),'ShoppingCard: altura original de 146px ausente');
 assert(allSrc.includes('portfolio-map-root') && allSrc.includes('portfolio-map-legend'),'BrazilMap: estrutura flexível V3.9 ausente');
@@ -90,10 +90,10 @@ assert(overviewRoute.includes('height: 302px !important'), 'V4.8: área dos 6 Sh
 assert(overviewRoute.includes('height: 408px !important'), 'V4.8: faixa inferior deve reservar 408px');
 assert(overviewRoute.includes('grid-template-rows: 408px !important'), 'V4.8: todos os painéis inferiores devem compartilhar a mesma track');
 assert(overviewRoute.includes('overflow-y: auto !important'), 'V4.8: app-inset deve permitir scroll vertical da página');
-assert(overviewRoute.includes('data-ancar-overview-layout="4.8"'), 'V4.8: style guard precisa estar montado na rota');
+assert(overviewRoute.includes('data-ancar-overview-layout="5.0"'), 'V4.8: style guard precisa estar montado na rota');
 const rootRoute=fs.readFileSync(path.join(src,'routes','__root.tsx'),'utf8');
-assert(rootRoute.includes('ancar-ui=4.8.0'), 'V4.8: cache-bust do stylesheet ausente');
-assert(rootRoute.includes('ancar-ui-version') && rootRoute.includes('4.8.0'), 'V4.8: meta de versão ausente');
+assert(rootRoute.includes('ancar-ui=5.0.0'), 'V4.8: cache-bust do stylesheet ausente');
+assert(rootRoute.includes('ancar-ui-version') && rootRoute.includes('5.0.0'), 'V4.8: meta de versão ausente');
 assert(health.includes('text-[11px]'), 'V4.8: valor central do gauge deve permanecer pequeno');
 assert(map.includes('preserveAspectRatio="xMidYMid meet"'), 'V4.8: mapa deve preservar proporção geográfica');
 
@@ -125,5 +125,11 @@ assert(overviewRoute.includes('useState<RankingMetric>("efficiency")'), 'V4.8: R
 assert(overviewRoute.includes('label: "Eficiência Energética", unit: "kW/TR"'), 'V4.8: rótulo Eficiência Energética ausente no Ranking da home');
 const rankingRoute=fs.readFileSync(path.join(root,'src/routes/ranking.tsx'),'utf8');
 assert(rankingRoute.includes('key: "intensidade"') && rankingRoute.includes('label: "Eficiência Energética"'), 'V4.8: página Ranking deve exibir Eficiência Energética mantendo a chave interna intensidade');
+// V5.0 — saúde de aquisição e fallback de 10 min.
+assert(liveTypes.includes('LiveValueFreshness'), 'V5.0: contrato de freshness por KPI ausente');
+assert(liveService.includes('getPortfolioSystemStatus'), 'V5.0: cálculo de saúde global ausente');
+assert(liveService.includes('Comunicação degradada') && liveService.includes('Sistema com atenção'), 'V5.0: estados globais de aquisição ausentes');
+assert(topBar.includes('getPortfolioSystemStatus') && topBar.includes('systemStatus.label'), 'V5.0: TopBar não está ligado à saúde real da aquisição');
+assert(!topBar.includes('shoppings.length ? "Sistema Operacional" : "API indisponível"'), 'V5.0: status global simplista antigo ainda presente');
 console.log(`TS/TSX analisados: ${files.length}`); console.log(`Erros: ${errors.length}`); if(errors.length){console.error(errors.join('\n'));process.exit(1)}
 console.log('VALIDAÇÃO DE FONTE: PASS');
