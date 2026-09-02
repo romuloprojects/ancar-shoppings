@@ -20,6 +20,7 @@ assert(styles.includes('.reports-workspace-body'),'Relatórios: workspace latera
 assert(styles.includes('grid-template-columns:170px minmax(0,1fr)'),'Configurações: navegação lateral homologada ausente');
 const allSrc=files.map(f=>fs.readFileSync(f,'utf8')).join('\n');
 assert(allSrc.includes('const portfolioPageSize = 6'),'Visão Geral: paginação deve voltar a 6 cards por página');
+assert(allSrc.includes('data-ancar-ui-version="4.3"'),'V4.3: marcador de versão da Visão Geral ausente');
 assert(allSrc.includes('h-[116px]'),'KpiCard: altura original de 116px ausente');
 assert(allSrc.includes('min-h-[146px]'),'ShoppingCard: altura original de 146px ausente');
 assert(allSrc.includes('portfolio-map-root') && allSrc.includes('portfolio-map-legend'),'BrazilMap: estrutura flexível V3.9 ausente');
@@ -79,17 +80,17 @@ for(const route of ['index.tsx','shoppings.$shoppingId.tsx','analises.tsx','esg.
   assert(text.includes('formatHistoryTick'),`V3.6 ${route}: formatação por período ausente`);
   assert(!text.includes('type="monotone"'),`V3.6 ${route}: interpolação monotone não deve ser usada em telemetria`);
 }
-assert(styles.includes('grid-template-rows: 108px minmax(285px, 1fr) 320px'),'V3.9: faixa inferior 820–860 px deve ter 320 px');
-assert(styles.includes('grid-template-rows: 96px minmax(235px, 1fr) 260px'),'V3.9: faixa inferior 720–819 px deve ter 260 px');
-assert(styles.includes('flex: 1 1 0') && styles.includes('max-height: none !important') && styles.includes('.portfolio-map-legend'),'V3.9: mapa deve usar flex sizing sem corte por max-height');
-assert(health.includes('text-[11px]'),'V3.9: valor central do gauge deve usar 11 px');
-assert(styles.includes('@media (min-width: 1280px) and (min-height: 650px)'),'V4.0: correção deve iniciar em 650px de altura CSS');
-assert(styles.includes('grid-template-rows: 84px minmax(170px, 1fr) 275px !important'),'V4.0: faixa 650–719 não encontrada');
-assert(styles.includes('grid-template-rows: 92px minmax(200px, 1fr) 305px !important'),'V4.0: faixa 720–819 não encontrada');
-assert(styles.includes('grid-template-rows: 100px minmax(235px, 1fr) 355px !important'),'V4.0: faixa 820–899 não encontrada');
-assert(styles.includes('grid-template-rows: 108px minmax(255px, 1fr) 405px !important'),'V4.0: faixa >=900 não encontrada');
-assert(styles.includes('flex: 0 0 22px !important'),'V4.0: legenda compacta do mapa ausente');
-assert(map.includes('preserveAspectRatio="xMidYMid meet"'),'V4.0: mapa deve preservar proporção geográfica');
+// V4.3 — regra definitiva da faixa inferior em viewport desktop efetiva.
+assert(styles.includes('@media (min-width: 1024px) and (min-height: 650px)'), 'V4.3: correção deve iniciar em 1024x650 CSS');
+assert(styles.includes('grid-template-rows: repeat(2, 146px) !important'), 'V4.3: Portfólio deve exibir duas linhas fixas de 146px');
+assert(styles.includes('grid-auto-rows: 146px !important'), 'V4.3: linhas adicionais do Portfólio devem preservar 146px');
+assert(styles.includes('.app-inset') && styles.includes('overflow-y: auto !important'), 'V4.3: app-inset deve permitir scroll vertical da página');
+assert(styles.includes('grid-template-rows: var(--overview-kpi-row-v43) var(--overview-primary-row-v43) auto !important'), 'V4.3: faixa inferior deve ser auto e governada pelo conteúdo');
+assert(styles.includes('.overview-portfolio-cards > a') && styles.includes('height: 146px !important'), 'V4.3: ShoppingCard deve preservar 146px');
+assert(styles.includes('.overview-map-panel .portfolio-map-svg') && styles.includes('min-height: 280px !important'), 'V4.3: mapa deve crescer com o card lateral');
+assert(styles.includes('.portfolio-health-card .portfolio-health-gauge') && styles.includes('width: 76px !important'), 'V4.3: Qualidade deve crescer proporcionalmente');
+assert(health.includes('text-[11px]'), 'V4.3: valor central do gauge deve permanecer pequeno');
+assert(map.includes('preserveAspectRatio="xMidYMid meet"'), 'V4.3: mapa deve preservar proporção geográfica');
 
 // Imports locais @/ devem apontar para arquivos reais.
 for(const file of files){

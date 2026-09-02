@@ -1,0 +1,211 @@
+{
+  "viewport": {
+    "w": 1100,
+    "h": 700
+  },
+  "insetClientHeight": 700,
+  "insetScrollHeight": 845,
+  "insetOverflowY": "auto",
+  "lower": {
+    "x": 92,
+    "y": 417,
+    "w": 984,
+    "h": 408,
+    "bottom": 825,
+    "right": 1076
+  },
+  "portfolio": {
+    "x": 92,
+    "y": 417,
+    "w": 395,
+    "h": 408,
+    "bottom": 825,
+    "right": 487
+  },
+  "portfolioClientHeight": 406,
+  "portfolioScrollHeight": 406,
+  "cards": [
+    {
+      "x": 109,
+      "y": 466,
+      "w": 113.65625,
+      "h": 146,
+      "bottom": 612,
+      "right": 222.65625
+    },
+    {
+      "x": 232.65625,
+      "y": 466,
+      "w": 113.671875,
+      "h": 146,
+      "bottom": 612,
+      "right": 346.328125
+    },
+    {
+      "x": 356.328125,
+      "y": 466,
+      "w": 113.65625,
+      "h": 146,
+      "bottom": 612,
+      "right": 469.984375
+    },
+    {
+      "x": 109,
+      "y": 622,
+      "w": 113.65625,
+      "h": 146,
+      "bottom": 768,
+      "right": 222.65625
+    },
+    {
+      "x": 232.65625,
+      "y": 622,
+      "w": 113.671875,
+      "h": 146,
+      "bottom": 768,
+      "right": 346.328125
+    },
+    {
+      "x": 356.328125,
+      "y": 622,
+      "w": 113.65625,
+      "h": 146,
+      "bottom": 768,
+      "right": 469.984375
+    }
+  ],
+  "cardRows": [
+    466,
+    622
+  ],
+  "cardOverflow": [
+    {
+      "cw": 112,
+      "sw": 112,
+      "ch": 144,
+      "sh": 144
+    },
+    {
+      "cw": 112,
+      "sw": 112,
+      "ch": 144,
+      "sh": 144
+    },
+    {
+      "cw": 112,
+      "sw": 112,
+      "ch": 144,
+      "sh": 144
+    },
+    {
+      "cw": 112,
+      "sw": 112,
+      "ch": 144,
+      "sh": 144
+    },
+    {
+      "cw": 112,
+      "sw": 112,
+      "ch": 144,
+      "sh": 144
+    },
+    {
+      "cw": 112,
+      "sw": 112,
+      "ch": 144,
+      "sh": 144
+    }
+  ],
+  "panels": [
+    {
+      "x": 92,
+      "y": 417,
+      "w": 395,
+      "h": 408,
+      "bottom": 825,
+      "right": 487
+    },
+    {
+      "x": 499,
+      "y": 417,
+      "w": 237,
+      "h": 408,
+      "bottom": 825,
+      "right": 736
+    },
+    {
+      "x": 748,
+      "y": 417,
+      "w": 158,
+      "h": 408,
+      "bottom": 825,
+      "right": 906
+    },
+    {
+      "x": 918,
+      "y": 417,
+      "w": 158,
+      "h": 408,
+      "bottom": 825,
+      "right": 1076
+    }
+  ],
+  "mapPanel": {
+    "x": 499,
+    "y": 417,
+    "w": 237,
+    "h": 408,
+    "bottom": 825,
+    "right": 736
+  },
+  "mapSvg": {
+    "x": 516,
+    "y": 466,
+    "w": 203,
+    "h": 314.40625,
+    "bottom": 780.40625,
+    "right": 719
+  },
+  "mapPath": {
+    "x": 520.9203491210938,
+    "y": 539.6299438476562,
+    "w": 193.1593017578125,
+    "h": 167.1463623046875,
+    "bottom": 706.7763061523438,
+    "right": 714.0796508789062
+  },
+  "legend": {
+    "x": 516,
+    "y": 786,
+    "w": 203,
+    "h": 22,
+    "bottom": 808,
+    "right": 719
+  },
+  "health": {
+    "x": 918,
+    "y": 417,
+    "w": 158,
+    "h": 408,
+    "bottom": 825,
+    "right": 1076
+  },
+  "gauge": {
+    "x": 959,
+    "y": 476,
+    "w": 76,
+    "h": 76,
+    "bottom": 552,
+    "right": 1035
+  },
+  "gaugeFont": 11,
+  "sixVisible": true,
+  "noPortfolioScroll": true,
+  "cardsNotClipped": true,
+  "equalPanelHeights": true,
+  "portfolioTallEnough": true,
+  "mapInside": true,
+  "mapResponsive": true,
+  "qualityMatches": true,
+  "pageScrollAvailable": true
+}
