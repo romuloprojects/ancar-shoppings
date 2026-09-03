@@ -8,12 +8,14 @@ export interface AvailableReportMonth {
   lastDate: string;
   daysWithData: number;
   sampleCount: number;
+  shoppingsWithData?: number;
 }
 
 export interface ReportPeriodsResponse {
   ok: boolean;
   generatedAt: string;
-  shoppingId: string;
+  scope?: "shopping" | "portfolio";
+  shoppingId: string | null;
   shoppingName: string;
   earliestDataDate: string | null;
   latestDataDate: string | null;
@@ -40,11 +42,32 @@ function filenameFromResponse(response: Response, fallback: string) {
 }
 
 export const reportService = {
-  async getPeriods(shoppingId: string): Promise<ReportPeriodsResponse> {
-    const response = await authorizedFetch(`${API_BASE_URL}/ancar-report-periods-v1?shoppingId=${encodeURIComponent(shoppingId)}`);
+  async getPeriods(shoppingId = "", scope: "shopping" | "portfolio" = "shopping"): Promise<ReportPeriodsResponse> {
+    const qs = scope === "portfolio" ? "scope=portfolio" : `scope=shopping&shoppingId=${encodeURIComponent(shoppingId)}`;
+    const response = await authorizedFetch(`${API_BASE_URL}/ancar-report-periods-v1?${qs}`);
     const payload = await response.json().catch(() => null) as (ReportPeriodsResponse & { message?: string }) | null;
     if (!response.ok || !payload?.ok) throw new Error(payload?.message || `Não foi possível consultar os períodos (${response.status}).`);
     return payload;
+  },
+
+  async downloadMonthlyPortfolio(month: string) {
+    const url = `${API_BASE_URL}/ancar-report-monthly-portfolio-pdf-v1?month=${encodeURIComponent(month)}`;
+    const response = await authorizedFetch(url);
+    if (!response.ok) {
+      const payload = await response.json().catch(() => null) as { message?: string } | null;
+      throw new Error(payload?.message || `Não foi possível gerar o PDF do portfólio (${response.status}).`);
+    }
+    const blob = await response.blob();
+    if (!blob.size) throw new Error("O PDF do portfólio retornou vazio.");
+    const fallback = `ANCAR_Portfolio_Mensal_${month}.pdf`;
+    const objectUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = objectUrl;
+    link.download = filenameFromResponse(response, fallback);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 2500);
   },
 
   async download(type: "daily" | "weekly" | "monthly", shoppingId: string, anchor: string) {
