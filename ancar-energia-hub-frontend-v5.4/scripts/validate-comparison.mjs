@@ -1,0 +1,21 @@
+import fs from "node:fs";
+import { createRequire } from "node:module";
+const require=createRequire(import.meta.url);
+const ts=require('/opt/nvm/versions/node/v22.16.0/lib/node_modules/typescript/lib/typescript.js');
+const source=fs.readFileSync(new URL('../src/utils/comparison.ts',import.meta.url),'utf8');
+const compiled=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext,verbatimModuleSyntax:false},fileName:'comparison.ts'}).outputText;
+const mod=await import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`);
+const failures=[]; const check=(c,m)=>{if(!c)failures.push(m)};
+check(mod.getComparisonLabel('24h')==='vs ontem','24h deve mostrar vs ontem');
+check(mod.getComparisonLabel('7d')==='vs semana passada','7d deve mostrar vs semana passada');
+check(mod.getComparisonLabel('30d')==='vs mês anterior','30d deve mostrar vs mês anterior');
+check(Math.abs(mod.percentageChange(110,100)-10)<1e-9,'percentual +10% incorreto');
+check(Math.abs(mod.percentageChange(90,100)+10)<1e-9,'percentual -10% incorreto');
+check(mod.percentageChange(10,0)===null,'base zero deve gerar sem comparativo');
+check(Math.abs(mod.absoluteChange(27.5,25.0)-2.5)<1e-9,'delta absoluto de temperatura incorreto');
+check(Math.abs(mod.targetDeviationPct(0.72,0.80)+10)<1e-9,'10% abaixo da meta incorreto');
+check(Math.abs(mod.targetDeviationPct(0.88,0.80)-10)<1e-9,'10% acima da meta incorreto');
+check(mod.targetDeviationPct(0.8,null)===null,'meta ausente deve gerar null');
+if(failures.length){console.error(`VALIDAÇÃO DE COMPARATIVOS: FAIL (${failures.length})`);console.error(failures.join('\n'));process.exit(1)}
+console.log('24h/7d/30d, delta %, delta °C e meta: PASS');
+console.log('VALIDAÇÃO DE COMPARATIVOS: PASS');
