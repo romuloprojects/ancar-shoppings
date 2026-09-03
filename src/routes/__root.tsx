@@ -80,7 +80,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "ANCAR | Monitoramento CAG" },
-      { name: "ancar-ui-version", content: "5.2.0" },
+      { name: "ancar-ui-version", content: "5.6.1" },
       {
         name: "description",
         content:
@@ -95,15 +95,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
-      { rel: "stylesheet", href: `${appCss}?ancar-ui=5.2.0` },
+      { rel: "stylesheet", href: `${appCss}?ancar-ui=5.6.1` },
+      { rel: "stylesheet", href: "/login-v561.css?v=5.6.1" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
       },
-      { rel: "icon", href: "/favicon.png", type: "image/png" },
-      { rel: "shortcut icon", href: "/favicon.ico" },
+      { rel: "icon", href: "/favicon.png?v=5.6.1", type: "image/png" },
+      { rel: "shortcut icon", href: "/favicon.ico?v=5.6.1" },
     ],
   }),
   shellComponent: RootShell,

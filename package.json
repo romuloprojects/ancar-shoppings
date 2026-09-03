@@ -26,7 +26,7 @@
     "validate:acquisition-health": "node scripts/validate-acquisition-health.mjs",
     "validate:economic-concept": "node scripts/validate-economic-concept.mjs",
     "validate:reports-layout": "python scripts/validate-reports-layout-v54.py",
-    "validate:login": "python scripts/validate-login-v56.py"
+    "validate:login": "python scripts/validate-login-v561.py"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -100,5 +100,5 @@
     "typescript-eslint": "^8.56.1",
     "vite": "^8.0.16"
   },
-  "version": "5.6.0"
+  "version": "5.6.1"
 }
