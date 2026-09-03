@@ -33,6 +33,7 @@ import type { Shopping } from "@/types";
 import type { AnalysisMetric, HistoryPeriod } from "@/types/live";
 import { useDashboardRuntime } from "@/contexts/dashboard-runtime-context";
 import { useAuth } from "@/auth/AuthContext";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const controlClass =
   "h-9 shrink-0 gap-2 rounded-xl border-border/55 bg-[color-mix(in_oklab,var(--card)_76%,transparent)] px-3 text-[11px] font-medium text-foreground/90 shadow-none hover:bg-accent/55 hover:text-foreground";
@@ -149,8 +150,13 @@ export function TopBar() {
           >
             <img
               src="/images/logo-ancar-white.png"
-              alt=""
-              className="h-[30px] w-auto object-contain opacity-95 transition-opacity hover:opacity-100"
+              alt="ancar"
+              className="hidden h-[30px] w-auto object-contain opacity-95 transition-opacity hover:opacity-100 dark:block"
+            />
+            <img
+              src="/images/logo-ancar-v56.png"
+              alt="ancar"
+              className="h-[28px] w-auto object-contain opacity-95 transition-opacity hover:opacity-100 dark:hidden"
             />
           </Link>
 
@@ -180,7 +186,14 @@ export function TopBar() {
             </div>
           </div>
 
-          <div className="topbar-status ml-auto flex shrink-0 items-center gap-2 lg:gap-3">
+          <div className="topbar-partner ml-auto hidden shrink-0 items-center xl:flex" title="Tecnologia 2SEE">
+            <div className="topbar-partner-plate flex h-9 items-center rounded-xl border border-border/60 bg-white px-2.5 shadow-sm">
+              <img src="/images/logo-2see-header.svg" alt="2SEE hub de monitoramento" className="h-[25px] w-auto max-w-[128px] object-contain" />
+            </div>
+          </div>
+
+          <div className="topbar-status flex shrink-0 items-center gap-2 lg:gap-3">
+            <ThemeToggle />
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild>
                 <Button
@@ -196,6 +209,11 @@ export function TopBar() {
                 <SheetHeader>
                   <SheetTitle>Controles do dashboard</SheetTitle>
                 </SheetHeader>
+                <div className="mt-5 flex justify-center xl:hidden">
+                  <div className="flex h-10 items-center rounded-xl border border-border/60 bg-white px-3 shadow-sm">
+                    <img src="/images/logo-2see-header.svg" alt="2SEE hub de monitoramento" className="h-[27px] w-auto max-w-[138px] object-contain" />
+                  </div>
+                </div>
                 <div className="mt-6 space-y-5">
                   <label className="block text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
                     Shopping

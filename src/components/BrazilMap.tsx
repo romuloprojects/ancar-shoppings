@@ -158,9 +158,9 @@ export function BrazilMap({ items = [] }: { items?: Shopping[] }) {
       >
         <defs>
           <radialGradient id="brazil-map-fill" cx="62%" cy="42%" r="72%">
-            <stop offset="0%" stopColor="oklch(0.29 0.07 233)" stopOpacity="0.9" />
-            <stop offset="68%" stopColor="oklch(0.225 0.045 250)" stopOpacity="0.94" />
-            <stop offset="100%" stopColor="oklch(0.185 0.032 260)" stopOpacity="0.98" />
+            <stop offset="0%" stopColor="var(--map-fill-start)" stopOpacity="0.9" />
+            <stop offset="68%" stopColor="var(--map-fill-mid)" stopOpacity="0.94" />
+            <stop offset="100%" stopColor="var(--map-fill-end)" stopOpacity="0.98" />
           </radialGradient>
           <filter id="map-marker-glow" x="-100%" y="-100%" width="300%" height="300%">
             <feGaussianBlur stdDeviation="3.2" result="blur" />
@@ -180,7 +180,7 @@ export function BrazilMap({ items = [] }: { items?: Shopping[] }) {
         <path
           d={BRAZIL_OUTLINE_PATH}
           fill="url(#brazil-map-fill)"
-          stroke="oklch(0.62 0.085 220 / 62%)"
+          stroke="var(--map-outline)"
           strokeWidth={1.15}
           vectorEffect="non-scaling-stroke"
           filter="url(#map-shadow)"
@@ -192,7 +192,7 @@ export function BrazilMap({ items = [] }: { items?: Shopping[] }) {
               key={path}
               d={path}
               fill="none"
-              stroke="oklch(0.52 0.06 225 / 58%)"
+              stroke="var(--map-state-line)"
               strokeWidth={0.65}
               vectorEffect="non-scaling-stroke"
             />
@@ -225,7 +225,7 @@ export function BrazilMap({ items = [] }: { items?: Shopping[] }) {
                 cy={marker.markerY}
                 r={active ? 4.5 : 3.5}
                 fill={marker.color}
-                stroke="oklch(0.98 0.01 240 / 70%)"
+                stroke="var(--map-marker-ring)"
                 strokeWidth={active ? 1.35 : 0.8}
               />
             </g>
@@ -238,16 +238,16 @@ export function BrazilMap({ items = [] }: { items?: Shopping[] }) {
               width={tooltipWidth}
               height={tooltipHeight}
               rx={8}
-              fill="oklch(0.17 0.035 260 / 96%)"
-              stroke="oklch(0.52 0.07 225 / 72%)"
+              fill="var(--popover)"
+              stroke="var(--border)"
               strokeWidth={0.8}
               filter="url(#map-shadow)"
             />
             <circle cx={13} cy={15} r={3.2} fill={hovered.color} />
-            <text x={22} y={18} fill="oklch(0.96 0.01 240)" fontSize={11} fontWeight={700}>
+            <text x={22} y={18} fill="var(--popover-foreground)" fontSize={11} fontWeight={700}>
               {hovered.code}
             </text>
-            <text x={12} y={34} fill="oklch(0.72 0.02 245)" fontSize={9.5}>
+            <text x={12} y={34} fill="var(--muted-foreground)" fontSize={9.5}>
               {hovered.city}/{hovered.stateCode}
             </text>
           </g>

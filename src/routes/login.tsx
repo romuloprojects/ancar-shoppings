@@ -69,23 +69,6 @@ function LoginPage() {
             </p>
           </div>
 
-          <div className="login-v56-insights" aria-hidden="true">
-            <div className="login-v56-insight">
-              <span>Performance do portfólio</span>
-              <strong>Visão multi-site</strong>
-              <div className="login-v56-bars">
-                <i /><i /><i /><i /><i />
-              </div>
-              <small>Indicadores operacionais e econômicos</small>
-            </div>
-            <div className="login-v56-insight">
-              <span>Sustentabilidade</span>
-              <strong>Energia & emissões</strong>
-              <div className="login-v56-ring"><i /></div>
-              <small>Eficiência, metas e impacto ambiental</small>
-            </div>
-          </div>
-
           <div className="login-v56-feature-grid">
             <div className="login-v56-feature">
               <span className="login-v56-feature-icon"><Building2 /></span>
@@ -169,7 +152,7 @@ function LoginPage() {
 
           <footer className="login-v56-footer">
             <span>Ambiente protegido para usuários autorizados</span>
-            <b>Versão 5.6.1</b>
+            <b>Versão 5.7.0</b>
           </footer>
         </div>
       </section>

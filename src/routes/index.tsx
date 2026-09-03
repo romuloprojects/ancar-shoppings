@@ -389,7 +389,7 @@ function OverviewPage() {
   const portfolioHealth = makePortfolioHealth(portfolio.shoppings);
 
   return (
-    <><style data-ancar-overview-layout="5.2">{OVERVIEW_LAYOUT_V45_CSS}</style><div className="overview-dashboard space-y-4" data-ancar-ui-version="5.2">
+    <><style data-ancar-overview-layout="5.2">{OVERVIEW_LAYOUT_V45_CSS}</style><div className="overview-dashboard space-y-4" data-ancar-ui-version="5.7.0">
       {error && (
         <div className="overview-error rounded-lg border border-[color-mix(in_oklab,var(--accent-yellow)_38%,transparent)] bg-[color-mix(in_oklab,var(--accent-yellow)_8%,transparent)] px-3 py-2 text-xs text-[var(--accent-yellow)]">
           {error}
@@ -475,11 +475,11 @@ function OverviewPage() {
             {(loadingHistory || historyTransitionPending) && history.length === 0 ? <LoadingBlock h={244}/> : history.length === 0 ? <div className="grid h-full place-items-center"><DataUnavailable label="Histórico ainda não disponível para este período"/></div> : (
               <ResponsiveContainer width="100%" height="100%"><ComposedChart data={chartHistory} margin={{top:8,right:0,bottom:0,left:-12}}>
                 <defs><linearGradient id="cagPowerArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--accent-cyan)" stopOpacity={0.34}/><stop offset="100%" stopColor="var(--accent-cyan)" stopOpacity={0}/></linearGradient></defs>
-                <CartesianGrid stroke="oklch(0.35 0.03 260 / 30%)" strokeDasharray="3 3" vertical={false}/>
-                <XAxis dataKey="chartTimestamp" type="number" scale="time" domain={historyDomain} tickCount={historyTickCount(historyPeriod)} tickFormatter={(value)=>formatHistoryTick(Number(value),historyPeriod)} stroke="oklch(0.6 0.02 250)" tick={{fontSize:10}} minTickGap={18} tickLine={false} axisLine={{stroke:"oklch(0.38 0.03 260 / 60%)"}} allowDataOverflow/>
-                <YAxis yAxisId="eff" stroke="oklch(0.6 0.02 250)" tick={{fontSize:10}} tickLine={false} axisLine={false} width={38}/>
-                <YAxis yAxisId="load" orientation="right" stroke="oklch(0.6 0.02 250)" tick={{fontSize:10}} tickLine={false} axisLine={false} width={48}/>
-                <Tooltip labelFormatter={(value)=>formatHistoryTooltip(typeof value==="number"?value:Number(value))} formatter={(value,name)=>{const label=String(name);const numeric=typeof value==="number"?value:Number(value);if(label.includes("kW/TR"))return [formatKwTr(numeric),label];return [formatNumber(numeric,{maximumFractionDigits:1}),label]}} contentStyle={{background:"oklch(0.20 0.03 260)",border:"1px solid oklch(0.35 0.03 260)",borderRadius:8,fontSize:12}} labelStyle={{color:"var(--foreground)"}}/>
+                <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false}/>
+                <XAxis dataKey="chartTimestamp" type="number" scale="time" domain={historyDomain} tickCount={historyTickCount(historyPeriod)} tickFormatter={(value)=>formatHistoryTick(Number(value),historyPeriod)} stroke="var(--muted-foreground)" tick={{fontSize:10}} minTickGap={18} tickLine={false} axisLine={{stroke:"var(--border)"}} allowDataOverflow/>
+                <YAxis yAxisId="eff" stroke="var(--muted-foreground)" tick={{fontSize:10}} tickLine={false} axisLine={false} width={38}/>
+                <YAxis yAxisId="load" orientation="right" stroke="var(--muted-foreground)" tick={{fontSize:10}} tickLine={false} axisLine={false} width={48}/>
+                <Tooltip labelFormatter={(value)=>formatHistoryTooltip(typeof value==="number"?value:Number(value))} formatter={(value,name)=>{const label=String(name);const numeric=typeof value==="number"?value:Number(value);if(label.includes("kW/TR"))return [formatKwTr(numeric),label];return [formatNumber(numeric,{maximumFractionDigits:1}),label]}} contentStyle={{background:"var(--popover)",color:"var(--popover-foreground)",border:"1px solid var(--border)",borderRadius:8,fontSize:12,boxShadow:"var(--panel-glow)"}} labelStyle={{color:"var(--foreground)"}}/>
                 <Area isAnimationActive={false} yAxisId="load" type="linear" dataKey="kwCag" name="Potência CAG (kW)" stroke="var(--accent-cyan)" strokeWidth={2} fill="url(#cagPowerArea)" activeDot={{r:4}} connectNulls={false}/>
                 <Line isAnimationActive={false} yAxisId="load" type="linear" dataKey="trTotal" name="Produção (TR)" stroke="var(--accent-blue)" strokeWidth={2} dot={false} activeDot={{r:4}} connectNulls={false}/>
                 <Line isAnimationActive={false} yAxisId="eff" type="linear" dataKey="kwTr" name={`${isMixed?"Intensidade":"Eficiência"} (kW/TR)`} stroke="var(--accent-green)" strokeWidth={2} dot={{r:2.2,fill:"var(--accent-green)",strokeWidth:0}} activeDot={{r:4}} connectNulls={false}/>

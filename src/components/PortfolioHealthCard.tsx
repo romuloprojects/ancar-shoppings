@@ -52,7 +52,7 @@ export function PortfolioHealthCard({ metrics }: { metrics: PortfolioHealthMetri
               cy="50"
               r="42"
               fill="none"
-              stroke="oklch(0.28 0.03 260 / 72%)"
+              stroke="var(--border)"
               strokeWidth="8"
             />
             <circle

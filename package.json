@@ -12,7 +12,7 @@
     "format": "prettier --write .",
     "validate:source": "node scripts/validate-source.mjs",
     "validate:visual": "python scripts/validate-visual.py",
-    "validate": "npm run validate:source && npm run validate:history && npm run validate:comparison && npm run validate:kpi-layout && npm run validate:portfolio-layout && npm run validate:silent-refresh && npm run validate:history-resilience && npm run validate:ranking-target && npm run validate:acquisition-health && npm run validate:economic-concept && npm run validate:visual",
+    "validate": "npm run validate:source && npm run validate:history && npm run validate:comparison && npm run validate:kpi-layout && npm run validate:portfolio-layout && npm run validate:silent-refresh && npm run validate:history-resilience && npm run validate:ranking-target && npm run validate:acquisition-health && npm run validate:economic-concept && npm run validate:reports-layout && npm run validate:login && npm run validate:themes",
     "start": "node .output/server/index.mjs",
     "validate:history": "node scripts/validate-history.mjs",
     "validate:overview-layout": "python scripts/validate-overview-layout.py",
@@ -26,7 +26,8 @@
     "validate:acquisition-health": "node scripts/validate-acquisition-health.mjs",
     "validate:economic-concept": "node scripts/validate-economic-concept.mjs",
     "validate:reports-layout": "python scripts/validate-reports-layout-v54.py",
-    "validate:login": "python scripts/validate-login-v561.py"
+    "validate:login": "python scripts/validate-login-v57.py",
+    "validate:themes": "python scripts/validate-themes-v57.py"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -100,5 +101,5 @@
     "typescript-eslint": "^8.56.1",
     "vite": "^8.0.16"
   },
-  "version": "5.6.1"
+  "version": "5.7.0"
 }

@@ -138,9 +138,10 @@ export function StatusPill({
 }
 
 export const chartTooltipStyle = {
-  background: "oklch(0.19 0.034 260 / 98%)",
-  border: "1px solid oklch(0.37 0.04 250 / 72%)",
+  background: "var(--popover)",
+  border: "1px solid var(--border)",
   borderRadius: 10,
-  boxShadow: "0 16px 42px -24px rgba(0,0,0,.9)",
+  boxShadow: "var(--panel-glow)",
   fontSize: 12,
+  color: "var(--popover-foreground)",
 };
