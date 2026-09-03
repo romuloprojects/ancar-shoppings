@@ -10,6 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ShoppingsRouteImport } from './routes/shoppings'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AlterarSenhaRouteImport } from './routes/alterar-senha'
 import { Route as RelatoriosRouteImport } from './routes/relatorios'
 import { Route as RankingRouteImport } from './routes/ranking'
 import { Route as EsgRouteImport } from './routes/esg'
@@ -19,6 +21,16 @@ import { Route as AlertasRouteImport } from './routes/alertas'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShoppingsShoppingIdRouteImport } from './routes/shoppings.$shoppingId'
 
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AlterarSenhaRoute = AlterarSenhaRouteImport.update({
+  id: '/alterar-senha',
+  path: '/alterar-senha',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShoppingsRoute = ShoppingsRouteImport.update({
   id: '/shoppings',
   path: '/shoppings',
@@ -66,6 +78,8 @@ const ShoppingsShoppingIdRoute = ShoppingsShoppingIdRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/login': typeof LoginRoute
+  '/alterar-senha': typeof AlterarSenhaRoute
   '/': typeof IndexRoute
   '/alertas': typeof AlertasRoute
   '/analises': typeof AnalisesRoute
@@ -77,6 +91,8 @@ export interface FileRoutesByFullPath {
   '/shoppings/$shoppingId': typeof ShoppingsShoppingIdRoute
 }
 export interface FileRoutesByTo {
+  '/login': typeof LoginRoute
+  '/alterar-senha': typeof AlterarSenhaRoute
   '/': typeof IndexRoute
   '/alertas': typeof AlertasRoute
   '/analises': typeof AnalisesRoute
@@ -89,6 +105,8 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/login': typeof LoginRoute
+  '/alterar-senha': typeof AlterarSenhaRoute
   '/': typeof IndexRoute
   '/alertas': typeof AlertasRoute
   '/analises': typeof AnalisesRoute
@@ -102,6 +120,8 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/login'
+    | '/alterar-senha'
     | '/'
     | '/alertas'
     | '/analises'
@@ -113,6 +133,8 @@ export interface FileRouteTypes {
     | '/shoppings/$shoppingId'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/login'
+    | '/alterar-senha'
     | '/'
     | '/alertas'
     | '/analises'
@@ -124,6 +146,8 @@ export interface FileRouteTypes {
     | '/shoppings/$shoppingId'
   id:
     | '__root__'
+    | '/login'
+    | '/alterar-senha'
     | '/'
     | '/alertas'
     | '/analises'
@@ -136,6 +160,8 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  LoginRoute: typeof LoginRoute
+  AlterarSenhaRoute: typeof AlterarSenhaRoute
   IndexRoute: typeof IndexRoute
   AlertasRoute: typeof AlertasRoute
   AnalisesRoute: typeof AnalisesRoute
@@ -148,6 +174,20 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/alterar-senha': {
+      id: '/alterar-senha'
+      path: '/alterar-senha'
+      fullPath: '/alterar-senha'
+      preLoaderRoute: typeof AlterarSenhaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/shoppings': {
       id: '/shoppings'
       path: '/shoppings'
@@ -227,6 +267,8 @@ const ShoppingsRouteWithChildren = ShoppingsRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
+  LoginRoute: LoginRoute,
+  AlterarSenhaRoute: AlterarSenhaRoute,
   IndexRoute: IndexRoute,
   AlertasRoute: AlertasRoute,
   AnalisesRoute: AnalisesRoute,

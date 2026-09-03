@@ -1,4 +1,4 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   Activity,
   BarChart3,
@@ -24,6 +24,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { useAuth } from "@/auth/AuthContext";
 
 const items = [
   { title: "Visão Geral", url: "/", icon: Home },
@@ -41,6 +42,8 @@ const navigationButtonClass =
 
 export function AppSidebar() {
   const { isMobile, state } = useSidebar();
+  const { session, logout } = useAuth();
+  const navigate = useNavigate();
   const compact = state === "collapsed" && !isMobile;
   const pathname = useRouterState({ select: (routerState) => routerState.location.pathname });
   const isActive = (url: string) => (url === "/" ? pathname === "/" : pathname.startsWith(url));
@@ -60,7 +63,7 @@ export function AppSidebar() {
         <SidebarGroup className="px-2 py-4 md:py-5">
           <SidebarGroupContent>
             <SidebarMenu className="gap-1.5 md:items-center md:gap-2">
-              {items.map((item) => (
+              {items.filter((item) => item.url !== "/configuracoes" || session?.user?.role === "ADMIN").map((item) => (
                 <SidebarMenuItem key={item.url} className="w-full md:flex md:justify-center">
                   <SidebarMenuButton
                     asChild
@@ -93,7 +96,7 @@ export function AppSidebar() {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem className="w-full md:flex md:justify-center">
-            <SidebarMenuButton tooltip="Sair" className={navigationButtonClass}>
+            <SidebarMenuButton tooltip="Sair" className={navigationButtonClass} onClick={async () => { await logout(); await navigate({ to: "/login", replace: true }); }}>
               <LogOut className="!h-[19px] !w-[19px]" strokeWidth={1.8} />
               {!compact && <span>Sair</span>}
             </SidebarMenuButton>

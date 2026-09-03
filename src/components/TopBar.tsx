@@ -32,6 +32,7 @@ import { getPortfolioSystemStatus, liveDashboardService, mapLiveShoppingToLegacy
 import type { Shopping } from "@/types";
 import type { AnalysisMetric, HistoryPeriod } from "@/types/live";
 import { useDashboardRuntime } from "@/contexts/dashboard-runtime-context";
+import { useAuth } from "@/auth/AuthContext";
 
 const controlClass =
   "h-9 shrink-0 gap-2 rounded-xl border-border/55 bg-[color-mix(in_oklab,var(--card)_76%,transparent)] px-3 text-[11px] font-medium text-foreground/90 shadow-none hover:bg-accent/55 hover:text-foreground";
@@ -54,6 +55,7 @@ const comparisonMetrics: Record<AnalysisMetric, string> = {
 
 export function TopBar() {
   const navigate = useNavigate();
+  const { session, logout } = useAuth();
   const {
     tick,
     selectedShoppingCode,
@@ -256,22 +258,21 @@ export function TopBar() {
                 <button className="flex items-center gap-2 rounded-xl px-1.5 py-1 outline-none transition-colors hover:bg-muted/45 focus-visible:ring-1 focus-visible:ring-ring">
                   <Avatar className="h-9 w-9 border border-border/70 shadow-sm">
                     <AvatarFallback className="bg-gradient-to-br from-[color-mix(in_oklab,var(--accent-blue)_45%,var(--card))] to-[color-mix(in_oklab,var(--accent-purple)_35%,var(--card))] text-xs font-semibold text-foreground">
-                      AN
+                      {(session?.user?.displayName || session?.user?.username || "AN").split(/\s+/).slice(0,2).map(v=>v[0]).join("").toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="hidden min-w-[82px] text-left leading-tight 2xl:block">
-                    <div className="text-xs font-medium text-foreground">ANCAR</div>
-                    <div className="mt-0.5 text-[10px] text-muted-foreground">Monitoramento</div>
+                    <div className="max-w-[120px] truncate text-xs font-medium text-foreground">{session?.user?.displayName || session?.user?.username || "ANCAR"}</div>
+                    <div className="mt-0.5 text-[10px] text-muted-foreground">{session?.user?.role === "ADMIN" ? "Administrador" : "Visualização"}</div>
                   </div>
                   <ChevronDown className="hidden h-3.5 w-3.5 text-muted-foreground 2xl:block" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Minha conta</DropdownMenuLabel>
+                <DropdownMenuLabel><div className="text-xs">{session?.user?.displayName || session?.user?.username}</div><div className="mt-0.5 text-[10px] font-normal text-muted-foreground">{session?.user?.username}</div></DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Perfil</DropdownMenuItem>
-                <DropdownMenuItem>Preferências</DropdownMenuItem>
-                <DropdownMenuItem>Sair</DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => navigate({ to: "/alterar-senha" })}>Alterar senha</DropdownMenuItem>
+                <DropdownMenuItem onSelect={async () => { await logout(); await navigate({ to: "/login", replace: true }); }}>Sair</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

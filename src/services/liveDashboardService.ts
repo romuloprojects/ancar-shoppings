@@ -1,6 +1,7 @@
 import { SHOPPING_LOCATIONS } from "@/data/shoppingLocations";
 import { API_BASE_URL } from "@/config";
 import { normalizeShoppingHistory } from "@/utils/history";
+import { getAuthToken, signalAuthExpired } from "@/auth/auth-storage";
 import type { Alert, Shopping } from "@/types";
 import type {
   ComparisonWindowSummary,
@@ -14,15 +15,22 @@ import type {
 } from "@/types/live";
 
 async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
+  const token = getAuthToken();
   const response = await fetch(url, {
     ...init,
     headers: {
       Accept: "application/json",
       ...(init?.body ? { "Content-Type": "application/json" } : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(init?.headers ?? {}),
     },
     cache: "no-store",
   });
+  if (response.status === 401) signalAuthExpired();
+  if (response.status === 403) {
+    const payload = await response.clone().json().catch(() => null) as { error?: string } | null;
+    if (payload?.error === "PASSWORD_CHANGE_REQUIRED") signalAuthExpired();
+  }
   if (!response.ok) throw new Error(`API ANCAR respondeu HTTP ${response.status}.`);
   return (await response.json()) as T;
 }
