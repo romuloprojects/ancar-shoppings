@@ -158,6 +158,7 @@ export function getLiveStatus(item: LiveShoppingSummary): Shopping["status"] {
   if (healthStatus === "error") return "critico";
   if (healthStatus === "partial") return "atencao";
   const kpis = item.latest.kpis ?? {};
+  if (kpis.alert_flags?.powerStatusMismatch === true) return "atencao";
   const settings = item.settings ?? normalizeSettings();
   const balance = asNumber(kpis.desvio_balanco_pct);
   const peripherals = asNumber(kpis.auxiliares_pct_kw_cag);
@@ -244,7 +245,31 @@ export function buildCurrentAlerts(items: LiveShoppingSummary[]): Alert[] {
     const fallbackCount = Object.values(latest.valueFreshness ?? {}).filter((v) => v?.fallback).length;
     if (fallbackCount > 0) alerts.push(makeAlert(item, "fallback", "atencao", "Valores mantidos pelo último válido", `${fallbackCount} indicador(es) usam valor válido anterior dentro da janela de 10 minutos.`, "Acompanhe a próxima coleta; após 10 minutos sem recuperação o dado fica indisponível.", date));
 
-    const kwTr = asNumber(latest.kpis?.kw_tr_eletrico_cag ?? latest.kpis?.kw_tr_cag);
+    const kpis = latest.kpis ?? {};
+    if (kpis.alert_flags?.powerStatusMismatch === true) {
+      const diag = kpis.status_diagnostics ?? {};
+      const mismatchEquipments = Object.entries(kpis.equipamentos ?? {})
+        .filter(([, eq]) => eq?.power_status_mismatch === true)
+        .map(([key, eq]) => `${key.replaceAll("_", " ").toUpperCase()} (${fmt(asNumber(eq?.kw), 1)} kW)`);
+      const details: string[] = [];
+      if (mismatchEquipments.length) details.push(`potência em status OFF: ${mismatchEquipments.join(", ")}`);
+      if (diag.cagPowerWithoutChillerOn === true) details.push(`CAG ${fmt(asNumber(diag.kwCagRaw ?? kpis.kw_cag_raw), 1)} kW`);
+      if (diag.auxPowerWithoutChillerOn === true) details.push(`Periféricos/BAGPS ${fmt(asNumber(diag.kwAuxRaw ?? kpis.kw_auxiliares_raw), 1)} kW`);
+      const prefix = diag.noChillersOnByStatus === true
+        ? "Todos os status de chiller indicam desligado, mas há leitura de potência"
+        : "Foi detectada leitura de potência incompatível com o status de chiller";
+      alerts.push(makeAlert(
+        item,
+        "potencia-status",
+        "atencao",
+        "Potência detectada com chiller desligado",
+        `${prefix}${details.length ? `: ${details.join("; ")}` : "."}`,
+        "Verifique o ponto de status, o medidor/transdutor de potência e eventual operação de bombas em pré ou pós-ciclo. As leituras brutas permanecem registradas, mas equipamentos explicitamente OFF não entram nos KPIs operacionais.",
+        date,
+      ));
+    }
+
+    const kwTr = asNumber(kpis.kw_tr_eletrico_cag ?? kpis.kw_tr_cag);
     const target = asNumber(settings.targetKwTr);
     if (kwTr !== null && target !== null && target > 0 && kwTr > target) {
       const deviation = ((kwTr-target)/target)*100;

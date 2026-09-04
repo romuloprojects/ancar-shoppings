@@ -80,7 +80,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "ANCAR | Monitoramento CAG" },
-      { name: "ancar-ui-version", content: "5.7.0" },
+      { name: "ancar-ui-version", content: "5.7.2" },
       {
         name: "description",
         content:
@@ -95,16 +95,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
-      { rel: "stylesheet", href: `${appCss}?ancar-ui=5.7.0` },
-      { rel: "stylesheet", href: "/login-v57.css?v=5.7.0" },
+      { rel: "stylesheet", href: `${appCss}?ancar-ui=5.7.2` },
+      { rel: "stylesheet", href: "/login-v57.css?v=5.7.2" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
       },
-      { rel: "icon", href: "/favicon.png?v=5.7.0", type: "image/png" },
-      { rel: "shortcut icon", href: "/favicon.ico?v=5.7.0" },
+      { rel: "icon", href: "/favicon.png?v=5.7.2", type: "image/png" },
+      { rel: "shortcut icon", href: "/favicon.ico?v=5.7.2" },
     ],
   }),
   shellComponent: RootShell,
@@ -115,12 +115,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="pt-BR" className="dark">
+    <html lang="pt-BR" className="light">
       <head>
         <HeadContent />
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem("ancar-theme");if(t!=="light"&&t!=="dark")t="dark";var r=document.documentElement;r.classList.toggle("dark",t==="dark");r.classList.toggle("light",t==="light");r.dataset.theme=t;r.style.colorScheme=t;}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem("ancar-theme");if(t!=="light"&&t!=="dark")t="light";var r=document.documentElement;r.classList.toggle("dark",t==="dark");r.classList.toggle("light",t==="light");r.dataset.theme=t;r.style.colorScheme=t;}catch(e){}})();`,
           }}
         />
       </head>

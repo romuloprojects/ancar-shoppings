@@ -6,7 +6,7 @@ type AppTheme = "dark" | "light";
 const STORAGE_KEY = "ancar-theme";
 
 function readTheme(): AppTheme {
-  if (typeof document === "undefined") return "dark";
+  if (typeof document === "undefined") return "light";
   return document.documentElement.classList.contains("light") ? "light" : "dark";
 }
 
@@ -24,7 +24,7 @@ function applyTheme(theme: AppTheme) {
 }
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<AppTheme>("dark");
+  const [theme, setTheme] = useState<AppTheme>("light");
 
   useEffect(() => {
     setTheme(readTheme());

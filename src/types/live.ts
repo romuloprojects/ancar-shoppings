@@ -42,6 +42,28 @@ export interface LiveAlertFlags {
   peripherals?: boolean | null;
   target?: boolean | null;
   dataQuality?: boolean | null;
+  powerStatusMismatch?: boolean | null;
+  chillerPowerWithStatusOff?: boolean | null;
+  cagPowerWithoutChillerOn?: boolean | null;
+  auxPowerWithoutChillerOn?: boolean | null;
+}
+
+export interface LiveStatusDiagnostics {
+  authority?: "status" | "kw_fallback" | string | null;
+  allStatusesKnown?: boolean | null;
+  noChillersOnByStatus?: boolean | null;
+  activeStatusCount?: number | null;
+  activeKwCount?: number | null;
+  activeHybridCount?: number | null;
+  powerStatusMismatch?: boolean | null;
+  chillerPowerMismatchCount?: number | null;
+  chillerPowerMismatchKeys?: string[];
+  chillerPowerMismatches?: Array<{ equipmentKey?: string; kw?: number | null }>;
+  cagPowerWithoutChillerOn?: boolean | null;
+  auxPowerWithoutChillerOn?: boolean | null;
+  kwCagRaw?: number | null;
+  kwAuxRaw?: number | null;
+  thresholdKw?: number | null;
 }
 
 export interface LiveEquipmentKpi {
@@ -49,7 +71,10 @@ export interface LiveEquipmentKpi {
   energySource?: string | null;
   status?: boolean | null;
   kw?: number | null;
+  kw_operacional?: number | null;
   tr?: number | null;
+  tr_operacional?: number | null;
+  power_status_mismatch?: boolean | null;
   kw_tr?: number | null;
   cop?: number | null;
   kw_share_pct?: number | null;
@@ -65,6 +90,10 @@ export interface LiveKpis {
   chillers_total?: number | null;
   chillers_eletricos?: number | null;
   chillers_absorcao?: number | null;
+  kw_cag_raw?: number | null;
+  kw_chillers_total_raw?: number | null;
+  kw_auxiliares_raw?: number | null;
+  tr_total_raw?: number | null;
   kw_cag?: number | null;
   kw_chillers_total?: number | null;
   kw_chillers_eletricos_total?: number | null;
@@ -106,6 +135,7 @@ export interface LiveKpis {
   potencial_economia_kw?: number | null;
   potencial_economia_brl_h?: number | null;
   settings_version?: number | null;
+  status_diagnostics?: LiveStatusDiagnostics;
   alert_flags?: LiveAlertFlags;
   equipamentos?: Record<string, LiveEquipmentKpi>;
   [key: string]: unknown;
